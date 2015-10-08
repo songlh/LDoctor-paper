@@ -1,0 +1,315 @@
+%% \usepackage{times}  %% the  gives a more compact font (saves space)
+%%         %%     \usepackage{times} messes up the texttt 
+%%         %%  this command here makes it good again
+%%         %%      http://blog.bakhshi.eu/2009/04/times-and-texttt.html
+\renewcommand{\ttdefault}{cmtt} 
+
+%% put this for decent listings (because the listing uses sffamily)
+%% apparently, THIS ``cmss'' is the default
+%%          http://www.forkosh.com/pstex/latexcommands.htm
+%%      so presumably some other package set it to some other value or something
+%%              but without this, it looks super crammed
+\renewcommand{\sfdefault}{cmss} 
+
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{url}
+\usepackage{listings}
+\usepackage{latexsym}
+\usepackage{amsmath}
+\usepackage{mathrsfs}
+%% \usepackage{wrapfig}
+\usepackage{cite}  %% << does not work with sigplanconf
+
+%% \usepackage{tikz}   %% for text circled
+
+%% \newcommand*\circled[1]{\tikz[baseline=(char.base)]{\node[shape=circle,draw,inner sep=2pt] (char) {#1};}}  %% to allign circled decently
+
+% added by Shan
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{xspace}
+\usepackage{enumerate}
+\usepackage{balance}
+\usepackage{cleveref}
+
+
+
+
+%% To prevent having just a couple of figures, and lots of white space, on a page.
+\def\topfraction{.99}
+\def\dbltopfraction{\topfraction}
+\def\floatpagefraction{\topfraction}     % default .5
+\def\dblfloatpagefraction{\topfraction}  % default .5
+\def\textfraction{.01}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% copied from issta-11
+%% \newcommand{\jbasicstyle}{\scriptsize\sffamily}%\footnotesize}  %% Ballerina  
+%% \newcommand{\jnumberstyle}{\tiny}   %%  Ballerina
+\lstdefinelanguage{pseudo}
+ {
+%alsoletter={<>:=},
+  morekeywords={new, String, this, null, byte, private,
+                endfor, endforeach, endwhile, method, struct,
+                int,boolean,continue,enum, do, done,float,
+                void,if,else,endif,while,endwhile,return,for,foreach,assert,assume,false,true,class,static,import,
+                ignoreIf,getInt,getAny,getNew,getExisting,getBoolean,force,concrete,Susp,
+                getInt,getAny,getNew,getBoolean,force,concrete,Susp,ObjectPool,
+                implements,interface,public,double,synchronized,final,
+                proc,
+                Algorithm,Input,Output},
+  keywordstyle=\bfseries,
+  lineskip=-0.1em,
+  numbers=left,
+  xleftmargin=12pt,
+%%  numbers=none,
+%%  numberstyle=\jnumberstyle,  %% Ballerina
+  numberstyle=\tiny,
+  numbersep=4pt,
+%  basicstyle=\scriptsize,
+%%  basicstyle=\jbasicstyle,  %% Ballerina
+  basicstyle=\scriptsize\sffamily,
+  breaklines=true,
+  breakautoindent=true,
+  tabsize=2,
+%  columns=fixed,
+%  columns=flexible,
+  columns=fullflexible,
+%  morecomment=*[s][\textsl]{/*:}{*/},
+  morecomment=*[l][\textsl]{//},
+%  morecomment=*[s][\jahobform]{"}{"},
+  mathescape=true,
+%  escapeinside=<>,
+%  escapebegin={\begin{isakeyword}},
+%  escapeend={\end{isakeyword}}
+%  caption={},
+%  label={},
+}
+
+% {morekeywords={impl,module,format,var,proc,if,assume,while,assert,return,returns,bool,with,null,spec,specvar,requires,modifies,ensures,card,in,not,default,disjoint,abst,use,plugin,predvar,invariant},morecomment=[l]{//},morecomment=[s]{/*}{*/},}
+
+\lstset{language=pseudo}
+
+\lstdefinelanguage{pseudoForLog}
+ {
+%alsoletter={<>:=},
+  morekeywords={StartLoop, StartIter, FinishLoop},
+  keywordstyle=\bfseries,
+  lineskip=-0.1em,
+  numbers=left,
+  xleftmargin=12pt,
+%%  numbers=none,
+%%  numberstyle=\jnumberstyle,  %% Ballerina
+  numberstyle=\tiny,
+  numbersep=4pt,
+%  basicstyle=\scriptsize,
+%%  basicstyle=\jbasicstyle,  %% Ballerina
+  basicstyle=\scriptsize\sffamily,
+  breaklines=true,
+  breakautoindent=true,
+  tabsize=2,
+%  columns=fixed,
+%  columns=flexible,
+  columns=fullflexible,
+%  morecomment=*[s][\textsl]{/*:}{*/},
+  morecomment=*[l][\textsl]{//},
+%  morecomment=*[s][\jahobform]{"}{"},
+  mathescape=true,
+%  escapeinside=<>,
+%  escapebegin={\begin{isakeyword}},
+%  escapeend={\end{isakeyword}}
+%  caption={},
+%  label={},
+}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%% listing with languages
+%% 
+\newcommand{\insertListing}[1]{\lstinputlisting[language=pseudo]{#1}}  %% the pseudo
+%% \newcommand{\insertListing}[1]{\lstinputlisting[mathescape]{#1}} %% the default
+
+%% listing with log
+\newcommand{\insertListingForLog}[1]{\lstinputlisting[language=pseudoForLog]{#1}}  %% the pseudo
+
+%% not sure this is actually useful 
+\newcommand{\SpaceBelowCaption}{\vspace*{-6ex}}
+%% \newcommand{\Caption}[1]{\caption{#1}\SpaceBelowCaption{}}
+\newcommand{\CaptionCloseToLine}[1]{\vspace*{-3ex}\caption{#1}\SpaceBelowCaption{}}
+\newcommand{\CaptionLineTight}[1]{\vspace*{-3ex}\rule{\linewidth}{1.3pt}\vspace*{-2ex}\caption{#1}\SpaceBelowCaption{}}
+\newcommand{\CaptionCloseNoLine}[1]{\caption{#1}\SpaceBelowCaption{}}
+\newcommand{\Caption}[1]{\vspace*{-1ex}\rule{\linewidth}{1.3pt}\vspace*{-1.5ex}\caption{#1}\vspace*{-1ex}}
+
+
+
+%% \newcommand{\lstTxb}[1]{\lstlisting[#1]}
+\newcommand{\lstTxb}[1]{\txb{#1}}
+
+
+
+%% \newcommand{\sizeOfTTTFont}[1]{{\small{#1}}}  %% controls the size of text that is in \texttt mode
+                                              %%    typically CodeIn and APN type of thing 
+\newcommand{\sizeOfTTTFont}[1]{#1}
+
+%% InstantCheck, but no begin/end{small}. Current LaTeX template does not need it.
+\newcommand{\apncaption}[1]{${\tt#1}$}
+\newcommand{\apn}[1]{\sizeOfTTTFont{\texttt{#1}}} %% do NOT put $\texttt{#1}$$, because it prevents the braking of line
+\newcommand{\xyBS}{\symbol{92}} %% Back Slash 
+\newcommand{\xyCAP}{\symbol{94}} %% ^ instead of power
+\newcommand{\xyLAG}{\symbol{60}} %% ^ instead of power
+\newcommand{\xyRAG}{\symbol{62}} %% ^ instead of power
+\newcommand{\xyCMsep}{$\diamondsuit$}%% separator for Comparison Mode
+
+
+%% Cute names 
+\newcommand{\BLR}{\textsc{Toddler}}
+\newcommand{\BLRsection}{S{\normalsize{}\textbf{UN}}C{\normalsize{}\textbf{AT}}}
+\newcommand{\BLRcaption}{S{\scriptsize{}\textbf{UN}}C{\scriptsize{}\textbf{AT}}}
+
+\newenvironment{Contributions}{}{}
+\newcommand{\Contribution}[1]{\textbf{#1:}}
+
+\newenvironment{Problems}{}{}
+\newcommand{\Problem}[1]{\textbf{#1.}}
+
+
+%% Evaluationa
+\newcommand{\profilerName}{HPROF}
+
+
+
+
+% Latex writing
+\newcommand{\Comment}[1]{}
+\newcommand{\General}[1]{} %% signifies useful things, but that their place is not ther
+\newcommand{\Space}[1]{}
+%% \newcommand{\CodeIn}[1]{\ifmmode{\mbox{\small\texttt{#1}}}\else{\small\texttt{#1}}\fi}     %% with \small
+\newcommand{\CodeIn}[1]{\ifmmode{\mbox{\texttt{#1}}}\else{\texttt{#1}}\fi}   
+
+%% \newcommand{\Fix}[1]{\textbf{[[#1]]}}
+%% \newcommand{\FIX}[1]{\textbf{[[#1]]}}
+\newcommand{\Fix}[1]{}
+\newcommand{\FIX}[1]{}
+
+\newcommand{\FIXNUM}[1]{#1}
+
+% Multi Row
+\newcommand{\MMR}[1]{\multirow{2}{*}{#1}}
+
+% Multi Column;; use this : \MMC{2}{c||}{BLR}
+\newcommand{\MMC}[3]{\multicolumn{#1}{#2}{#3}}
+\newcommand{\decentHLine}{\noalign{\hrule height 1.04pt}}
+% Textin
+\newcommand{\TextIn}[1]{\ifmmode{\mbox{\small\texttt{#1}}}\else{\small\texttt{#1}}\fi}
+
+\newcommand{\Txb}[1]{\ifmmode{\mbox{\sizeOfTTTFont{\texttt{#1}}}}\else{\sizeOfTTTFont{\texttt{#1}}}\fi}
+\newcommand{\txb}[1]{\Txb{#1}}%% easier to type :)
+\newcommand{\Txs}[1]{\ifmmode{\mbox{\small\texttt{#1}}}\else{\small\texttt{#1}}\fi}
+
+
+%% the emphasis of the last rown in tables (e.g., sum and such)
+%%  WITH size Small (and tables are typically \footnotesize, aka \small is bigger 
+\newcommand{\overallEmphTableSizeSmall}[1]{\small{\textbf{#1}}}
+\newcommand{\overallEmphTable}[1]{\overallEmphTableSizeSmall{#1}}
+\newcommand{\overallEmphTableNormalSize}[1]{\textbf{#1}} %% same size as the resto of the table
+
+
+%% Hyphenation for the more exotic words
+%% \hyphenation{Cur-rent-View-State Cur-rent-Stop name}
+%%% BUG: the above does NOT work for:
+%%      \TextIn{CurrentViewState.CurrentStop.name}
+%%      NOT because of \TextIn (that is fine, has nothing to do with it)
+%%      BUT because of the "." which you can't put in \hyphenation
+%%          and since you dont have it there, LaTeX does NOT see it as
+%%          the word that you are trying to hyphenate
+%%      SOOO, who do I do:      CurrentViewState.CurrentStop.name
+%%          \TextIn{Cur\-rent\-View\-State.\-Cur\-rent\-Stop.\-name}
+%%      aka declare how it can be broken in the TEXT itself 
+%%                  (a bit trasy if you ask me, but works)
+
+%%%%%%%%% Hightlight from CAPP
+%% NOTE: the two renewcommand were initially newcommand
+%% but LaTeX said they were already defined. So by renewing them 
+%%  I HOPE I did not ever need the old value. 
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{colortbl}
+
+\definecolor{gray}{RGB}{211,211,211}
+\newcommand{\jbasicstyleX}{\scriptsize\sffamily}%\footnotesize}   
+\newcommand{\textcodeX}[1]{{#1}} % with current font \sf and \tt look ugly
+\newcommand{\jnumberstyleX}{\tiny}
+\newcommand{\HilightX}{\makebox[0pt][l]{\color{gray}\rule[-3pt]{0.98\linewidth}{9pt}}}
+% From Qingzhou
+\newcommand{\PHilight}[1]{\makebox[2.2pt][l]{\color{gray}\rule[-1.7pt]{#1\linewidth}{6.9pt}}}
+
+
+\newcommand{\adiOne}{\ \ \ \ }
+\newcommand{\adiTwo}{\ \ \ \ \ \ \ \ }
+%% gets is just flimsy
+\newcommand{\adigets}{$\pmb{\leftarrow}$}
+\newcommand{\adigoes}{$\pmb{\rightarrow}$}
+
+
+\newcommand{\usc}{\_$\!$\_}  %% Under SCore 
+\newcommand{\xyOEX}{a}  %% One Event Example -- the name of the event used in example
+
+\newcommand{\Tool}{\BLR\xspace}
+\newcommand{\bugs}{11\xspace}
+\newcommand{\apps}{9\xspace}
+\newcommand{\bugsCpp}{6}
+
+%% name of parameters
+\newcommand{\minIterations}{\txb{minIter}}
+\newcommand{\minSeqRatio}{\txb{minSeqRatio}}
+\newcommand{\minSimilarRatio}{\txb{minSimRatio}}
+\newcommand{\minLCS}{\txb{minLCS}}
+\newcommand{\minLCSRatio}{\txb{minLCSRatio}}
+
+%% name of parameters IN FIGURES
+\newcommand{\figminIterations}{\underline{\txb{minIter}}}
+\newcommand{\figminSeqRatio}{\underline{\txb{minSeqRatio}}}
+\newcommand{\figminSimilarRatio}{\underline{\txb{minSimRatio}}}
+\newcommand{\figminLCS}{\underline{\txb{minLCS}}}
+\newcommand{\figminLCSRatio}{\underline{\txb{minLCSRatio}}}
+
+
+
+%% name of terms in the algorithms/technique
+\newcommand{\Sequence}{dip-sequence}
+\newcommand{\Sequences}{dip-sequences}
+
+%% Guava fancy names
+\newcommand{\Guava}{GCL}
+\newcommand{\GuavaLong}{Google Core Libraries}
+
+%% Human experiments
+\newcommand{\TestsAuto}{Auto}
+\newcommand{\TestsExpert}{Expert} %% Mert
+\newcommand{\TestsNovice}{Novice} %% others, 
+\newcommand{\nofNoviceStudents}{8}
+
+\newcommand{\TestsAutoInTableShort}{Auto}
+\newcommand{\TestsExpertInTableShort}{Exp.} %% Mert
+\newcommand{\TestsNoviceInTableShort}{Nov.} %% others, 
+
+
+\newcommand{\MyParagraph}[1]{\textbf{#1}}
+
+\newcommand{\Seq}[1]{\CodeIn{[#1]}}
+\newcommand{\IP}[1]{\CodeIn{ip#1}}
+\newcommand{\VAL}[1]{\CodeIn{v\Space{al}$_{#1}$}}
+\newcommand{\Pair}[2]{#1:#2}%$\langle$#1, #2$\rangle$}
+
+\newcommand{\IPCS}{IPCS}
+\newcommand{\IPCSs}{IPCSs}
+
+% LocalWords:  morekeywords boolean enum foreach ignoreIf getInt getAny getNew
+% LocalWords:  getExisting getBoolean Susp ObjectPool proc keywordstyle tabsize
+% LocalWords:  lineskip numberstyle numbersep basicstyle breaklines morecomment
+% LocalWords:  breakautoindent fullflexible mathescape OneBusAway TouchStudio
+% LocalWords:  Pex LINQ BusStopObj AllStops OneStop RecentStops endif endwhile
+% LocalWords:  AView el RGB

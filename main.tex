@@ -1,0 +1,131 @@
+%% paper.tex
+
+
+\documentclass[10pt,pldi]{sigplanconf-pldi15}
+
+% standard LaTeX packages
+
+% standard LaTeX packages
+%\usepackage{changebar}
+
+\usepackage{balance}
+\usepackage{alltt}
+\usepackage{amsmath}
+\usepackage{balance}
+\usepackage{booktabs}
+\usepackage{fixltx2e}
+\usepackage{graphicx}
+\usepackage{boxedminipage}
+\usepackage{hyperref}
+\usepackage{nicefrac}
+\usepackage{subfig}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{xspace}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{amsfonts} 
+\usepackage{blindtext}
+\usepackage{chngpage}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{pifont}
+
+\usepackage[linesnumbered, vlined, ruled]{algorithm2e}
+% font selection
+%\usepackage{courier}
+%\usepackage[scaled]{helvet}
+\usepackage{mathptmx}
+\usepackage{times}
+
+% custom packages for this paper
+\usepackage{double-blind}
+\usepackage{shared-affiliation}
+
+\usepackage[numbers,sort&compress,square]{natbib}
+
+\lstset{
+  basicstyle=\tiny,
+  columns=fullflexible,
+  numbersep=5pt,
+  numberstyle=\scriptsize,
+  showstringspaces=false,
+  escapeinside={/*@}{@*/},
+  belowcaptionskip=1\baselineskip,
+  language=C,
+  showstringspaces=true,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+}
+
+
+
+
+\newcommand{\Code}[1]{\lstinline{#1}}
+\newcommand{\Tool}{LDoctor\xspace}
+
+\makeatletter
+\def\@copyrightspace{\relax}
+\makeatother
+
+\captionsetup{format=default, font=bf}
+
+%\newcommand{\allbugs}{110\xspace}
+%\newcommand{\allbugsns}{110}
+%\newcommand{\usefulp}{54\xspace}
+%\newcommand{\usefulsp}{25\xspace}
+%\newcommand{\newbug}{61\xspace}
+%\newcommand{\newconfirm}{1\xspace}
+%\newcommand{\newrepeated}{0\xspace}
+%\newcommand{\mailto}[1]{\href{mailto:#1}{#1}}
+\newcommand*{\Scale}[2][4]{\scalebox{#1}{$#2$}}%
+\newcommand{\comment}[1]{{}}
+
+%% taken from unknown.sty
+%\DeclareCaptionType{copyrightbox}
+
+\sloppy
+
+\begin{document}
+
+\title{
+  Performance Diagnosis for Inefficient Loops
+}
+
+%\numberofauthors{2}
+\authorinfo{Linhai Song \and Shan Lu\thanks{Shan is now with University of Chicago.}}
+           {University of Wisconsin--Madison}
+           {\{songlh, shanlu\}@cs.wisc.edu}
+\maketitle
+\begin{abstract}
+\input section/abstract.tex
+\end{abstract}
+
+\input{section/0_intro}
+\input{section/1_under}
+\input{section/2_workless}
+\input{section/3_redundancy}
+\input{section/5_exper}
+\input{section/6_related}
+\input{section/7_con}
+%\input{related}
+%\input{conclusion}
+
+%%\balance
+%\begin{spacing}{0.65}
+
+\balance
+{
+\bibliographystyle{abbrvnat}
+\bibliography{debug,perf} 
+}
+%\end{spacing}
+\end{document}
+
+% Local variables:
+% TeX-PDF-mode: t
+% TeX-master: t
+% End:
+
+% LocalWords:  Crug cci
