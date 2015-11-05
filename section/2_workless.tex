@@ -1,12 +1,12 @@
 \section{\Tool design}
 \label{sec:design}
-\Tool is composed of a series of analysis routines, each designed to 
-identify whether a given loop belongs to one specific type of root causes,
-as we will present below. 
-
-As briefly mentioned in Section \ref{sec:intro}, the design of these analysis routines follows the following principles.
+\Tool is composed of a series of analysis routines that
+identify whether a given loop belongs to any root cause type discussed in
+Section \ref{sec:study_tax}.
+Its design
+follows the following principles.
 \begin{itemize}
-\item Providing diagnosis information, not detecting bugs. \Tool will be  
+\item Failure diagnosis, not bug detection. \Tool will be  
 used together with other performance diagnosis tools \cite{SongOOPSLA2014}
 and focus on a small
 number of loops that are most correlated with a specific performance symptom,
@@ -15,14 +15,14 @@ design trade-offs in terms of coverage and accuracy, comparing with
 bug detection tools.
 
 \item Static-dynamic hybrid analysis. As we will see, static analysis alone
-will not be able to provide all the needed information for performance
-diagnosis; dynamic analysis alone will incur too much unnecessary overhead.
-Therefore, we will use static-dynamic hybrid approach throughout our design.
+will not be able to provide all the needed information. However, 
+dynamic analysis alone will incur too much overhead.
+Therefore, we use a hybrid approach throughout our design.
 
-\item Using sampling to decrease run-time overhead. Loop-related 
+\item Sampling. Loop-related 
 performance problems have the unique nature of repetitiveness, which make 
-them a natural fit for random sampling. Therefore, we will design different
-sampling schemes for different analysis routines.
+them a natural fit for random sampling. We will design different
+sampling schemes for different analysis.
 \end{itemize}
 
 \subsection{Resultless Checker}
@@ -46,9 +46,9 @@ inefficient.
 \subsubsection{Static Analysis}
 \label{sec:s_workless}
 
-We consider side-effect instructions as those instructions that write to
-variables defined outside the loop. The analysis to identify side-effect
-instructions is straightforward. We consider all functions that are called
+\Tool first identifies side-effect instructions that write to
+variables defined outside the loop. 
+\Tool analyzes all functions that are called
 by a loop directly or indirectly --- a function $F$ that updates variables
 defined outside $F$ makes the corresponding call statement in $F$'s
 caller a side-effect instruction.
@@ -56,15 +56,12 @@ We consider all library functions or function calls through function pointers
 as functions that have side effects, 
 unless the library functions are specially marked by us in a white list.
 
-After identifying side-effect instructions, it is straight-forward to
-categorize loops into the four types discussed above.
+\Tool then categorizes loops into four types.
 Loop 0* contains no side-effect instructions. 
 Loop 1* contains at least one side-effect instruction along every path that
 starts from the loop header and ends at the loop header.
-The remaining cases are either 
-0*1? or [0$|$1]*. 
-Differentiating these two cases is also straight-forward.
-In short, when the basic block that contains side-effect instructions
+For the remaining cases, 
+when the basic block with side-effect instructions
 is part of the natural loop, the case
 belongs to [0$|$1]*; instead, if the side-effect basic block is post-dominated
 by one of the loop-exit blocks and is dominated by the loop header, yet is
@@ -81,12 +78,11 @@ for this loop (e.g., cross-iteration or cross-loop redundancy).
 
 Except for 0*, none of the other three type of loops are inefficient for sure.
 We need dynamic analysis to figure out what portion of loop iterations are
-resultless at run time, which will help decide whether the loop is indeed
-the root cause of a user-perceived performance problem and worth fixing.
+resultless at run time, which will help decide whether the loop worths fixing.
 
 For a 0*1? loop, since it only generates results in the last iteration, we 
-only need to know the total number of iterations (or the average total number 
-of iterations when the loop has multiple instances) to figure out the 
+only need to know the total number of loop iterations 
+to figure out the 
 \textit{resultless rate} of the loop. The implementation is straightforward
 --- we initialize a local counter to be 0 in the pre-header of the loop; we 
 increase the counter by 1 in the loop header to count the number of 

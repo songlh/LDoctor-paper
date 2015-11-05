@@ -20,50 +20,48 @@ Given two iterations (or loop-instances) $i_1$ and $i_2$, since they have
 the same source code, 
 a naive, yet expensive, solution is to record and compare the return value of
 every memory read conducted by $i_1$ and $i_2$. Two better alternative
-solutions are to record and compare only the values written or read by the
+solutions are to record and compare only the values written by the
 side-effect instructions, such as 
 line 9 in Figure~\ref{fig:Mozilla477564},
-or the source instructions\footnote{We define source instructions in a code
+or read by 
+the source instructions\footnote{We define source instructions in a code
 region $r$ as a set of memory-read instructions that side-effect
 instructions in $r$ depend on and do not depend on any other instructions
 inside $r$.}, 
 such as source[i] at line 12 of Figure~\ref{fig:Apache34464}.
 
-Among the the above two potential solutions, our design chooses the second one.
-The reason is that, if there is indeed
-redundancy, repetitive patterns at the side-effect instructions are caused by
-repetitive patterns in the source instructions.
-For the purpose of performance diagnosis, it is
-more informative to track the cause, rather than the effect.
+Among the the above two potential solutions, our design chooses the second one,
+because it is
+more informative for performance diagnosis 
+to track the cause rather than the effect.
 
 \emph{How to handle partial redundancy?}
-In practice, redundant loops may be doing largely the same, instead of exactly
-the same, computation across iterations or loop instances. It is also possible
+In practice, redundant loops may be doing largely the same, but not exactly
+the same, computation across iterations or loop instances. 
+%It is also possible
 %TODO define loop instance.
-that only some, instead of all, iterations in a loop are doing redundant
-computation. We will discuss how we handle this issue in Section \ref{sec:cal}.
+%that only some, instead of all, iterations in a loop are doing redundant
+%computation. 
+We will discuss how we handle this issue in Section \ref{sec:cal}.
 
 
 
 \emph{How to lower the overhead of record-and-compare?}
-Even if we only record and compare the values returned by source instructions,
-instead of all instructions in a loop, the run-time overhead and the log size
-would still be large. We will use two ways to lower this time and spatial
-overhead. First, static analysis can already tell some source instructions
-will always return the same value across iterations/loop-instances, and hence
-need not be traced at run time. Second, we can leverage the repetitive nature
-of performance problems and use random sampling to lower the overhead without
-degrading the diagnosis capability. We will discuss details of 
-these two optimization in Section \ref{sec:inst} and \ref{sec:perf}.
+Even if we only record and compare the values returned by source instructions
+the run-time overhead and the log size
+could still be large. We will use static analysis and run-time sampling
+to lower this time and spatial
+overhead 
+(Section \ref{sec:inst} and \ref{sec:perf}).
 %TODO static analysis alone is not sufficient, because some redundant is
 %workload dependent
 
 \emph{How to provide the most suitable fix-strategy suggestion?}
 Finally, as discussed in Section \ref{sec:study_ob} and Table \ref{tab:root},
 memoization and batching are both common fix strategies for redundant loops.
-To pick the right fix strategies to fix a redundant loop, we will conduct 
-some extra analysis. We will discuss this in Section \ref{sec:redundant_fix}.
-
+To pick the right fix strategies,
+extra analysis is conducted by \Tool and presented in 
+Section \ref{sec:redundant_fix}.
 
 \subsubsection{Identifying source instructions}
 \label{sec:dependence}
@@ -212,14 +210,16 @@ and two values defined outside the loop (\texttt{max} and \texttt{first}).
 \subsubsection{Identifying redundant loops}
 \label{sec:cal}
 
-After identifying source instructions, we instrument these source
-instructions, so that the values returned by these memory read
-instructions can be recorded at run time. Specifically, we will assign
-a unique ID for each source instruction, and a pair of $<InstID, Value>$
-will be recorded at run time with the execution of a source instruction.
+After identifying source instructions, we instrument them to record
+what values they read from memory
+at run time.
+%Specifically, we will assign
+%a unique ID for each source instruction, and a pair of $<InstID, Value>$
+%will be recorded at run time with the execution of a source instruction.
 Our trace also includes some delimiters and meta information that allows
-trace analysis to differentiate values recorded from different loop
-iterations, different loop instances, and so on.
+trace analysis to differentiate values recorded from different instructions, 
+loop
+iterations, loop instances, and so on.
 %TODO
 %All values defined outside the loop is recorded in block O. 
 %We record a delimiter, loop instance number and values defined in previous iterations in block H1'.
@@ -237,8 +237,7 @@ by the exact implementation in our prototype.
 \paragraph{High-level algorithms}
 For cross-iteration redundancy, we need to answer two questions. 
 First, how to judge whether
-two iterations are doing redundant work --- should the two iterations conduct
-exactly the same computation?
+two iterations are doing redundant work?
 Second, is a (dynamic) loop problematic when it contains only few 
 iterations that are
 redundant with each other?
@@ -249,12 +248,12 @@ for a user-perceived performance problem and to make itself worthwhile to
 get optimized by the developers. Consequently,
 for the first question, \Tool takes a strict 
 definition --- only iterations that are doing exactly the same computation are
-considered redundant. Since one iterating may not contain too much computation,
+considered redundant. Since one iteration may not contain too much computation,
 a weaker definition here may lead to many false positives. For the 
 second question, we believe there should be a threshold. In our current 
 prototype,
 when the number of distinct iterations is less than half of the total iterations, 
-we consider the loop is cross-iteration redundant. 
+we consider the loop to be cross-iteration redundant. 
 %when the number of distinct iterations is less than half of the total iterations 
 %iterations/(distinct iterations) = 2
 
@@ -269,10 +268,10 @@ we consider the loop is cross-iteration redundant.
 
 For example, Figure~\ref{fig:Apache37184} shows a loop from Apache-Ant that
 contains cross-iteration redundancy.
-As we can see, under the problem triggering input, 
-only several distinct listeners are contained inside the vector, and most of 
-iterations of the loop inside function \texttt{fireMessageLoggedEvent}
-are doing exactly the same computation. 
+Under the problem triggering input, there are
+only few distinct listeners, and most of the
+loop iterations in \texttt{fireMessageLoggedEvent}
+are doing redundant work. 
 %The problem for this bug is that developers say that the performance 
 %loss happens in fireMessageLoggedEvent, but in the code I found, function
 %messageLogged does not contain anything, and it is an empty function.
@@ -336,7 +335,7 @@ The smaller the rate is, with 0 being the minimum possible value, the
 less cross-loop redundancy $L$ contains.
 Here we only check redundancy between consecutive loop instances, because  
 checking the redundancy between every pairs of loop
-instances would be very time consuming.
+instances is time consuming.
 
 The key of this implementation is
 to judge whether two dynamic loop instances $l_1$ and $l_2$ 
@@ -468,14 +467,12 @@ of every loop instance whether to track values for this instance.
 Since we will need to compare two consecutive loop
 instances for redundancy, once we decide to sample one loop instance, we will
 make sure to sample the immediately next loop instance too.
-
-The implementation is similar with that for cross-iteration redundancy analysis.
-The only difference includes: (1) clone is made for the whole loop and the
-sampling control
-is done in the pre-header of the loops; (2)
-sampling is conducted when \texttt{CurrentID} equals either
-\texttt{NextSampleID} or \texttt{NextSampleID}$+1$, with \texttt{NextSampleID}
-increased by a random value in the latter case.
+The implementation is straightforward by cloning the whole loop and making
+sampling decisions in the loop pre-headers.
+%; (2)
+%sampling is conducted when \texttt{CurrentID} equals either
+%\texttt{NextSampleID} or \texttt{NextSampleID}$+1$, with \texttt{NextSampleID}
+%increased by a random value in the latter case.
 
 %TODO
 %For each monitored memmove or memcpy instruction, 
@@ -484,17 +481,17 @@ increased by a random value in the latter case.
 
 
 
-\paragraph{Handling recursive functions}
-We also conduct sampling to our redundancy analysis for recursive functions.
-For a recursive function, we first create an instrumented clone copy of 
-the whole function body.
-We then add a sampling-control code snippet at the entry point of the function,
-where \texttt{CurrentID} and \texttt{NextSampleID} are maintained to decide
-whether to execute the original function body or the instrumented 
-value-recording clone copy.
-We also create clones for all the callee functions of the recursive function
-under study, so that the sampling decision can be correctly conducted
-throughout the call chain.
+%\paragraph{Handling recursive functions}
+%We also conduct sampling to our redundancy analysis for recursive functions.
+%For a recursive function, we first create an instrumented clone copy of 
+%the whole function body.
+%We then add a sampling-control code snippet at the entry point of the function,
+%where \texttt{CurrentID} and \texttt{NextSampleID} are maintained to decide
+%whether to execute the original function body or the instrumented 
+%value-recording clone copy.
+%We also create clones for all the callee functions of the recursive function
+%under study, so that the sampling decision can be correctly conducted
+%throughout the call chain.
 
 \subsubsection{Static analysis for performance optimization}
 \label{sec:perf}
@@ -551,14 +548,14 @@ there could not be cross-iteration redundancy.
 We use scalar evolution analysis
 provided by LLVM to identify induction variables and avoid tracking their
 values.
-%induction variables are not alwayes identified as source instructions.
+%induction variables are not always identified as source instructions.
 %it could be possible that side-effect instructions do not depend on induction variables.
 %for example, side-effect instruction may only depend on array content, and array index 
 %will not be source instructions
 
 %TODO: Linhai, I find it hard to believe that consider "there will not be
 %cross-iteration redundancy simply because induction variable is in the 
-%dependent set. Really? The input workload itself could be repititive, and hence
+%dependent set. Really? The input workload itself could be repetitive, and hence
 %could still deserve monitoring, right? 
 %
 
@@ -619,10 +616,10 @@ From the scalar evolution analysis, we know that the starting address is \texttt
 is source plus the ending value of \texttt{i}.  
 %TODO Linhai, I don't understand your original text. The address is 
 %source+i; loop induction variable is i. What do you mean by "the read address
-%is an induction varaible"? Please rewrite.
+%is an induction variable"? Please rewrite.
 
 %ANSWER
-%Shan, both source + i and i are induction variables, becasue both of them 
+%Shan, both source + i and i are induction variables, because both of them 
 %will be added by 1 in each iteration. The only difference between these two 
 %are their initial values.
 %For cross-loop redundant bugs, we also rely on scalar evolution analysis to identify whether the read address

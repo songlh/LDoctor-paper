@@ -19,18 +19,18 @@
    \midrule
    Mozilla347306         & 88              & C                      &  0*1?        & C     \\
    Mozilla416628         & 105             & C                      &  0*1?        & C     \\
-   Mozilla490742         & N/A             & JS                     &  C-I         & B       \\
-   Mozilla35294          & N/A             & C++                    &  C-L         & B        \\ 
-   Mozilla477564         & N/A             & JS                     &  C-L         & M       \\
+   Mozilla490742         &  -             & JS                     &  C-I         & B       \\
+   Mozilla35294          &  -             & C++                    &  C-L         & B        \\ 
+   Mozilla477564         &  -             & JS                     &  C-L         & M       \\
    \midrule 
    MySQL27287            & 995             & C++                    &  0*1?,C-L        & C     \\
    MySQL15811            & 1127            & C++                    &  C-L         & M \\ 
    \midrule    
-   Apache32546           & N/A             & Java                   &  C-I         & B  \\
-   Apache37184           & N/A             & Java                   &  C-I         & M  \\
-   Apache29742           & N/A             & Java                   &  C-L         & B \\ 
-   Apache34464           & N/A             & Java                   &  C-L         & M  \\
-   Apache47223           & N/A             & Java                   &  C-L         & B \\
+   Apache32546           &  -             & Java                   &  C-I         & B  \\
+   Apache37184           &  -             & Java                   &  C-I         & M  \\
+   Apache29742           &  -             & Java                   &  C-L         & B \\ 
+   Apache34464           &  -             & Java                   &  C-L         & M  \\
+   Apache47223           &  -             & Java                   &  C-L         & B \\
    \midrule
    GCC46401              & 5521            & C                      &  [0$|$1]*    & S   \\
    GCC1687               & 2099            & C                      &  C-I         & M \\
@@ -42,10 +42,10 @@
    \end{tabular}
   %\nocaptionrule
   \caption{Benchmark information.
-  (N/A: we skip the size of benchmarks that are extracted from real-world applications.
-  Root cause ``C-I'' is short for cross-iteration redundancy.
-  Root cause ``C-L'' is short for cross-loop redundancy.
-  C, B, M, and S represent different fix strategies, as discussed in
+  (-: benchmarks extracted from real-world applications.
+  ``C-I'': cross-iteration redundancy.
+  ``C-L'': cross-loop redundancy.
+  C, B, M, S: fix strategies as discussed in
   Table \ref{tab:root}.
   ) 
  }
@@ -230,9 +230,7 @@ fix strategy suggestion goes beyond the capability of \Tool.
    \end{tabular}
   %\nocaptionrule
   \caption{False positives of \Tool, when applying to top 5 loops reported by 
-    statistical performance diagnosis for each benchmark. `-' represents zero false positive.
-    Other cells report real false positives and benign false positives, which is in the
-    subscript.
+    statistical performance diagnosis for each benchmark. `-': no false positive. $x_y$: $x$ real false positives and $y$ benign ones.
 }
   \label{tab:top5}
 \end{table}
@@ -282,7 +280,7 @@ potentially used to improve the accuracy of identifying root cause loops.
   \newcommand{\No}[0]{-}
   \begin{tabular}{lccccc}
     \toprule
-	    & \multicolumn{3}{c}{\Tool} & \multicolumn{2}{c}{w/o optimization} \\
+	    & \multicolumn{3}{c}{\Tool w/ optimization} & \multicolumn{2}{c}{w/o optimization} \\
      \cmidrule(lr){2-4}
      \cmidrule(lr){5-6}
      {\bf BugID}  & {\bf Resultless}  &  {\bf C-L R. } & {\bf C-I R. }  & {\bf C-L R.}  & {\bf C-I R. } \\
@@ -302,11 +300,10 @@ potentially used to improve the accuracy of identifying root cause loops.
    \bottomrule
    \end{tabular}
   %\nocaptionrule
-  \caption{Run-time overhead of applying \Tool to the buggy loop, with and
-    without optimizations. 
-    Only results from non-extracted benchmarks are shown. 
-  -: static analysis can figure out the results and hence no dynamic analysis is conducted.
-  /: not applicable. }
+  \caption{Run-time overhead of applying \Tool to the buggy loop
+    (only non-extracted benchmarks are shown). 
+  -: dynamic analysis is not conducted, as static analysis is sufficient.
+  /: not applicable.}
   \label{tab:performance}
 \end{table}
 

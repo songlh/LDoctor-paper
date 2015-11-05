@@ -6,75 +6,72 @@ Performance bugs\footnote{We also refer performance bugs as performance problems
 following previous works in this area~\cite{PerfBug,Alabama,SongOOPSLA2014}} 
 are software implementation mistakes that cause unnecessary performance
 degradation in software. They widely exist in deployed software due to the 
-complexity of modern software and the lack of testing support
+complexity of modern software and the lack of performance testing support
 ~\cite{s2e,PerfBug,perf.fse10,rily.perftest,perfantipattern,xiao13:context}. 
 They annoy end users and waste energy during production runs, and 
 have already caused highly publicized failures~\cite{ACA-health,colorado}.
 Tools that can help
-developers quickly and accurately diagnose performance problems,
-find performance-wasting root causes, and fix performance problems
-are sorely desired. 
+developers quickly and accurately diagnose performance problems
+are sorely desired.
 
 Like general failure diagnosis, 
 performance diagnosis starts from studying a problem symptom and hopefully ends
 at identifying the root cause and suggesting a fix strategy. 
 In the context of performance problems,
-the symptom is often
-an execution showing severe absolute or
-relative slowness \cite{SongOOPSLA2014}; the root cause contains 
-information like which code region is inefficient and why
-it is inefficient. An effective diagnosis tool can help developers quickly
-and correctly figure out a patch to fix the performance problem.
+the symptom is 
+execution 
+slowness \cite{SongOOPSLA2014}; the root cause is about
+which code region is inefficient and why.
+An effective diagnosis tool can help developers quickly
+and correctly figure out a fix to the performance problem.
 
 Also like general failure diagnosis, ideal performance diagnosis tools should
 satisfy three criteria.
 \begin{itemize}
 \item Coverage. 
-Real-world performance problems are caused by a wide variety of reasons. It 
-would be good if the diagnosis tool can cover a good portion of common
-root causes of real-world problems.
+Real-world performance problems are caused by a wide variety of reasons.
+A good diagnosis tool should handle a good portion of them.
 
 \item Accuracy. 
-The accuracy requirement applies for two aspects of performance diagnosis: (1)
-the inefficient code regions need to be accurately located and (2)
-the reason a specific region is inefficient needs to be accurately
-explained, so that developers can quickly fix the performance problem.
+First, the inefficient code regions need to be accurately located.
+Second, the reason a specific region is inefficient needs to be accurately
+explained, so that developers can fix the problem.
 
 \item Performance. 
 Diagnosis often requires collecting run-time information. The lower the overhead
 is, the easier for the diagnosis tool to be deployed, especially for 
-production-run usage scenarios. 
+production-run usage. 
 \end{itemize}
 
-Although progress has been made, no existing tools can satisfy the above
+No existing tools can satisfy these
 three requirements.
 
 Profiling is the state of practice in performance diagnosis.
 It is far from providing the desired \textit{accuracy}, as it is designed to
 tell where computation resources are spent, 
-but not where and why computation resources are wasted. 
-In many cases, the root-cause function of a performance problem may not even
-get ranked by a profiler \cite{SongOOPSLA2014}.
+but not where and why resources are wasted. 
+In many cases, the root-cause function may not even
+get ranked by the profiler \cite{SongOOPSLA2014}.
 
 Performance bug detection tools use static or dynamic analysis to identify
 code regions that match specific inefficiency patterns 
-\cite{Alabama,CARAMEL, Cachetor,Xu:2010:FLD:1806596.1806617,Dufour:2008:STC:1453101.1453111, Xu:2009:GFP:1542476.1542523, Xu:2010:DIC:1806596.1806616}. 
-Unfortunately, these tools are not designed for performance diagnosis.
-Consequently, they are not designed to provide \textit{coverage} for a wide
-variety of real-world performance problems; they do not target a specific
-performance symptom, and hence are at disadvantage in terms of diagnosis
-\texttt{accuracy}; dynamic performance-bug detection tools often lead to 
+\cite{Alabama,CARAMEL, Cachetor,Xu:2010:FLD:1806596.1806617,Dufour:2008:STC:1453101.1453111, Xu:2009:GFP:1542476.1542523, Xu:2010:DIC:1806596.1806616,IsilDillig.PLDI15}. 
+Unfortunately, these tools are not designed for and are consequently
+unsuitable for performance diagnosis.
+They are not designed to provide \textit{coverage} for a wide
+variety of real-world problems; their analysis is not guided by
+performance failure symptom, and hence are at disadvantage in terms of diagnosis
+\texttt{accuracy}; dynamic detection tools often lead to 
 10X slowdowns or more \cite{Cachetor,Xu:2010:FLD:1806596.1806617,Alabama}, 
 not ideal in terms of \textit{performance}.
 
-Recently, progress has been made on applying statistical debugging to 
-performance diagnosis \cite{SongOOPSLA2014}. Given the symptom of 
-a performance problem (e.g., two similar inputs leading to very
-different execution speed),
-statistical debugging, an approach widely used for diagnosing
+Recently, progress has been made on statistical debugging for
+performance diagnosis \cite{SongOOPSLA2014}.
+Statistical debugging, an approach widely used for diagnosing
 functional failures \cite{liblit03,liblit05,tarantula1}, can
 accurately identify control-flow constructs that are most correlated with
-the performance problem by comparing problematic runs and regular runs.
+the performance problem by comparing runs with and without problematic 
+performance.
 Unfortunately, for loop-related 
 performance problems, which contribute to two thirds of
 real-world performance problems studied in previous work 
@@ -132,7 +129,8 @@ empirical studies \cite{SongOOPSLA2014,PerfBug}.
 statistical debugging \cite{SongOOPSLA2014}
 can help identify suspicious loops that are highly correlated with 
 user-perceived performance problems,
-it provides no information about why the suspicious loop is inefficient,
+it provides no information about whether and why 
+the suspicious loop is inefficient,
 not to mention providing fix suggestions. Although various
 bug-detection techniques \cite{Cachetor,Alabama,CARAMEL} can help detect
 loop-related performance bugs, they all suffer from generality problems,
@@ -174,7 +172,7 @@ accuracy.
 
 \item Root-cause taxonomy guided design. To provide the needed coverage, we follow
 the root-cause taxonomy discussed above and design analysis routines for 
-every root-cause sub-category. Given a candidate inefficient loop, we will 
+every root-cause sub-category. Given a candidate loop, we will 
 apply a series of analysis to it to see if it matches any type of inefficiency.
 %We will also put the analysis results from different analysis routines together
 %to figure out the most likely root cause category for an inefficient loop.
@@ -194,6 +192,6 @@ diagnosis due to the repetitive nature of inefficient code, especially
 inefficient loops.
 
 We have evaluated \Tool on 18 real-world performance problems. 
-Evaluation results show that \Tool can accurately identify the detailed
+Evaluation results show that \Tool can accurately identify detailed
 root cause for all benchmarks and provide correct fix-strategy suggestion for
-16 benchmarks. All these are achieved with low run-time overhead.
+16 benchmarks. All of these are achieved with low run-time overhead.
