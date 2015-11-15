@@ -284,6 +284,8 @@ these bugs.
 
 \subsubsection{Observations}
 \label{sec:study_ob}
+
+
 \begin{table*}[tb!]
 %\begin{adjustwidth}{-.5in}{-.5in}
 \small
@@ -332,6 +334,46 @@ fix strategies.}
 \end{table*}
 
 
+
+
+
+
+\def\cca#1{\cellcolor{black!#10}\ifnum #1>5\color{white}\fi{#1}}
+%For ranges 0-10, multiply by 10 by adding 0 after #1
+
+
+
+\begin{table}[tb!]
+%\begin{adjustwidth}{-.5in}{-.5in}
+\small
+\centering
+{
+\begin{tabular}{lcccccc}
+%\hline
+                                 &{\bf 0*}    & {\bf 0*1?} & {\bf [0$|$1]*}   & {\bf 1*} & {\bf C-I}  & {\bf C-L} \\
+%\hline
+ B                               & \cca{0}    & \cca{0}    & \cca{0}          & \cca{4}  & \cca{4}     & \cca{4}   \\
+%\hline
+ M                               & \cca{0}    & \cca{0}    & \cca{0}          & \cca{0}  & \cca{7}     & \cca{5}   \\
+ S                               & \cca{0}    & \cca{1}    & \cca{4}          & \cca{4}  & \cca{0}     & \cca{0}   \\
+ C                               & \cca{0}    & \cca{4}    & \cca{0}          & \cca{0}  & \cca{0}     & \cca{0}   \\
+ O                               & \cca{0}    & \cca{0}    & \cca{0}          & \cca{7}  & \cca{1}     & \cca{0}   \\
+%\hline
+
+\end{tabular}
+}
+%\end{adjustwidth}
+\caption{Number of bugs fixed by each strategy. 
+%B, M, S, C, and O represent different fix strategies:
+%B(atching),  
+%M(emoization), 
+%S(kipping the loop),
+%C(hange the data structure), and O(thers). 
+``C-I'': cross- iteration redundancy. 
+``C-L'': cross-loop redundancy. 
+B, M, S, C, O: fix strategies as discussed in Table~\ref{tab:root}. }
+\label{tab:correlation}
+\end{table}
 
 \underline{Are the root-causes in our taxonomy common?}
 The answer is \textit{yes}.

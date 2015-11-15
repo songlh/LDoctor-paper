@@ -31,6 +31,7 @@
 \usepackage{mathtools}
 \usepackage{amssymb}
 \usepackage{pifont}
+%\usepackage{pgfplotstable}
 
 \usepackage[linesnumbered, vlined, ruled]{algorithm2e}
 % font selection
@@ -59,6 +60,20 @@
   commentstyle=\itshape,
 }
 
+
+%\pgfplotstableset{
+%    color cells/.style={
+%        col sep=comma,
+%        string type,
+%        postproc cell content/.code={%
+%                \pgfkeysalso{@cell content=\rule{0cm}{2.4ex}\cellcolor{black!##10}\pgfmathtruncatemacro\number{##1}\ifnum\number>5\color{white}\fi##1}%
+%                },
+%        columns/x/.style={
+%            column name={},
+%            postproc cell content/.code={}
+%        }
+%    }
+%}
 
 
 
