@@ -1,18 +1,14 @@
-//expmed.c
-struct alg_hash_entry {
+struct hash_entry {
 -  unsigned int t;
-+  unsigned HOST_WIDE_INT t;
++  HOST_WIDE_UINT t;
 };
 
-void 
-synth_mult(...unsigned HOST_WIDE_INT t, ...)
+void mult_alg(... HOST_WIDE_UINT t, ...)
 {
   hash_index = t ...;
   if (alg_hash[hash_index].t == t ...)
   {
-    ...
     //reuse previous results
   }
-  ...
   //recursive computation
 }
