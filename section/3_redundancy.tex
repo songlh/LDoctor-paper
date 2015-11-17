@@ -509,7 +509,7 @@ accesses out of loops. The only extra analysis we did is to
 prune memory reads whose reading address is loop invariant, and there are no writes 
 inside the loop which are possibly conducted on the same address. 
 For example, the read address of \texttt{aNode.localName} and \texttt{aNode.namespaceURI}
-in Figure~\ref{fig:Mozilla347306} is loop-invariant, and there are no write conducted 
+in Figure~\ref{fig:Mozilla477564} is loop-invariant, and there are no write conducted 
 on the same address. We do not need to record these two memory read. 
 %It is easy to lift read from local variable outside the loop. 
 %Compiler is conservative to move read, which may cause exception, outside the loop.

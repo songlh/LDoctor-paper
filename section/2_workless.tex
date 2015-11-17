@@ -1,7 +1,7 @@
 \section{\Tool design}
 \label{sec:design}
-\Tool is composed of a series of analysis routines that
-identify whether a given loop belongs to any root cause type discussed in
+\Tool consists of a series of analysis that
+judges whether a given loop belongs to any root cause type discussed in
 Section \ref{sec:study_tax}.
 Its design
 follows the following principles.
@@ -15,7 +15,8 @@ design trade-offs in terms of coverage and accuracy, comparing with
 bug detection tools.
 
 \item Static-dynamic hybrid analysis. As we will see, static analysis alone
-will not be able to provide all the needed information. However, 
+will not be able to provide all the needed information to judge whether
+a loop is problematic. However, 
 dynamic analysis alone will incur too much overhead.
 Therefore, we use a hybrid approach throughout our design.
 
@@ -30,11 +31,12 @@ sampling schemes for different analysis.
 
 Our resultless checker includes two parts. First, we use static analysis
 to figure out which are the side-effect instructions in a loop and hence
-decide whether a loop belongs to 0*, 0*1?, [0$|$1]*, or 1*. Second, for
-0*1? and [0$|$1]* loops, we use
+decide whether a loop belongs to 0*, 0*1?, [0$|$1]*, or 1*. Second, to
+accurately determine 0*1? and [0$|$1]* loops, we use
 dynamic analysis to figure out what portion of loop iterations are
-resultless at run time, which will help decide whether the loop is indeed
-inefficient.
+resultless at run time.
+%, which will help decide whether the loop is indeed
+%inefficient.
 
 %\begin{figure}[ht]
 %\center
@@ -67,7 +69,7 @@ belongs to [0$|$1]*; instead, if the side-effect basic block is post-dominated
 by one of the loop-exit blocks and is dominated by the loop header, yet is
 not part of the natural loop, the case belongs to 0*1?.
 
-Finally, since the 1* pattern contains the least amount of information
+Note that since the 1* pattern contains the least amount of information
 about computation \textit{inefficiency}, \Tool will not report a loop's
 root-cause type as 1*, if more informative root-cause type is identified 
 for this loop (e.g., cross-iteration or cross-loop redundancy).
@@ -101,10 +103,12 @@ post-domination relation between each pair of side-effect blocks.
 If both block A and block B are side-effect blocks and block A post-dominates 
 block B, we only instrument block A to update \texttt{HasResult}. 
 
+\comment{
 We could speed up the above counting using sampling. However, since the 
 run-time overhead of the above counting is low, as shown in Section 
 \ref{sec:experiment}, our current prototype of \Tool does 
 not use sampling for this part of run-time analysis.
+}
 
 %\subsubsection{Sampling}
 %We calculate the average iteration number 
@@ -114,10 +118,10 @@ not use sampling for this part of run-time analysis.
 %In the future, we could design an algorithm to calculate the two resultless metrics 
 %based on branch sampling reports to get rid of the extra instrumentation and the extra bad run.   
 
+\comment{
 \subsubsection{Limitations}
 \label{sec:l_workless}
-The technique designed in this section has the following limitations.
-First, when callee may have side effect, we will consider it will have side effect in the caller side, 
+When callee may have side effect, we will consider it will have side effect in the caller side, 
 and do not consider the real execution inside callee. This could bring false negatives, 
 because we could miss resultless cases, 
 where side effect instructions inside callee do not execute. 
@@ -127,3 +131,4 @@ since we do not miss any resultless bugs.
 Second, our dynamic instrumentation does not consider concurrent execution of the monitored loop, 
 because most of buggy loops we study only execute in one single thread. 
 When the monitored loop is executed in multi-thread, like loop marked with omp pragma, we need to synchronize updates to global variables. 
+}
