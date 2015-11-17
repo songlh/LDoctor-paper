@@ -1,68 +1,68 @@
 \section{Root-Cause Taxonomy}
 \label{sec:study}
 
-The first task we are facing is to figure out a root-cause taxonomy for
-real-world inefficient loops. 
-Our taxonomy design is guided by checking a benchmark suite of real-world
-inefficient loops, collected by previous work \cite{SongOOPSLA2014,PerfBug}. 
-We also try to satisfy three requirements in our design.
-(1) Coverage: covering
+Previous work has identified a wide variety of performance root-cause 
+categories. However, no existing taxonomy satisfies all the three 
+requirements below and hence cannot be directly used for our diagnosis tool
+design.
+\begin{enumerate}
+\item Coverage: covering
 a big portion of real-world inefficient loop problems; 
-(2) Actionability: each root-cause category should be informative enough 
+\item Actionability: each root-cause category should be informative enough 
 to help developers
 decide how to fix a performance problem; 
-(3) Generality: too application-specific root causes will not work, as we
-need to build diagnosis tools to automatically identify these root causes 
+\item Generality: application-specific root causes will not work, as we
+hope to build diagnosis tools that can automatically identify root causes 
 without developers' help.
+\end{enumerate}
 
-Note that we are not the first one who tries to categorize
-the root causes of performance problems. We are also not the first
-to identify many of the root-cause categories below. Instead, guided by
-previous work and our empirical study, we try to figure out our own taxonomy 
-that satisfy the above three requirements and can
-work well with the diagnosis tool that we will build later.
+This section first presents the root-cause taxonomy designed by us, 
+and then discusses the coverage, actionability, and generality
+of our taxonomy using a suite of real-world
+inefficient loops collected by previous work \cite{SongOOPSLA2014,PerfBug}. 
 
-\subsection{Taxonomy}
+\subsection{Taxonomy Design}
 \label{sec:study_tax}
-Our taxonomy contains two major root cause categories,
-\textit{resultless} and \textit{redundancy}, and several sub-categories, 
-as below.
+We divide all inefficient loops into two root-cause categories:
+\textit{resultless} and \textit{redundancy}.
 
-\underline{\textit{\textbf{Resultless}}}
-Resultless loops spend a lot of time in computation that does not 
-produce any results that will be used after the loop.
-Depending on when such resultless computation is conducted, we further
-consider four sub-categories.
+\subsubsection{Resultless loops}
+A resultless loop spends a lot of time in computation without
+producing any results useful after the loop.
+It is further categorized based on which loop iterations are
+(not) producing useful results.
 
 {\textbf{0*}}: 
 This type of loops never produce any results in any iteration.
-This type of loops should be rare in mature software systems.
+They are rare in mature software systems.
 They should simply be deleted from the program.
 %Question: dynamic or static?
 
-\begin{figure}[h]
-\centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
-     morekeywords={+},keepspaces=true}
-  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla347306.c}}
-\caption{A resultless 0*1? bug in Mozilla}
-\label{fig:Mozilla347306}
-\end{figure}
+%\begin{figure}[h]
+%\centering
+%\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+%     morekeywords={+},keepspaces=true}
+%  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla347306.c}}
+%\caption{A resultless 0*1? bug in Mozilla}
+%\label{fig:Mozilla347306}
+%\end{figure}
 
 {\textbf{0*1?}}:
 This type of loops only produce results in the last iteration, if any. 
-They are often related to search: they check a sequence of elements one
+They are often related to search: check a sequence of elements one
 by one until the right one is found.
-Not all loops of this type are inefficient. If they are, they are often
+Clearly, whether this type of loops are efficient or not depends on the
+workload. If they are indeed inefficient, they are often
 fixed by data-structure changes.
-Figure~\ref{fig:Mozilla347306} shows an example from Mozilla
-JavaScript engine. 
-The loop searches through an array containing source code information for the input \texttt{pc}. 
-In practice, this loop needs to execute more than 10000 iterations for 
-many long JavaScript encountered by users, which leads to huge 
-performance problems --- web browsers freeze. To fix this problem, 
-developers simply replace array with hash table when processing long
-JavaScript files.
+As an example, Mozilla JavaScript engine used to store the source-code 
+line numbers of all byte-code instructions in a linked list \texttt{script}. 
+Later on, many users complained that Mozilla browser freezed when opening
+some popular websites. It turned out that those websites contained large
+JavaScript files that filled the linked list \texttt{script} with
+tens of thousands of nodes. Linear search on \texttt{script} then caused the
+to freeze. To fix this problem, 
+developers simply replace linked list with hash table
+(Mozilla Bug\#347306).
 % This improve the performance by 52.60{\bf X}.
 
 \comment{
@@ -102,25 +102,26 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 
 
 {\textbf{[0$|$1]*}}:
-Every iteration in this type of loops may or may not produce results.
-Under certain workload, the majority of the loop iterations do not produce
-any results and lead to performance problems perceived by end users.
-The inefficiency problem caused by this type of loops can often be solved
-by adding extra conditions to skip the loop under certain contexts.
-Figure~\ref{fig:GCC46401} shows such an example from GCC.
+Each iteration in this type of loops may or may not produce results.
+For some workload, the majority of iterations do not produce
+results and lead to performance problems perceived by users.
+These problems are often solved
+by using a simple check to conditionally skip the expensive loop.
+Figure~\ref{fig:GCC46401} shows such an example.
 %how users perceive this problem
 %explain how every iteration may or may not produce any results
 %explain the fix
-Only when the if branch executed,
-one iteration will generate results. 
-The bug happens when GCC checks violation of sequence point rule. 
-The user notice severe performance degradation when enabling the checking. 
-The buggy loop is super-linear inefficient in terms of the number of operands
-in one expression. The buggy input contains an expression, which is long and special. 
-The loop takes a lot of iterations during bad run, but none of the iterations will 
-generate results. 
-The patch is to add extra checking before processing each operand. When it also has
-the special feature like the bad input, the loop will be skipped. 
+Users complained that compilation became extremely slow when they 
+enabled the \texttt{-Wsequence-point} checking.
+The slowness was caused
+by the \texttt{for} loop shown in the figure. Since the algorithm
+behind this loop is quadratic in the number of operands in an expression, 
+programs with long expressions suffer severe slow-downs.
+After further diagnosis, developers observed that this loop rarely
+had any side-effects, as the \texttt{if} condition was rarely satisfied.
+At the end, the patch greatly improved performance through a
+simple checking that allows the loop to be
+skipped for most expressions.
 
 \comment{
 \textcolor{red}{ 
@@ -137,30 +138,17 @@ The patch designed by developers is to add an extra condition checking to skip t
 
 {\textbf{[1]*}}:
 Loops in this category always generate results in almost all iterations. 
-They are inefficient, because the results generated could be useless due to
+They are inefficient because their results are useless due to
 some high-level semantic reasons.
 Understanding and fixing this type of inefficiency problems often require
 deep understanding of the program and are difficult to automate.
 For example, several Mozilla performance problems are caused by 
-loops that contain intensive GUI operations.
-Although every iteration of these loops produce side effects, 
-the performance problem forced developers to change the program 
-and batch/skip some GUI operations.
+loops that contain intensive GUI operations whose graphical outcome may not
+be observed by humans and hence can be optimized.
 
-\begin{figure}[h]
-\centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
-     morekeywords={+},keepspaces=true}
-  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla477564.js}}
-\caption{A cross-loop redundant bug in Mozilla }
-\label{fig:Mozilla477564}
-\end{figure}
-
-\underline{\textit{\textbf{Redundant}}}
+\subsubsection{Redundant loops}
 Redundant loops spend a lot of time in repeating computation that is already
-conducted.
-Depending on the unit of the redundant computation, we further consider 
-two sub-categories.
+conducted. They are further categorized below based on their redundancy unit.
 
 %\begin{figure}[h]
 %\centering
@@ -173,8 +161,8 @@ two sub-categories.
 %\label{fig:GCC1687}
 %\end{figure}
 
-
-\begin{figure}[h]
+\comment{
+\begin{figure}
 \centering
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true}
@@ -182,19 +170,33 @@ two sub-categories.
 \caption{A cross-iteration redundant bug in Mozilla }
 \label{fig:Mozilla490742}
 \end{figure}
+}
+
+\begin{figure}
+\centering
+\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+     morekeywords={+},keepspaces=true}
+  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla477564.js}}
+\caption{A cross-loop redundant bug in Mozilla }
+\label{fig:Mozilla477564}
+\end{figure}
+
 
 {\textbf{Cross-iteration Redundancy}}:
 Loop iteration is the redundancy unit here:
 one iteration repeats
-repeating what was already done by an earlier iteration of the same loop.
-Here, we consider recursive function calls as a loop, treating one function 
-call instance as one loop iteration. 
+what was already done by an earlier iteration of the same loop.
+Here, we consider a recursive function as a loop, treating one function-call
+instance as one loop iteration. 
+
 This type of inefficiency is often fixed by memoization or batching, depending
 on whether the redundancy involves I/O operations.
-For example, GCC\#27733 shown in Figure~\ref{fig:GCC27733} 
-is fixed by better memoization. 
+For example, the GCC bug shown in Figure~\ref{fig:GCC27733} is caused by
+redundant computation across different invocations of recursive function
+\texttt{mult\_alg}. The patch essentially allows memoization to work.
 %Another bug similar to GCC\#27733 is shown in Figure~\ref{fig:GCC1687}. 
 %This bug is fixed by using a hash table to avoid visiting the same sub-tree twice.
+\comment{
 Mozilla\#490742 in Figure~\ref{fig:Mozilla490742} represents a slightly different type of cross-iteration
 redundancy. The inefficient loop in this case saves one URL into the ``Favorite
 Links'' database in each iteration. One database transaction in each iteration
@@ -205,34 +207,34 @@ bookmarking 50 tabs
 from popping up timeout windows to not blocking.
 %xxx from several minutes
 %to a couple of seconds.
+}
 
 {\textbf{Cross-loop Redundancy}}:
-A whole loop is the redundancy unit here:
+A whole loop is the redundancy unit:
 one dynamic instance of a loop spends a big chunk, if not all, of its
 computation in repeating the work already done by an
 earlier instance of the same loop.
 Developers often fix this type of inefficiency problems through memoization:
 caching the earlier computation results and skip following redundant loops.
 Mozilla\#477564 shown in Figure~\ref{fig:Mozilla477564} is an example for this type of bugs. 
-The buggy loop is to count how many previous siblings of the input \texttt{aNode} have the same name and URI. 
-There is an outer loop for the buggy one, and the outer loop will update \texttt{aNode} by using its next siblings. 
-The bug is fixed by saving the calculated count for each node. 
-A new count value is calculated by adding one to the saved count value of the nearest previous sibling with the same name and URI.
+The buggy loop counts how many previous siblings of the input \texttt{aNode} have the same name and URI. 
+There is an outer loop, not shown in the figure, that repeatedly updates
+\texttt{aNode} to be its next sibling and calls
+\texttt{sss\_xph\_generate} with the new \texttt{aNode}. 
+This bug is fixed by adding an extra field for each node to save the calculated 
+count, so that a new count value can be calculated by simply adding one to the
+saved count value of the nearest previous sibling with the same name and URI.
 
-
-\subsection{Empirical study}
+\subsection{Taxonomy Assessment}
 \label{sec:tax_study}
-Having presented our taxonomy above, we will see how it works for a set of
+We assess the coverage, actionability, and generality of our taxonomy using
+a set of
 real-world inefficient loop problems collected by previous work
-\cite{SongOOPSLA2014,PerfBug}. Specifically, we want to check the 
-coverage and the actionability of our taxonomy presented above:
-(1) How common are real-world performance problems caused by the 
-patterns discussed above?
-(2) How are real-world problems fixed by developers? Can we predict their
-fix strategies based on the root-cause pattern?
+\cite{SongOOPSLA2014,PerfBug}.
 
 \subsubsection{Methodology}
 \begin{table}[h!]
+\small{
 \centering
 \begin{tabular}{@{\hspace{3pt}}l@{\hspace{3pt}}|@{\hspace{3pt}}c@{\hspace{3pt}}}
 \hline
@@ -265,6 +267,7 @@ Application Suite Description (language) & \# Bugs \\
 {\bf Total}	   & 45 \\
 \hline
 \end{tabular}
+}
 \caption{Applications and bugs used in the study}
 \label{tab:app_bug}
 \end{table}
@@ -279,10 +282,10 @@ hence are the target of the study
 here\footnote{The definition of ``loop-related'' in this paper is a little
 bit broader than earlier paper~\cite{SongOOPSLA2014}, which only considers
 43 problems as loop-related. }.
-More details can be found in the original papers that collect
+More details can be found in previous papers that collected
 these bugs. 
 
-\subsubsection{Observations}
+\subsubsection{Assessment}
 \label{sec:study_ob}
 
 
@@ -291,29 +294,27 @@ these bugs.
 \small
 \centering
 {
-\begin{tabular}{|lccccccl|}
+\begin{tabular}{|lcccccc|}
 \hline
-&Apache&Chrome&GCC&Mozilla&MySQL&Total&Fix Strategy\\
+&Apache&Chrome&GCC&Mozilla&MySQL&Total\\
 \hline
-Total \# of loop-related bugs & 11 & 4 & 8 & 12 & 10 & 45 &  \\
+Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 \hline
-\multicolumn{8}{|c|}{\# of {\textit {Resultless}} bugs}\\
-\multicolumn{1}{|l}{ {\bf 0*} }
-&0&0&0&0&0&0&\\
-\multicolumn{1}{|l}{ {\bf 0*1?} }
-&0&0&0&2&3&5&C(4)$|$S(1)\\
-\multicolumn{1}{|l}{{\bf [0$|$1]*}}
-&0&1&1&1&1&4&S(4)\\
-\multicolumn{1}{|l}{{\bf 1*}}
-&1&2&3&6&3&15& B(4)$|$S(4)$|$O(7)\\
+\multicolumn{1}{|l}{ {\bf 0*} Resultness}
+&0&0&0&0&0&0\\
+\multicolumn{1}{|l}{ {\bf 0*1?} Resultness}
+&0&0&0&2&3&5\\
+\multicolumn{1}{|l}{{\bf [0$|$1]*} Resultness}
+&0&1&1&1&1&4\\
+\multicolumn{1}{|l}{{\bf 1*} Resultness}
+&1&2&3&6&3&15\\
 %&0&2&0&5&0&7&B(4)$|$S(3)\\
 %&1&0&3&1&3&8&\\
 \hline
-\multicolumn{8}{|c|}{ \# of {\textit {Redundant}} bugs}\\
-\multicolumn{1}{|l}{Cross-{\bf iteration} redundancy}
-&7&1&2&1&1&12&B(4)$|$M(7)$|$O(1)\\
-\multicolumn{1}{|l}{ Cross-{\bf loop} redundancy}
-&3&0&2&2&2&9&B(4)$|$M(5)\\
+\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&12\\
+\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&9\\
   %MySQL15811 is moved from 1* to here; consider it as fixed by M
 %\hline
 %\multicolumn{8}{|c|}{ \# of {\textit {Other}} bugs}\\
@@ -323,13 +324,7 @@ Total \# of loop-related bugs & 11 & 4 & 8 & 12 & 10 & 45 &  \\
 }
 %\end{adjustwidth}
 \caption{Number of bugs in each root-cause category. 
-B, M, S, C, and O represent different fix strategies:
-B(atching),  
-M(emoization), 
-S(kipping the loop),
-C(hange the data structure), and O(thers). The numbers in the 
-parentheses denote the number of problems that are fixed using specific
-fix strategies.}
+}
 \label{tab:root}
 \end{table*}
 
@@ -363,20 +358,19 @@ fix strategies.}
 \end{tabular}
 }
 %\end{adjustwidth}
-\caption{Number of bugs fixed by each strategy. 
-%B, M, S, C, and O represent different fix strategies:
-%B(atching),  
-%M(emoization), 
-%S(kipping the loop),
-%C(hange the data structure), and O(thers). 
+\caption{Number of bugs fixed by each strategy:
+B(atching),  
+M(emoization), 
+S(kipping the loop),
+C(hange the data structure), and O(thers). 
 ``C-I'': cross- iteration redundancy. 
 ``C-L'': cross-loop redundancy. 
-B, M, S, C, O: fix strategies as discussed in Table~\ref{tab:root}. }
+}
 \label{tab:correlation}
 \end{table}
 
-\underline{Are the root-causes in our taxonomy common?}
-The answer is \textit{yes}.
+\paragraph{Coverage}
+Our taxonomy does cover all inefficient loops under study. 
 Resultless loops are about as common as redundant loops
 (24 vs. 21).
 Intuitively, 0* loops, where no iteration produces any results,
@@ -385,28 +379,37 @@ benchmark suite belong to this category.
 All other root-cause sub-categories are well represented.
 
 
-\underline{How are real-world performance bugs fixed?}
-Overall, the fix strategies are well aligned with root-cause patterns.
+\paragraph{Actionability}
+As demonstrated in Table \ref{tab:correlation}, 
+the root-cause categories in our taxonomy are highly correlated with
+fix strategies.
+This indicates that our taxonomy is actionable --- once the root cause
+is identified, developers roughly know how to fix the problem.
 For example, 
-all inefficient loops with resultless [0$|$1]* are
-fixed by skipping the loop under certain contexts,
-and almost all inefficient loops with redundant root causes are fixed either by 
-memoization or batching the computation. 
+almost all 0*1? resultness loops are fixed by data-structure changes;
+all [0$|$1]* resultless loops are
+fixed by conditionally skipping the loop;
+almost all redundant loops are fixed either by 
+memoization or batching. 
 In fact, as we will discuss later, simple analysis can tell whether 
-memoization or batching should be used to fix a problem.
-The only problem is that there are no silver bullets for 1* loops.
+memoization or batching should be used to fix a redundant loop.
+The only problem is that there are no silver bullets for fixing 1* loops.
 %all inefficient loops with xx root cause are fixed by xxx.
 %xxx
 
-\paragraph{Implications}
-As we can see, resultless loops and redundant loops are both common reasons
-that cause user-perceived performance problems in practice. The root-cause
-categories discussed above also match with developers' fix strategy well ---
-with a little bit amount of extra analysis, one can pretty much predict the fix strategy based on the root-cause pattern.
-Consequently, tools that cover these root causes will have high
-chances to satisfy the coverage and accuracy requirements of performance 
-diagnosis.
+\paragraph{Generality}
+The root-cause categories in our taxonomy are designed to be 
+generic. Table \ref{tab:root} also shows that these categories 
+each appears in multiple
+application in our study. The only exception is $0^*$-resultless, which
+never appears. 
 
+
+In summary, the study above informally demonstrates that our taxonomy
+is suitable to guide our design of \Tool.
+%chances to satisfy the coverage and accuracy requirements of performance 
+%diagnosis.
+%
 %TODO even for the other, there are things we could do ...
 
 \subsubsection{Caveats} 
@@ -418,7 +421,7 @@ However, there are still uncovered cases, like distributed systems,
 and scientific computation. 
 
 Previous work~\cite{PerfBug, SongOOPSLA2014} uses developers tagging and
-on-line developer/user discussion to judge whether a bug report is about
+on-line discussion to judge whether a bug report is about
 performance problems and whether 
 the performance problem under discussion is noticed and reported by users
 or not.
@@ -429,6 +432,7 @@ Some loop-related performance problems may never be noticed by end users
 or never be fixed by developers, and hence skip our study. However,
 there are no conceivable ways to study them. 
 
+\comment{
 We believe that the bugs in our study provide a representative sample of the 
 well-documented and
 fixed performance bugs that are user-perceived and loop-related in the studied 
@@ -436,4 +440,4 @@ applications.
 Since we did not set up the root-cause taxonomy to fit particular
 bugs in this bug benchmark suite, we believe our taxonomy and diagnosis
 framework presented below will go beyond these sampled performance bugs. 
-
+}
