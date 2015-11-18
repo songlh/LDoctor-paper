@@ -1,0 +1,39 @@
+\def\cca#1{\cellcolor{black!#10}\ifnum #1>5\color{white}\fi{#1}}
+
+
+\begin{table*}[tb!]
+%\begin{adjustwidth}{-.5in}{-.5in}
+\small
+\centering
+{
+\begin{tabular}{lccccccccccccc}
+\hline
+                      & Apache &Chrome & GCC  & Mozilla & MySQL &&M$_{\text{emoization}}$  & B$_{\text{atching}}$   &  C & S  & O$_{\text{ther}}$ && Total\\
+\cmidrule{2-6}
+\cmidrule{8-12}
+                      & 11    & 4     & 8    & 12      & 10     && 12  & 12 & 4  & 9  & 8  && 45\\
+\hline
+\multicolumn{1}{l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&&\cca{7}&\cca{4}&0&0&\cca{1}&&12\\
+\multicolumn{1}{l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&&\cca{5}&\cca{4}&\cca{0}&\cca{0}&\cca{0}&&9\\
+\multicolumn{1}{l}{ {\bf 0*1?} Resultless}
+&0&0&0&2&3&&\cca{0}&\cca{0}&\cca{4}&\cca{1}&\cca{0}&&5\\
+\multicolumn{1}{l}{{\bf [0$|$1]*} Resultless}
+&0&1&1&1&1&&\cca{0}&\cca{0}&\cca{0}&\cca{4}&\cca{0}&&4\\
+\multicolumn{1}{l}{ {\bf 0*} Resultless}
+&0&0&0&0&0&&\cca{0}&\cca{0}&\cca{0}&\cca{0}&\cca{0}&&0\\
+\multicolumn{1}{l}{{\bf 1*} Resultless}
+&1&2&3&6&3&&\cca{0}&\cca{4}&\cca{0}&\cca{4}&\cca{7}&&15\\
+  %MySQL15811 is moved from 1* to here; consider it as fixed by M
+\hline
+\end{tabular}
+}
+%\end{adjustwidth}
+\caption{The distribution among different applications and different fix strategies for bugs with each root-cause category.
+(S: conditionally skip the loop; C: change the data structure)
+}
+\label{tab:root}
+\end{table*}
+
+

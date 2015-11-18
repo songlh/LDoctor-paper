@@ -1,6 +1,7 @@
 \section{Root-Cause Taxonomy}
 \label{sec:study}
 
+
 Previous work has identified a wide variety of performance root-cause 
 categories. However, no existing taxonomy satisfies all the three 
 requirements below and hence cannot be directly used for our diagnosis tool
@@ -21,6 +22,8 @@ and then discusses the coverage, actionability, and generality
 of our taxonomy using a suite of real-world
 inefficient loops collected by previous work \cite{SongOOPSLA2014,PerfBug}. 
 
+
+
 \subsection{Taxonomy Design}
 \label{sec:study_tax}
 We divide all inefficient loops into two root-cause categories:
@@ -31,6 +34,7 @@ A resultless loop spends a lot of time in computation without
 producing any results useful after the loop.
 It is further categorized based on which loop iterations are
 (not) producing useful results.
+
 
 {\textbf{0*}}: 
 This type of loops never produce any results in any iteration.
@@ -95,7 +99,7 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 %treating it like bug detection will inevitably lead to false positives
 %we are providing information to developers
 
-\begin{figure}[h]
+\begin{figure}
 \centering
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true}
@@ -229,6 +233,11 @@ This bug is fixed by adding an extra field for each node to save the calculated
 count, so that a new count value can be calculated by simply adding one to the
 saved count value of the nearest previous sibling with the same name and URI.
 
+
+\input section/tab_root
+
+\input section/tab_appbug
+
 \subsection{Taxonomy Assessment}
 \label{sec:tax_study}
 We assess the coverage, actionability, and generality of our taxonomy using
@@ -236,45 +245,8 @@ a set of
 real-world inefficient loop problems collected by previous work
 \cite{SongOOPSLA2014,PerfBug}.
 
+
 \subsubsection{Methodology}
-\begin{table}[h!]
-\small{
-\centering
-\begin{tabular}{@{\hspace{3pt}}l@{\hspace{3pt}}|@{\hspace{3pt}}c@{\hspace{3pt}}}
-\hline
-Application Suite Description (language) & \# Bugs \\
-\hline                            
-{\bf Apache Suite} 	 & 11\\
-%\cline{1-1}
-{HTTPD:	Web Server (C)	}& \\
-{TomCat:  Web Application Server (Java)}& \\
-{Ant:	Build management utility (Java)}& \\
-%\hline
-%JMeter	& Load test utility (Java) & \\
-\hline                            
-{\bf Chromium Suite} Google Chrome browser (C/C++) & 4\\
-\hline
-%\multicolumn{2}{|l|}
-{\bf GCC Suite}  GCC \& G++ Compiler (C/C++)     & 8\\
-\hline
-{\bf Mozilla Suite}  & 12\\
-%\cline{1-1}
-{Firefox: Web Browser (C++, JavaScript)}& 	\\
-{Thunderbird: Email Client (C++, JavaScript)}& \\
-\hline
-{\bf MySQL Suite}     & 10	\\
-%\cline{1-1}
-{Server: Database Server (C/C++)}&  	\\
-%\cline{1}
-{Connector: DB Client Libraries (C/C++/Java/.Net)} &  	\\
-\hline
-{\bf Total}	   & 45 \\
-\hline
-\end{tabular}
-}
-\caption{Applications and bugs used in the study}
-\label{tab:app_bug}
-\end{table}
 
 Previous work \cite{PerfBug,SongOOPSLA2014} studied the on-line bug
 databases of five representative open-source software projects, as 
@@ -332,46 +304,6 @@ Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 \end{table*}
 }
 
-\def\cca#1{\cellcolor{black!#10}\ifnum #1>5\color{white}\fi{#1}}
-
-
-\begin{table*}[tb!]
-%\begin{adjustwidth}{-.5in}{-.5in}
-\small
-\centering
-{
-\begin{tabular}{lccccccccccccc}
-\hline
-                      & Apache &Chrome & GCC  & Mozilla & MySQL &&M$_{\text{emoization}}$  & B$_{\text{atching}}$   &  C & S  & O$_{\text{ther}}$ && Total\\
-\cmidrule{2-6}
-\cmidrule{8-12}
-                      & 11    & 4     & 8    & 12      & 10     && 12  & 12 & 4  & 9  & 8  && 45\\
-\hline
-\multicolumn{1}{l}{Cross-{\bf iteration} Redundancy}
-&7&1&2&1&1&&\cca{7}&\cca{4}&0&0&\cca{1}&&12\\
-\multicolumn{1}{l}{ Cross-{\bf loop} Redundancy}
-&3&0&2&2&2&&\cca{5}&\cca{4}&\cca{0}&\cca{0}&\cca{0}&&9\\
-\multicolumn{1}{l}{ {\bf 0*1?} Resultless}
-&0&0&0&2&3&&\cca{0}&\cca{0}&\cca{4}&\cca{1}&\cca{0}&&5\\
-\multicolumn{1}{l}{{\bf [0$|$1]*} Resultless}
-&0&1&1&1&1&&\cca{0}&\cca{0}&\cca{0}&\cca{4}&\cca{0}&&4\\
-\multicolumn{1}{l}{ {\bf 0*} Resultless}
-&0&0&0&0&0&&\cca{0}&\cca{0}&\cca{0}&\cca{0}&\cca{0}&&0\\
-\multicolumn{1}{l}{{\bf 1*} Resultless}
-&1&2&3&6&3&&\cca{0}&\cca{4}&\cca{0}&\cca{4}&\cca{7}&&15\\
-  %MySQL15811 is moved from 1* to here; consider it as fixed by M
-\hline
-\end{tabular}
-}
-%\end{adjustwidth}
-\caption{The distribution among different applications and different fix strategies for bugs with each root-cause category.
-(S: conditionally skip the loop; C: change the data structure)
-}
-\label{tab:root}
-\end{table*}
-
-
-
 
 
 \comment{
@@ -411,7 +343,8 @@ C(hange the data structure), and O(thers).
 
 
 \paragraph{Coverage}
-Our taxonomy does cover all inefficient loops under study. 
+As shown in Table \ref{tab:root}, 
+our taxonomy does cover all inefficient loops under study. 
 Resultless loops are about as common as redundant loops
 (24 vs. 21).
 Intuitively, 0* loops, where no iteration produces any results,
@@ -421,8 +354,8 @@ All other root-cause sub-categories are well represented.
 
 
 \paragraph{Actionability}
-As demonstrated in Table \ref{tab:correlation}, 
-the root-cause categories in our taxonomy are highly correlated with
+As demonstrated in Table \ref{tab:root}, 
+the root-cause categories in our taxonomy are well correlated with
 fix strategies.
 This indicates that our taxonomy is actionable --- once the root cause
 is identified, developers roughly know how to fix the problem.
