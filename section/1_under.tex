@@ -54,13 +54,17 @@ by one until the right one is found.
 Clearly, whether this type of loops are efficient or not depends on the
 workload. If they are indeed inefficient, they are often
 fixed by data-structure changes.
-As an example, Mozilla JavaScript engine used to store the source-code 
-line numbers of all byte-code instructions in a linked list \texttt{script}. 
-Later on, many users complained that Mozilla browser freezed when opening
-some popular websites. It turned out that those websites contained large
-JavaScript files that filled the linked list \texttt{script} with
-tens of thousands of nodes. Linear search on \texttt{script} then caused the
-to freeze. To fix this problem, 
+As an example, Mozilla JavaScript engine used to use a linked list 
+\texttt{script}
+to store debugging information
+for every bytecode instruction in a JavaScript file. 
+Later on, people complained that Mozilla browsers were very slow in handling
+large JavaScript files.
+It turned out that those large
+JavaScript files filled the linked list \texttt{script} with
+tens of thousands of nodes. Repeated search through the
+long \texttt{script} list then led to poor performance.
+To fix this problem, 
 developers simply replace linked list with hash table
 (Mozilla Bug\#347306).
 % This improve the performance by 52.60{\bf X}.
@@ -300,6 +304,10 @@ these bugs.
 \hline
 Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 \hline
+\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&12\\
+\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&9\\
 \multicolumn{1}{|l}{ {\bf 0*} Resultness}
 &0&0&0&0&0&0\\
 \multicolumn{1}{|l}{ {\bf 0*1?} Resultness}
@@ -310,11 +318,6 @@ Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 &1&2&3&6&3&15\\
 %&0&2&0&5&0&7&B(4)$|$S(3)\\
 %&1&0&3&1&3&8&\\
-\hline
-\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
-&7&1&2&1&1&12\\
-\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
-&3&0&2&2&2&9\\
   %MySQL15811 is moved from 1* to here; consider it as fixed by M
 %\hline
 %\multicolumn{8}{|c|}{ \# of {\textit {Other}} bugs}\\
@@ -337,41 +340,32 @@ Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 \small
 \centering
 {
-\begin{tabular}{|lccccc|ccccc|c|}
+\begin{tabular}{lccccccccccccc}
 \hline
-                      & Apache &Chrome & GCC  & Mozilla & MySQL & B   & M  & S  & C  & O & Total\\
+                      & Apache &Chrome & GCC  & Mozilla & MySQL &&M$_{\text{emoization}}$  & B$_{\text{atching}}$   &  C & S  & O$_{\text{ther}}$ && Total\\
+\cmidrule{2-6}
+\cmidrule{8-12}
+                      & 11    & 4     & 8    & 12      & 10     && 12  & 12 & 4  & 9  & 8  && 45\\
 \hline
-%\cmidrule{2-7}
-Total \# of loop bugs & 11    & 4     & 8    & 12      & 10     & 12  & 12 & 9  & 4  & 8  & 45\\
-\hline
-\multicolumn{1}{|l}{ {\bf 0*} Resultness}
-&0&0&0&0&0&\cca{0}&\cca{0}&\cca{0}&\cca{0}&\cca{0}&0\\
-\multicolumn{1}{|l}{ {\bf 0*1?} Resultness}
-&0&0&0&2&3&\cca{0}&\cca{0}&\cca{1}&\cca{4}&\cca{0}&5\\
-\multicolumn{1}{|l}{{\bf [0$|$1]*} Resultness}
-&0&1&1&1&1&\cca{0}&\cca{0}&\cca{4}&\cca{0}&\cca{0}&4\\
-\multicolumn{1}{|l}{{\bf 1*} Resultness}
-&1&2&3&6&3&\cca{4}&\cca{0}&\cca{4}&\cca{0}&\cca{7}&15\\
-%&0&2&0&5&0&7&B(4)$|$S(3)\\
-%&1&0&3&1&3&8&\\
-\hline
-\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
-&7&1&2&1&1&\cca{4}&\cca{7}&\cca{0}&\cca{0}&\cca{1}&12\\
-\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
-&3&0&2&2&2&\cca{4}&\cca{5}&\cca{0}&\cca{0}&\cca{0}&9\\
+\multicolumn{1}{l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&&\cca{7}&\cca{4}&0&0&\cca{1}&&12\\
+\multicolumn{1}{l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&&\cca{5}&\cca{4}&\cca{0}&\cca{0}&\cca{0}&&9\\
+\multicolumn{1}{l}{ {\bf 0*1?} Resultless}
+&0&0&0&2&3&&\cca{0}&\cca{0}&\cca{4}&\cca{1}&\cca{0}&&5\\
+\multicolumn{1}{l}{{\bf [0$|$1]*} Resultless}
+&0&1&1&1&1&&\cca{0}&\cca{0}&\cca{0}&\cca{4}&\cca{0}&&4\\
+\multicolumn{1}{l}{ {\bf 0*} Resultless}
+&0&0&0&0&0&&\cca{0}&\cca{0}&\cca{0}&\cca{0}&\cca{0}&&0\\
+\multicolumn{1}{l}{{\bf 1*} Resultless}
+&1&2&3&6&3&&\cca{0}&\cca{4}&\cca{0}&\cca{4}&\cca{7}&&15\\
   %MySQL15811 is moved from 1* to here; consider it as fixed by M
-%\hline
-%\multicolumn{8}{|c|}{ \# of {\textit {Other}} bugs}\\
-%\multicolumn{1}{|l}{Not in above categories}
 \hline
 \end{tabular}
 }
 %\end{adjustwidth}
-\caption{Number of bugs in each root-cause category, and number of bugs fixed by each strategy.
-B(atching),  
-M(emoization), 
-S(kipping the loop),
-C(hange the data structure), and O(thers). 
+\caption{The distribution among different applications and different fix strategies for bugs with each root-cause category.
+(S: conditionally skip the loop; C: change the data structure)
 }
 \label{tab:root}
 \end{table*}
@@ -433,7 +427,7 @@ fix strategies.
 This indicates that our taxonomy is actionable --- once the root cause
 is identified, developers roughly know how to fix the problem.
 For example, 
-almost all 0*1? resultness loops are fixed by data-structure changes;
+almost all 0*1? resultless loops are fixed by data-structure changes;
 all [0$|$1]* resultless loops are
 fixed by conditionally skipping the loop;
 almost all redundant loops are fixed either by 
