@@ -288,7 +288,7 @@ these bugs.
 \subsubsection{Assessment}
 \label{sec:study_ob}
 
-
+\comment{
 \begin{table*}[tb!]
 %\begin{adjustwidth}{-.5in}{-.5in}
 \small
@@ -327,17 +327,62 @@ Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 }
 \label{tab:root}
 \end{table*}
-
-
-
-
-
+}
 
 \def\cca#1{\cellcolor{black!#10}\ifnum #1>5\color{white}\fi{#1}}
+
+
+\begin{table*}[tb!]
+%\begin{adjustwidth}{-.5in}{-.5in}
+\small
+\centering
+{
+\begin{tabular}{|lccccc|ccccc|c|}
+\hline
+                      & Apache &Chrome & GCC  & Mozilla & MySQL & B   & M  & S  & C  & O & Total\\
+\hline
+%\cmidrule{2-7}
+Total \# of loop bugs & 11    & 4     & 8    & 12      & 10     & 12  & 12 & 9  & 4  & 8  & 45\\
+\hline
+\multicolumn{1}{|l}{ {\bf 0*} Resultness}
+&0&0&0&0&0&\cca{0}&\cca{0}&\cca{0}&\cca{0}&\cca{0}&0\\
+\multicolumn{1}{|l}{ {\bf 0*1?} Resultness}
+&0&0&0&2&3&\cca{0}&\cca{0}&\cca{1}&\cca{4}&\cca{0}&5\\
+\multicolumn{1}{|l}{{\bf [0$|$1]*} Resultness}
+&0&1&1&1&1&\cca{0}&\cca{0}&\cca{4}&\cca{0}&\cca{0}&4\\
+\multicolumn{1}{|l}{{\bf 1*} Resultness}
+&1&2&3&6&3&\cca{4}&\cca{0}&\cca{4}&\cca{0}&\cca{7}&15\\
+%&0&2&0&5&0&7&B(4)$|$S(3)\\
+%&1&0&3&1&3&8&\\
+\hline
+\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&\cca{4}&\cca{7}&\cca{0}&\cca{0}&\cca{1}&12\\
+\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&\cca{4}&\cca{5}&\cca{0}&\cca{0}&\cca{0}&9\\
+  %MySQL15811 is moved from 1* to here; consider it as fixed by M
+%\hline
+%\multicolumn{8}{|c|}{ \# of {\textit {Other}} bugs}\\
+%\multicolumn{1}{|l}{Not in above categories}
+\hline
+\end{tabular}
+}
+%\end{adjustwidth}
+\caption{Number of bugs in each root-cause category, and number of bugs fixed by each strategy.
+B(atching),  
+M(emoization), 
+S(kipping the loop),
+C(hange the data structure), and O(thers). 
+}
+\label{tab:root}
+\end{table*}
+
+
+
+
+
+\comment{
+\def\cca#1{\cellcolor{black!#10}\ifnum #1>5\color{white}\fi{#1}}
 %For ranges 0-10, multiply by 10 by adding 0 after #1
-
-
-
 \begin{table}[tb!]
 %\begin{adjustwidth}{-.5in}{-.5in}
 \small
@@ -368,6 +413,8 @@ C(hange the data structure), and O(thers).
 }
 \label{tab:correlation}
 \end{table}
+}
+
 
 \paragraph{Coverage}
 Our taxonomy does cover all inefficient loops under study. 
