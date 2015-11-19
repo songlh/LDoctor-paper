@@ -1,11 +1,8 @@
- //java.lang.String
- static int 
- indexOf(char[] source, int sourceCount,
-         char[] target, int targetCount ) 
- {
-   ...
-   char first  = target[targetOffset];
-   int max = sourceCount - targetCount;
+ int found = -1;
+ while ( found < 0 ) {
+ //Check if string source[] contains target[]
+   char first  = target[0];
+   int max = sourceLen - targetLen;
 
    for (int i = 0; i <= max; i++) {
      // Look for first character.
@@ -14,29 +11,21 @@
      }
 
      // Found first character
-     //now look at the rest of v2
+     // now look at the rest
      if (i <= max) {
        int j = i + 1;
-       int end = j + targetCount - 1;
+       int end = j + targetLen - 1;
        for (int k = 1; j < end && source[j] == 
                 target[k]; j++, k++);
 
        if (j == end) {
-         /* Found whole string. */
-         return i ;
+         /* Found whole string target. */
+         found = i;
+         break;
        }
      }
    }
-   return -1;
- }
 
- //TelnetTask.java
- public void waitForString(...)
- {
-+  int windowIndex = -s.length();
--  while (sb.toString().indexOf(s) == -1) {
-+  while (windowIndex++ < 0 || 
-+   sb.substring(windowIndex).indexOf(s) == -1){
-     sb.append((char) is.read());
-   }
+   //append another character; try again 
+   source[sourceLen++] = getchar();
  }

@@ -14,9 +14,9 @@ instead of being applied to the whole program. Therefore, we will have different
 design trade-offs in terms of coverage and accuracy, comparing with 
 bug detection tools.
 
-\item Static-dynamic hybrid analysis. As we will see, static analysis alone
+\item Static-dynamic hybrid analysis. Static analysis alone
 will not be able to provide all the needed information to judge whether
-a loop is problematic. However, 
+a loop is inefficient. However, 
 dynamic analysis alone will incur too much overhead.
 Therefore, we use a hybrid approach throughout our design.
 
@@ -50,24 +50,27 @@ resultless at run time.
 
 \Tool first identifies side-effect instructions that write to
 variables defined outside the loop. 
-\Tool analyzes all functions that are called
+\Tool analyzes all functions called
 by a loop directly or indirectly --- a function $F$ that updates variables
 defined outside $F$ makes the corresponding call statement in $F$'s
 caller a side-effect instruction.
-We consider all library functions or function calls through function pointers 
-as functions that have side effects, 
+We consider all calls to library functions or through function pointers 
+as having side effects, 
 unless the library functions are specially marked by us in a white list.
 
 \Tool then categorizes loops into four types.
-Loop 0* contains no side-effect instructions. 
-Loop 1* contains at least one side-effect instruction along every path that
-starts from the loop header and ends at the loop header.
-For the remaining cases, 
-when the basic block with side-effect instructions
-is part of the natural loop, the case
-belongs to [0$|$1]*; instead, if the side-effect basic block is post-dominated
-by one of the loop-exit blocks and is dominated by the loop header, yet is
-not part of the natural loop, the case belongs to 0*1?.
+Given a natural loop $l$, when $l$
+contains at least one side-effect instruction along every path that
+starts from the loop header and ends at the loop header, it is a 1* loop;
+if there exists at least one side-effect instruction inside $l$, but not on
+every path,
+it is a [0$|$1]* loop; if there is no side-effect instructions inside $l$,
+$l$ is either a 0* or a 0*1? loop.
+In the last case, \Tool further checks all the loop exit-blocks. If there 
+exists an exit-block of $l$ that contains a side-effect instruction and is  
+post-dominated by another exit-block of $l$, this is a 0*1? loop.
+For example, line 5 in Figure \ref{fig:Mozilla347306} is such an exit block.
+Otherwise, $l$ is a 0* loop.
 
 Note that since the 1* pattern contains the least amount of information
 about computation \textit{inefficiency}, \Tool will not report a loop's

@@ -1,7 +1,6 @@
 \section{Root-Cause Taxonomy}
 \label{sec:study}
 
-
 Previous work has identified a wide variety of performance root-cause 
 categories. However, no existing taxonomy satisfies all the three 
 requirements below and hence cannot be directly used for our diagnosis tool
@@ -22,8 +21,6 @@ and then discusses the coverage, actionability, and generality
 of our taxonomy using a suite of real-world
 inefficient loops collected by previous work \cite{SongOOPSLA2014,PerfBug}. 
 
-
-
 \subsection{Taxonomy Design}
 \label{sec:study_tax}
 We divide all inefficient loops into two root-cause categories:
@@ -31,10 +28,9 @@ We divide all inefficient loops into two root-cause categories:
 
 \subsubsection{Resultless loops}
 A resultless loop spends a lot of time in computation without
-producing results useful after the loop.
+producing any results useful after the loop.
 It is further categorized based on which loop iterations are
 (not) producing useful results.
-
 
 {\textbf{0*}}: 
 This type of loops never produce any results in any iteration.
@@ -42,26 +38,35 @@ They are rare in mature software systems.
 They should simply be deleted from the program.
 %Question: dynamic or static?
 
-\begin{figure}
-\centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
-     morekeywords={+},keepspaces=true,numbers=left}
-  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla347306.c}}
-\caption{A resultless 0*1? bug in Mozilla}
-\label{fig:Mozilla347306}
-\end{figure}
+%\begin{figure}[h]
+%\centering
+%\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+%     morekeywords={+},keepspaces=true}
+%  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla347306.c}}
+%\caption{A resultless 0*1? bug in Mozilla}
+%\label{fig:Mozilla347306}
+%\end{figure}
 
 {\textbf{0*1?}}:
 This type of loops only produce results in the last iteration, if any. 
 They are often related to search: check a sequence of elements one
 by one until the right one is found.
-Clearly, whether these loops are efficient or not depends on the
-workload. When indeed inefficient, they are often
+Clearly, whether this type of loops are efficient or not depends on the
+workload. If they are indeed inefficient, they are often
 fixed by data-structure changes.
-An example is shown in Figure \ref{fig:Mozilla347306}.
-Large JavaScript files often fill the \texttt{script} list with 
-tens of thousands of nodes and cause poor performance.
-The patch simply replaced the \texttt{script} list with a hash table.
+As an example, Mozilla JavaScript engine used to use a linked list 
+\texttt{script}
+to store debugging information
+for every bytecode instruction in a JavaScript file. 
+Later on, people complained that Mozilla browsers were very slow in handling
+large JvaScript files.
+It turned out that those large
+JavaScript files filled the linked list \texttt{script} with
+tens of thousands of nodes. Repeated search through the
+long \texttt{script} list then led to poor performance.
+To fix this problem, 
+developers simply replace linked list with hash table
+(Mozilla Bug\#347306).
 % This improve the performance by 52.60{\bf X}.
 
 \comment{
@@ -90,7 +95,7 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 %treating it like bug detection will inevitably lead to false positives
 %we are providing information to developers
 
-\begin{figure}
+\begin{figure}[h]
 \centering
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true}
@@ -103,18 +108,18 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 {\textbf{[0$|$1]*}}:
 Each iteration in this type of loops may or may not produce results.
 For some workload, the majority of iterations do not produce
-results and cause performance problems perceived by users.
+results and lead to performance problems perceived by users.
 These problems are often solved
-by adding a simple check to conditionally skip the expensive loop.
+by using a simple check to conditionally skip the expensive loop.
 Figure~\ref{fig:GCC46401} shows such an example.
 %how users perceive this problem
 %explain how every iteration may or may not produce any results
 %explain the fix
-Users complained that compilation became extremely slow when
-the \texttt{-Wsequence-point} checking is enabled.
+Users complained that compilation became extremely slow when they 
+enabled the \texttt{-Wsequence-point} checking.
 The slowness was caused
-by the \texttt{for} loop in the figure. As the algorithm
-behind this loop has quadratic complexity in the number of operands in an expression, 
+by the \texttt{for} loop shown in the figure. Since the algorithm
+behind this loop is quadratic in the number of operands in an expression, 
 programs with long expressions suffer severe slow-downs.
 After further diagnosis, developers observed that this loop rarely
 had any side-effects, as the \texttt{if} condition was rarely satisfied.
@@ -135,7 +140,7 @@ The patch designed by developers is to add an extra condition checking to skip t
 }
 }
 
-{\textbf{1*}}:
+{\textbf{[1]*}}:
 Loops in this category always generate results in almost all iterations. 
 They are inefficient because their results are useless due to
 some high-level semantic reasons.
@@ -224,11 +229,6 @@ This bug is fixed by adding an extra field for each node to save the calculated
 count, so that a new count value can be calculated by simply adding one to the
 saved count value of the nearest previous sibling with the same name and URI.
 
-
-\input section/tab_root
-
-\input section/tab_appbug
-
 \subsection{Taxonomy Assessment}
 \label{sec:tax_study}
 We assess the coverage, actionability, and generality of our taxonomy using
@@ -236,8 +236,45 @@ a set of
 real-world inefficient loop problems collected by previous work
 \cite{SongOOPSLA2014,PerfBug}.
 
-
 \subsubsection{Methodology}
+\begin{table}[h!]
+\small{
+\centering
+\begin{tabular}{@{\hspace{3pt}}l@{\hspace{3pt}}|@{\hspace{3pt}}c@{\hspace{3pt}}}
+\hline
+Application Suite Description (language) & \# Bugs \\
+\hline                            
+{\bf Apache Suite} 	 & 11\\
+%\cline{1-1}
+{HTTPD:	Web Server (C)	}& \\
+{TomCat:  Web Application Server (Java)}& \\
+{Ant:	Build management utility (Java)}& \\
+%\hline
+%JMeter	& Load test utility (Java) & \\
+\hline                            
+{\bf Chromium Suite} Google Chrome browser (C/C++) & 4\\
+\hline
+%\multicolumn{2}{|l|}
+{\bf GCC Suite}  GCC \& G++ Compiler (C/C++)     & 8\\
+\hline
+{\bf Mozilla Suite}  & 12\\
+%\cline{1-1}
+{Firefox: Web Browser (C++, JavaScript)}& 	\\
+{Thunderbird: Email Client (C++, JavaScript)}& \\
+\hline
+{\bf MySQL Suite}     & 10	\\
+%\cline{1-1}
+{Server: Database Server (C/C++)}&  	\\
+%\cline{1}
+{Connector: DB Client Libraries (C/C++/Java/.Net)} &  	\\
+\hline
+{\bf Total}	   & 45 \\
+\hline
+\end{tabular}
+}
+\caption{Applications and bugs used in the study}
+\label{tab:app_bug}
+\end{table}
 
 Previous work \cite{PerfBug,SongOOPSLA2014} studied the on-line bug
 databases of five representative open-source software projects, as 
@@ -267,10 +304,6 @@ these bugs.
 \hline
 Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 \hline
-\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
-&7&1&2&1&1&12\\
-\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
-&3&0&2&2&2&9\\
 \multicolumn{1}{|l}{ {\bf 0*} Resultness}
 &0&0&0&0&0&0\\
 \multicolumn{1}{|l}{ {\bf 0*1?} Resultness}
@@ -281,6 +314,11 @@ Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 &1&2&3&6&3&15\\
 %&0&2&0&5&0&7&B(4)$|$S(3)\\
 %&1&0&3&1&3&8&\\
+\hline
+\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&12\\
+\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&9\\
   %MySQL15811 is moved from 1* to here; consider it as fixed by M
 %\hline
 %\multicolumn{8}{|c|}{ \# of {\textit {Other}} bugs}\\
@@ -294,6 +332,55 @@ Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
 \label{tab:root}
 \end{table*}
 }
+
+\def\cca#1{\cellcolor{black!#10}\ifnum #1>5\color{white}\fi{#1}}
+
+
+\begin{table*}[tb!]
+%\begin{adjustwidth}{-.5in}{-.5in}
+\small
+\centering
+{
+\begin{tabular}{|lccccc|ccccc|c|}
+\hline
+                      & Apache &Chrome & GCC  & Mozilla & MySQL & B   & M  & S  & C  & O & Total\\
+\hline
+%\cmidrule{2-7}
+Total \# of loop bugs & 11    & 4     & 8    & 12      & 10     & 12  & 12 & 9  & 4  & 8  & 45\\
+\hline
+\multicolumn{1}{|l}{ {\bf 0*} Resultness}
+&0&0&0&0&0&\cca{0}&\cca{0}&\cca{0}&\cca{0}&\cca{0}&0\\
+\multicolumn{1}{|l}{ {\bf 0*1?} Resultness}
+&0&0&0&2&3&\cca{0}&\cca{0}&\cca{1}&\cca{4}&\cca{0}&5\\
+\multicolumn{1}{|l}{{\bf [0$|$1]*} Resultness}
+&0&1&1&1&1&\cca{0}&\cca{0}&\cca{4}&\cca{0}&\cca{0}&4\\
+\multicolumn{1}{|l}{{\bf 1*} Resultness}
+&1&2&3&6&3&\cca{4}&\cca{0}&\cca{4}&\cca{0}&\cca{7}&15\\
+%&0&2&0&5&0&7&B(4)$|$S(3)\\
+%&1&0&3&1&3&8&\\
+\hline
+\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&\cca{4}&\cca{7}&\cca{0}&\cca{0}&\cca{1}&12\\
+\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&\cca{4}&\cca{5}&\cca{0}&\cca{0}&\cca{0}&9\\
+  %MySQL15811 is moved from 1* to here; consider it as fixed by M
+%\hline
+%\multicolumn{8}{|c|}{ \# of {\textit {Other}} bugs}\\
+%\multicolumn{1}{|l}{Not in above categories}
+\hline
+\end{tabular}
+}
+%\end{adjustwidth}
+\caption{Number of bugs in each root-cause category, and number of bugs fixed by each strategy.
+B(atching),  
+M(emoization), 
+S(kipping the loop),
+C(hange the data structure), and O(thers). 
+}
+\label{tab:root}
+\end{table*}
+
+
 
 
 
@@ -334,8 +421,7 @@ C(hange the data structure), and O(thers).
 
 
 \paragraph{Coverage}
-As shown in Table \ref{tab:root}, 
-our taxonomy does cover all inefficient loops under study. 
+Our taxonomy does cover all inefficient loops under study. 
 Resultless loops are about as common as redundant loops
 (24 vs. 21).
 Intuitively, 0* loops, where no iteration produces any results,
@@ -345,13 +431,13 @@ All other root-cause sub-categories are well represented.
 
 
 \paragraph{Actionability}
-As demonstrated in Table \ref{tab:root}, 
-the root-cause categories in our taxonomy are well correlated with
+As demonstrated in Table \ref{tab:correlation}, 
+the root-cause categories in our taxonomy are highly correlated with
 fix strategies.
 This indicates that our taxonomy is actionable --- once the root cause
 is identified, developers roughly know how to fix the problem.
 For example, 
-almost all 0*1? resultless loops are fixed by data-structure changes;
+almost all 0*1? resultness loops are fixed by data-structure changes;
 all [0$|$1]* resultless loops are
 fixed by conditionally skipping the loop;
 almost all redundant loops are fixed either by 

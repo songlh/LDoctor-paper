@@ -89,7 +89,7 @@ in fixing performance problems.
 \label{fig:GCC27733}
 \end{figure}
 
-Figure~\ref{fig:GCC27733} shows a real-world performance bug in GCC. 
+Figure~\ref{fig:GCC27733} shows a performance bug in GCC. 
 Function \texttt{mult\_alg} is used to compute the best algorithm for 
 multiplying \texttt{t}. It is so time consuming that developers used a
 hash-table
@@ -98,9 +98,11 @@ in the past and what is the result.
 Unfortunately, a mistake in the type declaration of hash-table
 entry \texttt{hash\_entry} makes the memoization useless for large \texttt{t},
 severely hurting performance.
-In reality, developers easily figured out that function
+In reality, developers easily figured out that
 \texttt{mult\_alg} is most correlated with the execution slowness, but
-spent several weeks to finally figure out \texttt{mult\_alg} is in fact
+spent several weeks to finally figure out \texttt{mult\_alg}, 
+containing 400 lines
+of code, is
 inefficient.
 %If a tool can tell them not only which loop\footnote{Recursive functions are
 %handled similarly as loops in this paper.}

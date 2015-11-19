@@ -69,7 +69,7 @@ The values returned
 from them at run-time will be tracked and compared to identify
 redundant computation among different instances of $C$.
 
-Specifically, \Tool first identifies side-effect instructions in $C$.
+Specifically, \Tool first identifes side-effect instructions in $C$.
 %, as 
 %discussed in Section \ref{sec:s_workless}. 
 It then conducts 
@@ -144,14 +144,13 @@ when only comparing the loop side-effect (e.g., always returning
 %TODO why not directly judge side-effect values
 
 \paragraph{Example}
-Figure \ref{fig:Apache34464} shows a simplified code-snippet from Apache,
-containing a cross-loop redundancy bug. 
-The \texttt{for} loop starting on line 7 
-searches a string \texttt{source} for a target sub-string 
-\texttt{target}. Since the outer loop, which starts on line 2, appends one 
-character to \texttt{source} in every iteration (line 30), 
-every execution of the \texttt{for} loop is working on a similar 
-\texttt{source} string from its previous execution, with a lot of redundancy. 
+Figure \ref{fig:Apache34464} shows a simplified code-snippet from Apache. 
+It contains a cross-loop redundant bug --- 
+the \texttt{for} loop starting on line 7 could be executed for many times,
+applied to many \texttt{source} strings slightly different from each other
+with a lot of
+redundant computation.
+Below, we use it to demonstrate how we identify \texttt{input}s.
 
 \begin{figure}
   \centering
@@ -162,7 +161,7 @@ every execution of the \texttt{for} loop is working on a similar
   \label{fig:Apache34464}
 \end{figure}
 
-Take the simple loop at line 10 of Figure~\ref{fig:Apache34464} as an example.
+Take the simple loop at line 10 of Figure~\ref{fig:Apache34464} as an exampale.
 Its only side-effect is to update \texttt{i}.
 For cross-loop redundancy analysis, we will consider the whole loop and 
 identify these as \textit{input}s:
@@ -185,7 +184,72 @@ This set is already smaller than the set of all data read by the loop.
 We will further shrink this set, removing invariant and others, 
 in Section \ref{sec:perf}.
 
+\comment{
+We consider two types of dependence, control dependence and RAW data dependence. 
+We build control dependence graph according to the algorithm discussed in~\cite{controldep}. 
+If block A is one of ancestors of block B on the control dependence graph, 
+we consider all instructions in block B control depend on the branch condition in block A. 
+Data dependence is mainly calculated based on instructions' operands. 
+We define several types of instrumentation sites. 
+The inputs of our dependence analysis are instructions, 
+and the output of our dependence analysis is a set of dependent values, 
+including instrumentation sites and constant values. 
 
+Before calculating dependence inside the monitored loop, 
+we conduct inter-procedural dependence analysis for each function directly called by the loop. 
+The formal parameters of each direct callee, memory instructions, 
+including load, memcpy, and memmove, 
+whose source is not from local structures or arrays, 
+and return values of library function calls are instrumentation sites. 
+During calculating dependence, 
+we consider formal parameter data depend on all real parameter, 
+the return value of each call site data depend on return inside the callee function, 
+and all instructions inside one callee functions inherit control dependence of all its call site. 
+
+If a direct callee from the monitored loop does not contain recursive function calls, 
+we use a three-stage method to solve the infeasible path problem. 
+Assume function A is called inside the monitored loop, function A will call function B, 
+and function B will call function C. 
+We will have a call tree A $\rightarrow$ B $\rightarrow$ C. 
+This call tree does not have recursive function calls, so our three-stage method can apply to this case. 
+At the first stage, we conduct intra-procedural dependence analysis for each function.  
+We consider return values of all call sites as instrumentation sites. 
+For example, we consider both the return value of B in A and the return value of C in B as instrumentation sites. 
+At the second stage, we process each function bottom-up on the call tree. 
+For each call site inside a function, we calculate 
+how the return value depend on real parameters based on dependence information inside the callee.
+Back to our example, we will process the three functions in order C, B, and A.
+When processing function B, we calculate the dependence for the return value of function C 
+based on the dependence information inside C and the real parameters of the call site.
+At the last stage, we process each function top-down on call tree, 
+and calculate dependence for instruction inside a callee function based on information from all its call site. 
+At this stage, we will process the three function in the order A, B, and C. 
+We update dependence information inside function B, according to control dependence and real parameters of its call site in A. 
+
+We design a Gen-Kill based intra-procedural analysis to 
+calculate which previous writes a memory read from local structures and arrays depends on. 
+The basic idea is that a memory write will kill all previous writes whose destination address it can cover, 
+and the memory write will generate a new write to its destination address. 
+Each memory read depends on previous writes whose destination addresses overlap with its source address. 
+
+For the monitored loop, we calculate dependent values for all site-effect instructions, 
+including side-effect instructions inside the loop and side-effect instructions inside the callees. 
+For cross-loop dependence analysis, instrumentation sites include values defined outside the loop, 
+memory reads inside the loop, memory reads not from local structure and arrays inside callees, 
+and return values of library function calls. 
+For cross-iteration dependent analysis, instrumented sites also include value defined in previous iterations. 
+For example, the instruction defining the value of \texttt{i} is the only side-effect instruction 
+inside the loop at line 12 in Figure~\ref{fig:Apache34464}. 
+After running cross-loop dependence analysis, the dependent values include 
+memory read \texttt{source[i]} inside the loop, 
+and three values defined outside the loop, 
+which represent the initial value of \texttt{i}, the value of \texttt{max} and \texttt{first} respectively. 
+After running cross-iteration dependence analysis, 
+the dependent value include value \texttt{i} defined in previous iteration, 
+memory read \texttt{source[i]}, 
+and two values defined outside the loop (\texttt{max} and \texttt{first}).  
+
+}
 
 \subsubsection{Identifying redundant loops}
 \label{sec:cal}
@@ -281,11 +345,16 @@ problem and worth developers' attention.
 
 In practice, we rarely see cases where different loop 
 instances are doing exactly the same computation.
-In cross-loop redundancy examples shown in 
-Figure~\ref{fig:Mozilla477564} and
-Figure~\ref{fig:Apache34464}, each loop instance is doing similar, but not
-exactly the same, work from its previous instance.
-
+For example, Figure~\ref{fig:Mozilla477564} demonstrates a cross-loop redundancy
+problem in Mozilla. Here, the
+latter instances contain more iterations than previous instances. 
+Figure~\ref{fig:Apache34464} shows an example in Apache, 
+The inner loop, which starts from line 9,  
+searches from the beginning of a string \texttt{sb} for a target sub-string 
+\texttt{s}. Since the outer loop, which starts on line 36, appends one 
+character to \texttt{sb} in every iteration, every inner loop instance is 
+doing computation that is similar, but not exactly the same, 
+from its previous instance.
 
 
 \paragraph{Detailed algorithm implementation}
@@ -413,7 +482,7 @@ identification algorithm discussed in Section \ref{sec:cal}.
 Our high-level sampling strategy is straightforward:
 randomly decide at the
 beginning of every iteration whether to track the values returned by
-input instructions in this iteration.
+source instructions in this iteration.
 
 The implementation is similar with previous sampling work 
 \cite{liblit03,liblit05}.
@@ -480,84 +549,16 @@ need to monitor.
 
 First, we identify and avoid monitoring memory reads whose return values can be 
 statically proved to
-not change throughout one loop instance
-or multiple loop instances. 
-Since we implement \Tool at LLVM byte-code level, the majority of this
+not change throughout one loop instance (i.e., for cross-iteration
+redundancy analysis) or multiple loop instances (i.e., for cross-loop redundancy
+analysis). Since we implement \Tool at LLVM byte-code level, a major part of this
 analysis is already done by LLVM, which lifts loop-invariant memory
-accesses out of loops. 
-For example, the read of \texttt{max} on line 12 of 
-Figure \ref{fig:Apache34464} is an \textit{input} instruction of the 
-\texttt{while} loop on the same line. LLVM identifies it as a loop invariant
-and lifts the read of \texttt{max}
-out of the loop. Consequently, \Tool only records
-its value once during each loop, not each iteration.
-However, LLVM does not apply its loop-invariant analysis to heap and global
-variables, so \Tool conducts some extra analysis --- it identifies those
-memory reads \texttt{read(v)}, where the address of \texttt{v} 
-is a loop invariant and no instructions 
-inside the loop can possibly write to that address. 
-For example, \Tool can identify that the values of
-\texttt{aNode->localName} and \texttt{aNode->namespaceURI} do not change
-throughout one loop instance
-in Figure~\ref{fig:Mozilla477564}. This analysis is sound but not complete.
-\Tool may miss some loop invariants. 
-
-Second, we leverage the scalar evolution analysis in LLVM to remove the 
-monitoring to some loop-induction related variables.
-The scalar evolution analysis can tell which variables are
-loop-induction variables (e.g., \texttt{i} on line 10
-of Figure~\ref{fig:Apache34464}) and what are their strides. 
-We then use this information in two ways. 
-One is for cross-iteration redundancy checking.
-If a loop iteration's input set contains a loop-induction
-variable, we know different iterations' inputs would be different and 
-hence conclude that there is no cross-iteration redundancy without any
-run-time analysis. 
-The other is for cross-loop redundancy checking.
-When the address of a memory read is a loop induction variable, such as
-\texttt{source[i]} on line 10 of Figure~\ref{fig:Apache34464},
-we only record the address range at run time (i.e., the start and the
-end), instead of every value returned by the memory read.
-Of course, this optimization could lead to false positives, reporting
-non-redundant loop computation as redundant.
-This may happen when the corresponding
-memory locations are modified across different loop instances.
-In that case, although different loop instances work on variables read from
-similar memory locations, the values they read are different.
-
-
-\subsubsection{Fix strategy recommendation}
-\label{sec:redundant_fix}
-As discussed in Section \ref{sec:tax_study}, extra analysis is needed to
-decide whether batching or memoization should be suggested to fix a 
-loop that conducts redundant computation.
-
-For cross-iteration redundancy, batching is often used for
-I/O operations.
-Therefore, we treat I/O related redundancy separately.
-When the only side effect of a loop is I/O operations
-and the same statement(s) is executed in every loop iteration, we report this
-as I/O related redundancy problem and suggest batching as a potential fix
-strategy. 
-
-For cross-loop redundancy, whether to use memoization or batching often
-depends on which strategy is cheaper. \Tool uses a simple
-heuristic. If 
-the side effect of each loop instance is to update 
-a constant number of memory locations, like the 
-buggy loop in Figure~\ref{fig:Mozilla477564} and Figure~\ref{fig:Apache34464}, 
-we recommend memoization. Instead, if the side effect is to update
-a sequence of memory locations, with the number of locations increasing
-with the workload, memoization is unlikely to save much and
-hence batching is suggested.
-
-%TODO what does batching mean for cross-loop redundancy???
-
-\comment{
-%%if side effect of the loop is to define several scalar value used outside the loop, we recommend memoization.
-%%if side effect is to write to distinct memory address or conduct system call, 
-%%we recommend batch
-
+accesses out of loops. The only extra analysis we did is to 
+prune memory reads whose reading address is loop invariant, and there are no writes 
+inside the loop which are possibly conducted on the same address. 
+For example, the read address of \texttt{aNode.localName} and \texttt{aNode.namespaceURI}
+in Figure~\ref{fig:Mozilla477564} is loop-invariant, and there are no write conducted 
+on the same address. We do not need to record these two memory read. 
 %It is easy to lift read from local variable outside the loop. 
 %Compiler is conservative to move read, which may cause exception, outside the loop.
 %I think this part of analysis is to prune memory read which is invariant, but unsafe to be moved out by compiler. 
@@ -565,6 +566,13 @@ hence batching is suggested.
 %outside the loop.
 %what we do is if the read address is loop invariant, and there are no other write possibly 
 %write to the same place, we will not record the memory read.
+
+%TODO: Linhai, I don't understand your original writing. Pls rephrase, and provide
+%an toy example.
+%For each monitored memory read, we use loop-invariant analysis to identify 
+%whether the read address is loop-invariant. 
+%If the address is invariant, and there are no memory writes whose addresses 
+%may/must alias to the read address, we will not instrument the memory read.
 
 %ANSWER:
 %while(i=lower[j]; a[i]<100 & i<upper[j]; i++); 
@@ -574,6 +582,20 @@ hence batching is suggested.
 %we conduct alias analysis, and analysis whether there are memory writes, whose
 %address may/must alias to the read address. 
 
+Second, we identify and avoid monitoring some memory reads whose return values 
+can be statically proved to be different throughout one loop instance in 
+cross-iteration redundancy analysis.
+Specifically, for read on loop induction variable, such as i for loop at line 12 of Figure~\ref{fig:Apache34464}, 
+%Specifically, reading of loop induction 
+%variables, such as XXX, are always identified as source instructions in % variable i for loop at line 12
+%cross-iteration redundancy analysis; 
+we also know for sure that their return
+values are different in different iterations. 
+If source instructions include read on loop induction variables, we know that 
+there could not be cross-iteration redundancy. 
+We use scalar evolution analysis
+provided by LLVM to identify induction variables and avoid tracking their
+values.
 %induction variables are not always identified as source instructions.
 %it could be possible that side-effect instructions do not depend on induction variables.
 %for example, side-effect instruction may only depend on array content, and array index 
@@ -604,6 +626,42 @@ hence batching is suggested.
 %If there are induction variable inside the dependent value set, 
 %we know that there will not be cross-iteration redundancy. 
 
+
+Third, sometimes we only record the memory-address range of a sequence of memory
+read, instead of the value returned by every read, in cross-loop redundancy
+analysis. 
+The loop at line 12 in Figure~\ref{fig:Apache34464} shows an example.
+The content of array \texttt{source} is never modified
+throughout the outer-loop, which starts 
+at line 12 in the Figure~\ref{fig:Apache34464}.
+%We do not have the static analysis to prove the content of array does not change.
+%for source[i] for the loop at line 12, we only need to record source, initial value of i and final value of i. 
+%TODO
+%Do you really do analysis to prove that the source array is not changed?
+%ANSWER
+%Shan, I do not have invariant analysis to prove the the source array is not changed.
+%I remove that part of writing in the last version I sent to you. 
+%It is very difficult to implement the invariant analysis.
+%I plan to discuss this in limitation part of this section, and say that this could bring false positives.
+%There are reasons why I feel it is too difficult to implement the invariant analysis:
+%1. it is difficult to find the range (the outer loop) to apply the analysis.
+%assume we have loopA, loopB and loopC. loopA contains loopB, and loopB contains loopC. 
+%we are analyzing loopC. It could be possible that loopB only execute 1 or 2 iterations, and loopA is the real outer loop
+%2. It is very difficult to prove that there is no other loop inside the outer loop which does not write to the same array.
+%There could be cases like:
+% for(i = 0; i < 10; i++)
+%   func(&(A[i]));
+% func will write to its parameter.
+Therefore, to check whether different inner loop instances read similar
+sequence of array data, we only need to record the starting and 
+ending array index touched by each inner loop, significantly reduce the 
+monitoring overhead. To accomplish this optimization, we again leverage
+the scalar evolution analysis provided by LLVM. The scalar evolution analysis
+tells us whether the address of a memory read instruction
+is a loop induction variable. For example, the address for memory read \texttt{source[i]} is added by one in each loop iteration,
+so it is a loop induction variable. 
+From the scalar evolution analysis, we know that the starting address is \texttt{source} plus the initial value of \texttt{i}, and the ending address
+is source plus the ending value of \texttt{i}.  
 %TODO Linhai, I don't understand your original text. The address is 
 %source+i; loop induction variable is i. What do you mean by "the read address
 %is an induction variable"? Please rewrite.
@@ -615,71 +673,37 @@ hence batching is suggested.
 %For cross-loop redundant bugs, we also rely on scalar evolution analysis to identify whether the read address
 %is an induction variable for each monitored read instruction. 
 
-\comment{
-We consider two types of dependence, control dependence and RAW data dependence. 
-We build control dependence graph according to the algorithm discussed in~\cite{controldep}. 
-If block A is one of ancestors of block B on the control dependence graph, 
-we consider all instructions in block B control depend on the branch condition in block A. 
-Data dependence is mainly calculated based on instructions' operands. 
-We define several types of instrumentation sites. 
-The inputs of our dependence analysis are instructions, 
-and the output of our dependence analysis is a set of dependent values, 
-including instrumentation sites and constant values. 
 
-Before calculating dependence inside the monitored loop, 
-we conduct inter-procedural dependence analysis for each function directly called by the loop. 
-The formal parameters of each direct callee, memory instructions, 
-including load, memcpy, and memmove, 
-whose source is not from local structures or arrays, 
-and return values of library function calls are instrumentation sites. 
-During calculating dependence, 
-we consider formal parameter data depend on all real parameter, 
-the return value of each call site data depend on return inside the callee function, 
-and all instructions inside one callee functions inherit control dependence of all its call site. 
+\subsubsection{Fix strategy recommendation}
+\label{sec:redundant_fix}
+As discussed in Section \ref{sec:tax_study}, extra analysis is needed to
+decide whether batching or memoization should be suggested to fix a 
+loop that conducts redundant computation.
 
-If a direct callee from the monitored loop does not contain recursive function calls, 
-we use a three-stage method to solve the infeasible path problem. 
-Assume function A is called inside the monitored loop, function A will call function B, 
-and function B will call function C. 
-We will have a call tree A $\rightarrow$ B $\rightarrow$ C. 
-This call tree does not have recursive function calls, so our three-stage method can apply to this case. 
-At the first stage, we conduct intra-procedural dependence analysis for each function.  
-We consider return values of all call sites as instrumentation sites. 
-For example, we consider both the return value of B in A and the return value of C in B as instrumentation sites. 
-At the second stage, we process each function bottom-up on the call tree. 
-For each call site inside a function, we calculate 
-how the return value depend on real parameters based on dependence information inside the callee.
-Back to our example, we will process the three functions in order C, B, and A.
-When processing function B, we calculate the dependence for the return value of function C 
-based on the dependence information inside C and the real parameters of the call site.
-At the last stage, we process each function top-down on call tree, 
-and calculate dependence for instruction inside a callee function based on information from all its call site. 
-At this stage, we will process the three function in the order A, B, and C. 
-We update dependence information inside function B, according to control dependence and real parameters of its call site in A. 
+For cross-iteration redundancy, batching is often used for
+I/O related operations.
+Therefore, we treat I/O related redundancy separately.
+Specifically, when the only side effect of a loop is I/O operations
+and the same statement(s) is executed in every loop iteration, we report this
+as I/O related redundancy problem and suggest batching as a potential fix
+strategy. 
 
-We design a Gen-Kill based intra-procedural analysis to 
-calculate which previous writes a memory read from local structures and arrays depends on. 
-The basic idea is that a memory write will kill all previous writes whose destination address it can cover, 
-and the memory write will generate a new write to its destination address. 
-Each memory read depends on previous writes whose destination addresses overlap with its source address. 
+For cross-loop redundancy, whether to use memoization or batching often
+depends on which strategy is cheaper to use. \Tool uses a simple
+heuristic. If 
+the side effect of each loop instance is to update 
+a constant number of memory locations, like the 
+buggy loop in Figure~\ref{fig:Mozilla477564} and Figure~\ref{fig:Apache34464}, 
+we recommend memoization. Instead, if the side effect is to update
+a sequence of memory locations, with the number of locations increasing
+with the workload, memoization is unlikely to help save much computation and
+hence batching is suggested.
 
-For the monitored loop, we calculate dependent values for all site-effect instructions, 
-including side-effect instructions inside the loop and side-effect instructions inside the callees. 
-For cross-loop dependence analysis, instrumentation sites include values defined outside the loop, 
-memory reads inside the loop, memory reads not from local structure and arrays inside callees, 
-and return values of library function calls. 
-For cross-iteration dependent analysis, instrumented sites also include value defined in previous iterations. 
-For example, the instruction defining the value of \texttt{i} is the only side-effect instruction 
-inside the loop at line 12 in Figure~\ref{fig:Apache34464}. 
-After running cross-loop dependence analysis, the dependent values include 
-memory read \texttt{source[i]} inside the loop, 
-and three values defined outside the loop, 
-which represent the initial value of \texttt{i}, the value of \texttt{max} and \texttt{first} respectively. 
-After running cross-iteration dependence analysis, 
-the dependent value include value \texttt{i} defined in previous iteration, 
-memory read \texttt{source[i]}, 
-and two values defined outside the loop (\texttt{max} and \texttt{first}).  
+%we xxx
+%TODO
 
-}
+%%if side effect of the loop is to define several scalar value used outside the loop, we recommend memoization.
+%%if side effect is to write to distinct memory address or conduct system call, 
+%%we recommend batch
 
-}
+

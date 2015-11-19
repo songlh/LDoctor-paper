@@ -1,13 +1,5 @@
-//jsscript.c
-jssrcnote *
-js_GetSrcNote(JSScript *script, jsbytecode *pc)
-{
-  ...
-  for (sn = SCRIPT_NOTES(script); 
-       !SN_IS_TERMINATOR(sn); sn = SN_NEXT(sn)) {
-    offset += SN_DELTA(sn);
-    if (offset == target && SN_IS_GETTABLE(sn))
+  for (sn=script->start, int offset=0; !sn; sn=sn->next){
+    offset += sn->delta;
+    if (offset == target)
        return sn;
   }
-  return NULL;
-}
