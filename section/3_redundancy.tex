@@ -65,14 +65,14 @@ Section \ref{sec:redundant_fix}.
 Informally, we use static analysis to identify a set of 
 memory-read instructions that the computation of code $C$
 depends on. We refer
-to these instructions as \textit{input} instructions for $C$. 
+to these instructions as \textit{input instructions} for $C$. 
 The values returned
-from them at run-time will be tracked and compared to identify
+from them at run-time, referred to as \textit{inputs}, 
+will be tracked and compared to identify
 redundant computation among different instances of $C$.
 
 Specifically, \Tool first identifies side-effect instructions in $C$,
-as 
-discussed in Section \ref{sec:s_workless}. 
+similar with that in Section \ref{sec:s_workless}. 
 It then conducts 
 backward static slicing 
 from these instructions, considering both control and data
@@ -492,7 +492,7 @@ prove to return the same value.
 Since we implement \Tool in LLVM, we leverage the SSA construction and the
 \textit{mem2reg} pass in LLVM to avoid unnecessary tracking of
 stack variables.
-For example, the read of \texttt{max} on line 12 of 
+For example, the read of \texttt{max} on line 10 of 
 Figure \ref{fig:Apache34464} is an \textit{input} instruction of the 
 \texttt{while} loop on the same line. LLVM identifies it as a loop invariant
 and lifts the read of \texttt{max}
