@@ -1,7 +1,7 @@
 \section{\Tool design}
 \label{sec:design}
 \Tool consists of a series of analysis that
-judges whether a given loop belongs to any root cause type discussed in
+judges whether a given loop belongs to any root-cause type discussed in
 Section \ref{sec:study_tax}.
 Its design
 follows the following principles.
@@ -25,6 +25,21 @@ performance problems have the unique nature of repetitiveness, which make
 them a natural fit for random sampling. We will design different
 sampling schemes for different analysis.
 \end{itemize}
+
+\paragraph{Usage scenario}
+Existing profilers and statistical debugging tool can
+identify suspicious loops that are most correlated with 
+certain performance 
+symptoms \cite{SongOOPSLA2014}. 
+\Tool will analyze
+these suspicious loops, identify which loop(s) is inefficient, why it is
+inefficient, and provide fix suggestions. This analysis could be
+conducted during in-house diagnosis, where failure-triggering inputs
+are available. It could also be conducted during production runs, with
+the run-time analysis component of \Tool running 
+at user sites.
+
+
 
 \subsection{Resultless Checker}
 \label{sec:workless}
