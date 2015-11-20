@@ -107,22 +107,22 @@ benchmarks, the real root-cause loops are ranked number 2, 2, 4, and 10.
    \midrule
    Mozilla347306                & \Yes                        & \Yes                                          \\
    Mozilla416628                & \Yes                        & \Yes                                         \\
-   Mozilla490742$_a$            & \Yes                        & \Yes                                             \\
-   Mozilla35294$_a$             & \Yes                          & \Yes                                              \\ 
-   Mozilla477564$_a$            & \Yes                          & \Yes                                            \\
+   Mozilla490742                & \Yes                        & \Yes                                             \\
+   Mozilla35294                 & \Yes                          & \Yes                                              \\ 
+   Mozilla477564                & \Yes                          & \Yes                                            \\
    \midrule 
    MySQL27287                   & \Yes                          & \ding{55}                                         \\
    MySQL15811                   & \Yes                          & \Yes                                      \\ 
    \midrule    
    Apache32546                  & \Yes                          & \Yes                                      \\
-   Apache37184$_a$              & \Yes                          & \Yes                                        \\
-   Apache29742$_a$              & \Yes                          & \Yes                                       \\ 
+   Apache37184                  & \Yes                          & \Yes                                        \\
+   Apache29742                  & \Yes                          & \Yes                                       \\ 
    Apache34464                  & \Yes                          & \Yes                                        \\
    Apache47223                  & \Yes                          & \Yes                                       \\
    \midrule
    GCC46401                     & \Yes                     & \Yes                                      \\
    GCC1687                      & \Yes                          & \Yes                                     \\
-   GCC27733$_a$                 & \Yes                          & \Yes                                     \\
+   GCC27733                     & \Yes                          & \Yes                                     \\
    GCC8805                      & \Yes                          & \Yes                                  \\
    GCC21430                     & \Yes                          & \Yes                                     \\
    GCC12322                     & \Yes                         & \ding{55}                                   \\
@@ -174,11 +174,11 @@ Overall, \Tool provides good diagnosis coverage, as shown in Table~\ref{tab:cove
 \Tool identifies the correct root cause for \textbf{all} 18 benchmarks, and 
 suggests fix strategies that exactly match what developers took in practice
 for 16 out of 18 cases. There are only two cases where \Tool fails to suggest
-the fix strategy that developers used. For MySQL27287, the root-cause loop
+the fix strategy that developers used. For MySQL\#27287, the root-cause loop
 is both cross-loop redundant and 0*1? inefficient. \Tool suggests both changing
 data structures and memoization as fix strategies. In practice, the developers
 find a new data structure that can eliminate both root causes.
-For GCC12322, \Tool correctly tells that the loop under study
+For GCC\#12322, \Tool correctly tells that the loop under study
 does not contain any form of inefficiency and produce results in every 
 iteration, and hence fails to suggest any fix strategy. In practice, GCC
 developers decide to skip the loop, which will cause some programs compiled by
@@ -200,22 +200,22 @@ that it is worthwhile considering the slow-down caused by the original loop.
    \midrule
    Mozilla347306         &   -                  & -                           & -                       & -                     &   -             & -\\
    Mozilla416628         &   -                  & -                           & -                       & -                     &   -             & -\\
-   Mozilla490742$_a$     &   -                  & -                           & -                       & -                     &   -             & -\\
-   Mozilla35294$_a$      &   -                  & -                           & -                       & -                     &   -             & -\\ 
-   Mozilla477564$_a$     &   -                  & -                           & -                       & -                     &   -             & -\\
+   Mozilla490742        &   -                  & -                           & -                       & -                     &   -             & -\\
+   Mozilla35294         &   -                  & -                           & -                       & -                     &   -             & -\\ 
+   Mozilla477564         &   -                  & -                           & -                       & -                     &   -             & -\\
    \midrule 
    MySQL27287            &   -                  & 0$_1$                       & -                       & -                     &   -             & 0$_1$\\
    MySQL15811            &   -                  & -                           & -                       & -                     &   -             & -\\ 
    \midrule    
    Apache32546           &   -                  & -                           & -                       & -                     &   -             & -\\
-   Apache37184$_a$       &   -                  & -                           & -                       & -                     &   -             & -\\
-   Apache29742$_a$       &   -                  & -                           & -                       & -                     &   -             & -\\ 
+   Apache37184           &   -                  & -                           & -                       & -                     &   -             & -\\
+   Apache29742       &   -                  & -                           & -                       & -                     &   -             & -\\ 
    Apache34464           &   -                  & -                           & -                       & -                     &   -             & -\\
    Apache47223           &   -                  & -                           & -                       & -                     &   -             & -\\
    \midrule
    GCC46401              &   -                  & 0$_1$                       & -                       & -                     &   -             & 0$_1$\\
    GCC1687               &   -                  & -                           & -                       & -                     &   -             & -\\
-   GCC27733$_a$          &   -                  & -                           & -                       & -                     &   -             & - \\
+   GCC27733            &   -                  & -                           & -                       & -                     &   -             & - \\
    GCC8805               &   -                  & 0$_2$                       & -                       & -                     &   -             & 0$_2$\\
    GCC21430              &   0$_1$              & 0$_3$                       & -                       & 0$_1$                 &   0$_1$         & 0$_6$\\
    GCC12322              &   0$_1$              & 0$_1$                       & -                       & 0$_1$                 &   0$_1$         & 0$_4$\\
@@ -259,7 +259,7 @@ to cause the corresponding performance problem.
 
 \Tool can also help improve the accuracy of statistical debugging in
 identifying which loop is the root cause loop.
-For example, the real root-cause loop of Apache34464 and GCC 46401 both
+For example, the real root-cause loop of Apache\#34464 and GCC\#46401 both
 rank number two by the statistical performance diagnosis tool.
 Fortunately,
 \Tool can tell that the number one loops in both cases do not contain
@@ -288,7 +288,7 @@ any form of inefficiency, resultless or redundancy.
     \midrule
       GCC46401    & 3.12\%         & 3.80\%            &  5.95\%        & 21.07{\bf X}  & 38.44{\bf X}\\ 
       GCC1687     & -              & /                 &  $\sim$0       &   /           & 142.29{\bf X} \\
-      GCC27733$_a$    & $\sim$0        & /                 &  4.73\%        &   /           & 17.41{\bf X}     \\
+      GCC27733    & $\sim$0        & /                 &  4.73\%        &   /           & 17.41{\bf X}     \\
       GCC8805     & -              & $\sim$0           & $\sim$0        & 2.22{\bf X}   &  3.52{\bf X}\\
       GCC21430    & -              & 5.46\%            &   0.69\%       & 107.20{\bf X} & 159.89{\bf X} \\
       GCC12322    & -              & 1.75\%            &  $\sim$0       & 21.07{\bf X}  & 38.44{\bf X} \\
@@ -342,7 +342,7 @@ any form of inefficiency, resultless or redundancy.
 
 As shown in Table \ref{tab:performance}, 
 the performance of \Tool is good. The overhead is consistently under or around 5\% 
-except for one benchmark, Mozilla347306. We believe \Tool is promising for potential production
+except for one benchmark, Mozilla\#347306. We believe \Tool is promising for potential production
 run usage.
 We can easily further lower the overhead through sparser sampling.
 As we will discuss later, 
@@ -359,7 +359,7 @@ Without sampling, even with all the static optimization, redundancy
 analysis lead to over 100X slowdown for five benchmarks.
 
 The benefit of static optimization is also non-trivial. 
-For example, for MySQL15811 and MySQL27287, static analysis alone can
+For example, for MySQL\#15811 and MySQL\#27287, static analysis alone can
 judge that they do not contain cross-iteration redundancy: the computation of 
 each iteration depends on loop induction variables, which are natually different
 in different iterations. Consequently, run-time overhead is completely
@@ -381,17 +381,17 @@ results. Due to space constraints, we briefly summarize the results below.
 
 When we lower the sampling rate from 1/100 to 1/1000 
 in cross-loop redundancy analysis,
-Mozilla347306 still incurs the largest overhead (0.49\%). 
+Mozilla\#347306 still incurs the largest overhead (0.49\%). 
 The diagnosis results remain the same for all but
-GCC8805 and GCC12322, where too few samples are available
+GCC\#8805 and GCC\#12322, where too few samples are available
 to judge redundancy.
 
 When we lower the sampling rate from 1/1000 to 1/10000
 in cross-iteration redundancy analysis,
-Mozilla347306 has the largest overhead (4.47\%). 
+Mozilla\#347306 has the largest overhead (4.47\%). 
 %In fact, Mozilla347306 is the only one whose overhead is larger than 2\%. 
 The diagnosis results remain 
-the same for all but GCC12322.
+the same for all but GCC\#12322.
 %If we increase the sampling rate to 1/100, we will 
 %have two benchmarks whose overhead is larger than 30\%.
 
