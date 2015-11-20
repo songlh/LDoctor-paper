@@ -151,10 +151,13 @@ bug bugs. We use these inputs in our run-time analysis.
 As discussed in Section \ref{sec:design}, our analysis contains 
 several configurable thresholds. In our evaluation,
 we use 0.001 as the \textit{resultful rate} threshold for identifying
-0*1? loops, 0.01 as the \textit{resultful rate} threshold for identifying 
-[0$|$1]* loops, 0.5 as the \textit{cross-loop redundancy rate}, and 
-2 as the \textit{cross-iteration redundancy rate} (i.e., 
-the number of distinct iterations is less than half of the total iterations).
+0*1? 
+%loops, 0.01 as the \textit{resultful rate} threshold for identifying 
+and [0$|$1]* resultless loops; we use 
+0.5 as the \textit{redundancy rate} threshold for identifying redundant loops.
+%, and 
+%2 as the \textit{cross-iteration redundancy rate} (i.e., 
+%the number of distinct iterations is less than half of the total iterations).
 
 All the analysis and performance results presented below regarding
 cross-loop analysis is obtained using $1/100$ sampling rate; all the
@@ -216,7 +219,7 @@ that it is worthwhile considering the slow-down caused by the original loop.
    GCC46401              &   -                  & 0$_1$                       & -                       & -                     &   -             & 0$_1$\\
    GCC1687               &   -                  & -                           & -                       & -                     &   -             & -\\
    GCC27733            &   -                  & -                           & -                       & -                     &   -             & - \\
-   GCC8805               &   -                  & 0$_2$                       & -                       & -                     &   -             & 0$_2$\\
+   GCC8805               &   -                  & 0$_1$                       & -                       & -                     &   -             & 0$_1$\\
    GCC21430              &   0$_1$              & 0$_3$                       & -                       & 0$_1$                 &   0$_1$         & 0$_6$\\
    GCC12322              &   0$_1$              & 0$_1$                       & -                       & 0$_1$                 &   0$_1$         & 0$_4$\\
 \bottomrule
@@ -238,8 +241,8 @@ problems are \textit{not} fixed by developers in their performance patches.
 
 There are several reasons for these benign performance problems. 
 The main reason is that they are not the main contributor to the 
-performance problem perceived by the users. This happens to 12 out of the
-14 benign cases. In fact, this is not really a problem for \Tool in 
+performance problem perceived by the users. This happens to 11 out of the
+13 benign cases. In fact, this is not really a problem for \Tool in 
 real usage scenarios, because statistical debugging can accurately
 tell that these loops are not top contributors to the performance
 problems.
@@ -255,7 +258,6 @@ all of them as inefficient (i.e., 0*1? resultless). Fortunately,
 \Tool run-time analysis counts the total number of loop iterations and
 correctly identifies three of them as truly inefficient and severe enough
 to cause the corresponding performance problem.
-%TODO a table 6 was deleted from oopsla submission
 
 \Tool can also help improve the accuracy of statistical debugging in
 identifying which loop is the root-cause loop.
@@ -397,18 +399,21 @@ the same for all but GCC\#12322.
 
 \paragraph{Resultful and redundancy rate}
 Since the severity of resultless and redundant loops depends on
-workload, it is natural that \Tool uses thresholds in its diagnosis.
-Intuitively, changing these thresholds affects the
-false positive and false negative of \Tool. For example, 
-if we change the cross-iteration redundancy rate from the default 2
-to 4, \Tool incurs 1 more false negative and 1 fewer false positive.
+workload, it is natural that \Tool uses two thresholds in its diagnosis.
+In fact, the diagnosis results are largely insensitive to the threshold
+setting. For example, the results would remain the same when
+changing the redundancy rate threshold from 0.5 to any value between about
+0.1 and 0.66. We will have 1 more false negative and 1 fewer benign report, 
+when the rate is 0.75. The trend is similar for resultless
+loop checking. 
 
-Our default setting is obtained based on our experience
-and should work for many problems.
-Developers can adjust these thresholds based on their
-need. They can even get rid of all threshods, and only
+Our default setting %is obtained based on our experience
+should work for many problems.
+Developers can adjust these thresholds. 
+They can even get rid of threshods, and only
 use the raw values of resultful/redundancy rates to understand
-the absolute and relative resultless/redundancy nature of suspicious 
-loops. 
+the absolute and relative (in)efficiency nature of suspicious 
+loops. Based on our experiments, the difference between efficient and inefficient
+loops is usually obvious, based on these rates.
 
 
