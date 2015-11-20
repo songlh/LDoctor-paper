@@ -205,12 +205,10 @@ iterations, loop instances, and so on.
 %We record a delimiter, loop instance number and values defined in previous iterations in block H1'.
 %Since we only consider redundant iterations from the same loop instance,  
 %we do not record values defined outside the loop for cross-iteration redundancy. 
-
-
 Once the trace under problematic workload is collected either during
-off-line debugging or during production runs, 
+off-line debugging or production runs, 
 \Tool will process the trace and decide
-whether the loops under study contain cross-iteration redundancy or 
+whether the loops under study contain cross-iteration or 
 cross-loop redundancy. We will first present our high-level algorithms, followed
 by the exact implementation in our prototype.
 
@@ -322,15 +320,15 @@ The key of this implementation is
 to judge whether two dynamic loop instances $l_1$ and $l_2$ 
 are redundant or not.
 The challenge is that $l_1$ and $l_2$ may have executed different numbers of
-iterations; in different iterations, different sets of source instructions
+iterations; in different iterations, different sets of input instructions
 may have executed. Therefore, we cannot simply chain values from different
 input instructions and iterations together and compare two data sequences.
-Instead, we decide to check the redundancy for each source instruction across
+Instead, we decide to check the redundancy for each input instruction across
 $l_1$ and $l_2$ first, and then use the average \textit{redundancy rate} of
-all source instructions as the \textit{cross-loop redundancy rate} between
+all input instructions as the \textit{cross-loop redundancy rate} between
 $l_1$ and $l_2$. 
 
-We calculate the redundancy for one source instruction $I$ by normalizing the
+We calculate the redundancy for one input instruction $I$ by normalizing the
 edit-distance between the two sequences of values returned by $I$ in the two
 loop instances. The exact formula is the following:
 
@@ -388,18 +386,25 @@ redundancy value.
 %\label{fig:CL-I}
 %\end{figure}
 
-Recording values returned by every source instruction would lead to 
-huge run-time overhead. To lower the overhead,
-we use random sampling to reduce the number of instructions that we
-track at run time. Due to the repetitive nature of performance bugs,
-we will still be able to recognize redundant 
-computation as long as the sampling rate is not too sparse, which
-we will evaluate
-in Section \ref{sec:experiment}. 
-Our sampling scheme requires almost no changes to our redundancy 
+Recording values returned by every input instruction would lead to 
+huge run-time overhead.
+\Tool uses random sampling to reduce this overhead, which 
+requires almost no changes to our redundancy 
 identification algorithm discussed in Section \ref{sec:cal}.
 
-
+Note that, \Tool leverages sampling to gain performance with \textbf{no}
+sacrifice to diagnosis latency or quality, which is
+\textbf{different} from traditional sampling techniques
+for diagnosing correctness failures \cite{liblit03,liblit05}, where
+many more failure runs and hence longer diagnosis latency
+are needed to compensate for the performance gain.
+Performance bugs have a unique repetitive nature:
+a loop can cause a severe performance problem only when it 
+contains many redundant iterations/instances.
+Therefore, we can still recognize redundant behavior in just
+\textbf{one} failure run, 
+as long as the sampling is not insanely sparse
+(Section \ref{sec:experiment}). 
 %Another observation, which can also be demonstrated by examples shown in Figure~\ref{fig:Mozilla477564} and Figure~\ref{fig:Apache34464}, 
 %is that two consecutive loop instances are good targets to compare.
 
