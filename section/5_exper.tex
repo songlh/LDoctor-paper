@@ -129,7 +129,9 @@ benchmarks, the real root-cause loops are ranked number 2, 2, 4, and 10.
 \bottomrule
    \end{tabular}
   %\nocaptionrule
+\vspace{-0.1in}
   \caption{Coverage Results.}
+\vspace{-0.1in}
   \label{tab:cover}
 \end{table}
 
@@ -386,7 +388,7 @@ When we lower the sampling rate from 1/100 to 1/1000
 in cross-loop redundancy analysis,
 Mozilla\#347306 still incurs the largest overhead (0.49\%). 
 The diagnosis results remain the same for all but
-GCC\#8805 and GCC\#12322, where too few samples are available
+GCC\#12322, where too few samples are available
 to judge redundancy.
 
 When we lower the sampling rate from 1/1000 to 1/10000
@@ -404,8 +406,8 @@ workload, it is natural that \Tool uses two thresholds in its diagnosis.
 In fact, the diagnosis results are largely insensitive to the threshold
 setting. For example, the results would remain the same when
 changing the redundancy rate threshold from 0.5 to any value between about
-0.1 and 0.7. We will have 1 more false negative and 1 fewer benign false positive, 
-when the rate is 0.75. The trend is similar for resultless
+0.1 and 0.66. We will have 1 more false negative and 1 fewer benign false positive, 
+when the rate is 0.7. The trend is similar for resultless
 loop checking. 
 
 Our default setting %is obtained based on our experience

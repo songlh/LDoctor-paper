@@ -392,13 +392,13 @@ huge run-time overhead.
 requires almost no changes to our redundancy 
 identification algorithm discussed in Section \ref{sec:cal}.
 
-Note that, \Tool leverages sampling to gain performance with \textbf{no}
+Note that, \Tool leverages sampling to gain performance with almost \textbf{no}
 sacrifice to diagnosis latency or quality, which is
 \textbf{different} from traditional sampling techniques
 for diagnosing correctness failures \cite{liblit03,liblit05}, where
 many more failure runs and hence longer diagnosis latency
 are needed to compensate for the performance gain.
-Performance bugs have a unique repetitive nature:
+The reason is that performance bugs have a unique repetitive nature:
 a loop can cause a severe performance problem only when it 
 contains many redundant iterations/instances.
 Therefore, we can still recognize redundant behavior in just
