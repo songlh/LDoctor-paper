@@ -225,6 +225,7 @@ that it is worthwhile considering the slow-down caused by the original loop.
 \bottomrule
    \end{tabular}
   %\nocaptionrule
+\vspace{-0.1in}
   \caption{False positives of \Tool for top 5 loops reported by 
     statistical debugging for each benchmark. `-': no false positive. $x_y$: real ($x$) and benign false positives ($y$).
 }
@@ -251,12 +252,12 @@ identified redundant/resultless problems
 are very difficult and hence developers decide not to fix them.
 
 The accuracy of \Tool benefits from its run-time analysis.
-For example, there are seven benchmarks in total that each contains
-one loop, which generates side effect only
+For example, there are 7 benchmarks in total that each contains
+a loop that generates side effect only
 in its last iteration. Without run-time information, \Tool would judge
-all of them as inefficient (i.e., 0*1? resultless). Fortunately,
-\Tool run-time analysis counts the total number of loop iterations and
-correctly identifies three of them as truly inefficient and severe enough
+all of them as inefficient (0*1? resultless). Fortunately,
+\Tool run-time counts the total number of iterations and
+correctly identifies 3 of them as truly inefficient and severe enough
 to cause the corresponding performance problem.
 
 \Tool can also help improve the accuracy of statistical debugging in
@@ -363,7 +364,7 @@ analysis lead to over 100X slowdown for five benchmarks.
 The benefit of static optimization is also non-trivial. 
 For example, for MySQL\#15811 and MySQL\#27287, static analysis alone can
 judge that they do not contain cross-iteration redundancy: the computation of 
-each iteration depends on loop induction variables, which are natually different
+each iteration depends on loop induction variables, which are naturally different
 in different iterations. Consequently, run-time overhead is completely
 eliminated for these two benchmarks.
 As another example, the buggy loops of MySQL\#27287 and MySQL\#15811 access 
@@ -403,14 +404,14 @@ workload, it is natural that \Tool uses two thresholds in its diagnosis.
 In fact, the diagnosis results are largely insensitive to the threshold
 setting. For example, the results would remain the same when
 changing the redundancy rate threshold from 0.5 to any value between about
-0.1 and 0.66. We will have 1 more false negative and 1 fewer benign report, 
+0.1 and 0.7. We will have 1 more false negative and 1 fewer benign false positive, 
 when the rate is 0.75. The trend is similar for resultless
 loop checking. 
 
 Our default setting %is obtained based on our experience
 should work for many problems.
 Developers can adjust these thresholds. 
-They can even get rid of threshods, and only
+They can even get rid of thresholds, and only
 use the raw values of resultful/redundancy rates to understand
 the absolute and relative (in)efficiency nature of suspicious 
 loops. Based on our experiments, the difference between efficient and inefficient
