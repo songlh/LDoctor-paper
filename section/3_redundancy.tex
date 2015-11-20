@@ -2,11 +2,11 @@
 \label{sec:redundant}
 
 \subsubsection{Design overview}
-At high level, we will compare the computation of different iterations
+We will compare the computation of different iterations
 from one loop instance and that of different loop instances from 
-one static loop, 
-and judge whether there exists redundancy.
-Specifically, our design needs to answer several questions.
+one static loop,
+and judge whether there is redundancy.
+Specifically, several questions need to be answered.
 
 \emph{What to compare?}
 Given two loop iterations (or loop instances) $c_1$ and $c_2$, since they 
@@ -44,10 +44,11 @@ We will discuss how we handle this issue in Section \ref{sec:cal}.
 
 
 \emph{How to lower the overhead of record-and-compare?}
-We will use both static optimization and dynamic sampling
-to reduce the amount of data that we need to record and compare, lowering
-time and spatial overhead. Details will be presented in 
-Section \ref{sec:inst} and \ref{sec:perf}.
+We will use both static optimization 
+(Section \ref{sec:perf})
+and dynamic sampling (Section \ref{sec:inst})
+to reduce the amount of data that is recorded and compared, reducing
+time and spatial overhead.
 %TODO static analysis alone is not sufficient, because some redundant is
 %workload dependent
 
@@ -263,10 +264,10 @@ are doing redundant work.
 
 
 
-For cross-loop redundancy, we need to answer similar questions.
-How to judge whether two loop instances are doing redundant work ---
-should they contain exactly the same number of iterations and doing exactly
-the same computation in each iteration?
+For cross-loop redundancy, we need to answer similar questions:
+how to judge whether two loop instances are doing redundant work?
+%should they contain exactly the same number of iterations and doing exactly
+%the same computation in each iteration?
 %Second, is a (static) loop problematic when it contains two instances that
 %are redundant with each other?
 
