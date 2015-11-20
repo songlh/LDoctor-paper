@@ -19,20 +19,25 @@ whether and what kind of computation inefficiency exists.
 
 Recently, tools that go beyond profiling and provide more automated analysis
 have been proposed.
-StackMine~\cite{Han:2012:PDL:2337223.2337241} can
-identify slow call-stack patterns inside event handlers. The work by
+StackMine~\cite{Han:2012:PDL:2337223.2337241} 
+identifies slow call-stack patterns inside event handlers. The work by
 \citet{TaoAsplos2014} analyzes system traces to understand 
 performance impact propagation and 
-causality relationship among different system components. 
+causality relationship among system components. 
 X-ray~\cite{Attariyan:2012:XAR:2387880.2387910} helps identify inputs
 or configuration entries that are most responsible for performance problems.
+Coz~\cite{coz.sosp15} can estimate the performance impact of any
+potential optimization at any point of a multi-threaded program.
 Although these techniques are all very useful, 
-they target different problems from \Tool. \Tool targets 
+they target different problems from \Tool. 
+\comment{
+\Tool targets 
 inefficient loops, a common
 inefficiency problem that contributes to
 about two thirds of real-world user-perceived performance problems studied
 by previous work \cite{SongOOPSLA2014}, and tries to pin-point the exact
 root cause and provide fix-strategy suggestions.
+}
 
 \Tool is most related to
 the recent statistical performance debugging work
@@ -43,8 +48,7 @@ a performance symptom through statistical analysis,
 but cannot answer whether or 
 what type of inefficiency this loop contains.
 \Tool complements it by
-providing detailed root cause information and fix strategy suggestions through
-program analysis. 
+providing detailed root cause information and fix strategy suggestions.
 
 \subsection{Performance Bug Detection}
 
@@ -71,7 +75,7 @@ categories and is more aggressive in identifying root-cause categories, because
 it is only applied to a small number of loops that are known to be highly
 correlated with the specific performance symptom under study.
 Performance-bug detection tools has to be more conservative and tries hard
-to lower false positive rates, because it needs to apply its analysis to the
+to lower false positive rates, because it needs to process the
 whole program, instead of just a few loops. This requirement causes bug
 detection tools to each focus on a specific root-cause category.
 %In fact, most inefficient loops in our study are very difficult to be detected

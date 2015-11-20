@@ -14,8 +14,7 @@
   \newcommand{\No}[0]{-}
   \begin{tabular}{lcccc}
     \toprule
-                         &      	   &                        & {\bf Root}   &          \\
-   {\bf BugID}           &  {\bf KLOC}     &  {\bf P. L.}           & {\bf Cause}  & {\bf Fix}\\
+   {\bf BugID}           &  {\bf KLOC}     &  {\bf P. L.}           & {\bf RootCause}  & {\bf Fix}\\
    \midrule
    Mozilla347306         & 88              & C                      &  0*1?        & C     \\
    Mozilla416628         & 105             & C                      &  0*1?        & C     \\
@@ -76,29 +75,22 @@ shown in Table~\ref{tab:benchmarks}.
 
 \paragraph{Metrics}
 Our experiments are designed to evaluate \Tool from three main aspects:
-\begin{itemize}
-\item Coverage. Given our benchmark suite that covers a wide variety
+(1) 
+\textit{Coverage}. Given our benchmark suite that covers a wide variety
 of real-world root causes, can \Tool identify all those root causes?
-\vspace{-0.05in}
-
-\item Accuracy. 
+(2)
+\textit{Accuracy}. 
 When analyzing non-buggy loops, will \Tool generate any false positives?
-\vspace{-0.05in}
-
-\item Performance. 
+(3) 
+\textit{Performance}.
 What is the run-time overhead of \Tool?
-\end{itemize}
 
 \paragraph{Evaluation settings}
-The imagined usage scenario of \Tool is that one will apply \Tool to identify
-detailed root causes and provide fix-strategy suggestion for a small number of
-suspicious loops that are most correlated with the specific performance problem.
-
 Our evaluation uses existing statistical performance diagnosis
 tool \cite{SongOOPSLA2014} to process a performance problem and identify 
 one or a few suspicious loops for \Tool to analyze.
-For 14 out of the 18 benchmarks, statistical performance debugging identifies the
-real root-cause loop as the top ranked suspicious loop. For the remaining
+For 14 out of the 18 benchmarks, statistical debugging identifies the
+real root-cause loop as the most suspicious loop. For the remaining
 benchmarks, the real root-cause loops are ranked number 2, 2, 4, and 10.
 %Overall, we believe future tools can accurately identify the most one or a couple
 %of suspicious loops.
@@ -158,8 +150,8 @@ bug bugs. We use these inputs in our run-time analysis.
 
 As discussed in Section \ref{sec:design}, our analysis contains 
 several configurable thresholds. In our evaluation,
-we use 0.001 as the \textit{resultless rate} threshold for identifying
-0*1? loops, 0.01 as the \textit{resultless rate} threshold for identifying 
+we use 0.001 as the \textit{resultful rate} threshold for identifying
+0*1? loops, 0.01 as the \textit{resultful rate} threshold for identifying 
 [0$|$1]* loops, 0.5 as the \textit{cross-loop redundancy rate}, and 
 2 as the \textit{cross-iteration redundancy rate} (i.e., 
 the number of distinct iterations is less than half of the total iterations).
@@ -171,6 +163,10 @@ rate. We use sparser sampling rate in the latter case, because there tend to
 be more loop iterations than loop instances.
 All our diagnosis results require only \textbf{one} run under the 
 problem-triggering input.
+
+More discussions about all the parameters/thresholds presented above, including
+how to set them and how sensitive they are, are discussed in Section
+\ref{sec:sensi}. 
 
 \subsection{Coverage Results}
 \label{sec:coverage}
@@ -188,10 +184,7 @@ iteration, and hence fails to suggest any fix strategy. In practice, GCC
 developers decide to skip the loop, which will cause some programs compiled by
 GCC
 to be less performance-optimal than before. However, GCC developers feel
-that it is worthwhile considering the performance impact of the original loop
-to the GCC compilation process.
-Providing this type of
-fix strategy suggestion goes beyond the capability of \Tool.
+that it is worthwhile considering the slow-down caused by the original loop.
 
 \subsection{Accuracy Results}
 \label{sec:result_acc}
@@ -229,8 +222,8 @@ fix strategy suggestion goes beyond the capability of \Tool.
 \bottomrule
    \end{tabular}
   %\nocaptionrule
-  \caption{False positives of \Tool, when applying to top 5 loops reported by 
-    statistical performance diagnosis for each benchmark. `-': no false positive. $x_y$: $x$ real false positives and $y$ benign ones.
+  \caption{False positives of \Tool for top 5 loops reported by 
+    statistical debugging for each benchmark. `-': no false positive. $x_y$: real ($x$) and benign false positives ($y$).
 }
   \label{tab:top5}
 \end{table}
@@ -255,20 +248,22 @@ identified redundant/resultless problems
 are very difficult and hence developers decide not to fix them.
 
 The accuracy of \Tool benefits from its run-time analysis.
-For example, 4 benchmarks contain loops that only generate side-effect
-in the last iteration among their top 5 suspicious loops. However,
-these loops are actually not inefficient because the portion of
-resultless iterations is small. 
+For example, there are seven benchmarks in total that each contains
+one loop, which generates side effect only
+in its last iteration. Without run-time information, \Tool would judge
+all of them as inefficient (i.e., 0*1? resultless). Fortunately,
+\Tool run-time analysis counts the total number of loop iterations and
+correctly identifies three of them as truly inefficient and severe enough
+to cause the corresponding performance problem.
 %TODO a table 6 was deleted from oopsla submission
 
-The good accuracy of \Tool can actually help improving the accuracy of
+\Tool can also help improve the accuracy of statistical debugging in
 identifying which loop is the root cause loop.
 For example, the real root-cause loop of Apache34464 and GCC 46401 both
 rank number two by the statistical performance diagnosis tool.
+Fortunately,
 \Tool can tell that the number one loops in both cases do not contain
-any form of inefficiency, resultless or redundancy. This result can
-potentially used to improve the accuracy of identifying root cause loops.
-
+any form of inefficiency, resultless or redundancy. 
 
 \subsection{Performance}
 \label{sec:result_perf}
@@ -302,7 +297,7 @@ potentially used to improve the accuracy of identifying root cause loops.
   %\nocaptionrule
   \caption{Run-time overhead of applying \Tool to the buggy loop
     (only non-extracted benchmarks are shown). 
-  -: dynamic analysis is not conducted, as static analysis is sufficient.
+  -: dynamic analysis is not needed;
   /: not applicable.}
   \label{tab:performance}
 \end{table}
@@ -348,45 +343,72 @@ potentially used to improve the accuracy of identifying root cause loops.
 As shown in Table \ref{tab:performance}, 
 the performance of \Tool is good. The overhead is consistently under or around 5\% 
 except for one benchmark, Mozilla347306. We believe \Tool is promising for potential production
-run usage. Of course, if we apply \Tool to multiple loops simultaneously,
-the overhead will be higher. However, the current results are obtained by running the
-program only \textbf{once} under the problem-triggering workload. The sampling nature
-of \Tool will allow us to keep the overhead low at the exchange of running the program for
-a couple of more times, if needed.
+run usage.
+We can easily further lower the overhead through sparser sampling.
+As we will discuss later, 
+the current diagnosis results are obtained by running the
+program only \textbf{once} under the problem-triggering workload.
+If we use sparser sampling, more failure runs will be needed to obtain good
+diagnosis results.
 
 As we can also see from the table, our performance optimization discussed in 
-Section \ref{sec:inst} and \ref{sec:perf} has contributed
-a lot to the good performance of \Tool.
+Section \ref{sec:inst} and \ref{sec:perf} has helped.
 
-Without sampling, while still applying our static optimization, our redundancy
-analysis would lead to over 100X slowdown for five benchmarks.
+The performance benefit of sampling is huge.
+Without sampling, even with all the static optimization, redundancy
+analysis lead to over 100X slowdown for five benchmarks.
 
-The buggy loops of MySQL\#27287 and MySQL\#15811 access arrays. 
+The benefit of static optimization is also non-trivial. 
+For example, for MySQL15811 and MySQL27287, static analysis alone can
+judge that they do not contain cross-iteration redundancy: the computation of 
+each iteration depends on loop induction variables, which are natually different
+in different iterations. Consequently, run-time overhead is completely
+eliminated for these two benchmarks.
+As another example, the buggy loops of MySQL\#27287 and MySQL\#15811 access 
+arrays. 
 After changing to tracking the initial and ending memory-access addresses
 of the array, instead of the content of the whole array accesses,
 the overhead is reduced from 11.77\% to 1.66\% for MySQL\#27287, 
 and from 20.46\% to 0.03\% for MySQL\#15811 respectively 
 (sampling is conducted consistently here). 
 
-The side-effect of the buggy loop for MySQL15811 is to calculate the length of a string. 
-The variable representing the length is an induction variable. 
-The side-effect of the buggy loop for MySQL27287 is to calculate the index of a searched target, 
-and the variable representing the index is also an induction variable. 
-We can reply on static analysis to figure out that these two loops are not cross-iteration redundant.
+\subsection{Parameter Setting and Sensitivity}
+\label{sec:sensi}
+\paragraph{Sampling rates}
+We have tried different sampling rates for redundancy analysis.
+Intuitively, sparser sampling leads to lower overhead but worse diagnosis
+results. Due to space constraints, we briefly summarize the results below.
 
-We also tried sampling with different sampling rates.
-For cross-loop redundancy, we also conduct experiments under sampling rate 1
-out of 1000. 
-Both run-time overhead and collected sample will be reduced. Mozilla347306 
-is still the benchmark with largest overhead, but the overhead is reduced to 0.49\%. For two benchmarks, GCC8805 and GCC12322, we cannot sample 
-more than 10 loop instances and hence cannot draw strong conclusion
-about their root-cause type. For all other benchmarks, we can 
-still have more than 10 loop instances and get exactly the same 
-root-cause analysis results presented above.
+When we lower the sampling rate from 1/100 to 1/1000 
+in cross-loop redundancy analysis,
+Mozilla347306 still incurs the largest overhead (0.49\%). 
+The diagnosis results remain the same for all but
+GCC8805 and GCC12322, where too few samples are available
+to judge redundancy.
 
-We also conduct cross-iteration redundant experiment under different sampling rates. When the sampling rate is 1 out of 100, there are two benchmarks, whose runtime overhead is larger than 30\%. The overhead for Mozilla347306 is 59.57\%, 
-and the overhead of GCC21430 is 30.65\%. When changing sampling rate to 1
-out of 10000, Mozilla347306 has the largest overhead, which is 4.47\%. And mozilla347306 is the only one whose overhead is larger than 2\%. Except for 
-GCC12322, all other benchmarks will have more than 100 iterations sampled, under the sample rate is 1 out of 10000. Consequently, the same root-cause
-analysis results will be reported for these benchmarks as the ones presented
-above.
+When we lower the sampling rate from 1/1000 to 1/10000
+in cross-iteration redundancy analysis,
+Mozilla347306 has the largest overhead (4.47\%). 
+%In fact, Mozilla347306 is the only one whose overhead is larger than 2\%. 
+The diagnosis results remain 
+the same for all but GCC12322.
+%If we increase the sampling rate to 1/100, we will 
+%have two benchmarks whose overhead is larger than 30\%.
+
+\paragraph{Resultful and redundancy rate}
+Since the severity of resultless and redundant loops depends on
+workload, it is natural that \Tool uses thresholds in its diagnosis.
+Intuitively, changing these thresholds affects the
+false positive and false negative of \Tool. For example, 
+if we change the cross-iteration redundancy rate from the default 2
+to 4, \Tool incurs 1 more false negative and 1 fewer false positive.
+
+Our default setting is obtained based on our experience
+and should work for many problems.
+Developers can adjust these thresholds based on their
+need. They can even get rid of all threshods, and only
+use the raw values of resultful/redundancy rates to understand
+the absolute and relative resultless/redundancy nature of suspicious 
+loops. 
+
+

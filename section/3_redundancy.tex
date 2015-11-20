@@ -69,9 +69,9 @@ The values returned
 from them at run-time will be tracked and compared to identify
 redundant computation among different instances of $C$.
 
-Specifically, \Tool first identifies side-effect instructions in $C$.
-%, as 
-%discussed in Section \ref{sec:s_workless}. 
+Specifically, \Tool first identifies side-effect instructions in $C$,
+as 
+discussed in Section \ref{sec:s_workless}. 
 It then conducts 
 backward static slicing 
 from these instructions, considering both control and data
@@ -478,29 +478,30 @@ sampling decisions in the loop pre-headers.
 We conduct a series of static analysis to reduce the number of instructions we 
 need to monitor. 
 
-First, we identify and avoid monitoring memory reads whose return values can be 
-statically proved to
-not change throughout one loop instance
-or multiple loop instances. 
-Since we implement \Tool at LLVM byte-code level, the majority of this
-analysis is already done by LLVM, which lifts loop-invariant memory
-accesses out of loops. 
+First, we avoid tracking multiple read instructions that we can statically 
+prove to return the same value.
+Since we implement \Tool in LLVM, we leverage the SSA construction and the
+\textit{mem2reg} pass in LLVM to avoid unnecessary tracking of
+stack variables.
 For example, the read of \texttt{max} on line 12 of 
 Figure \ref{fig:Apache34464} is an \textit{input} instruction of the 
 \texttt{while} loop on the same line. LLVM identifies it as a loop invariant
 and lifts the read of \texttt{max}
 out of the loop. Consequently, \Tool only records
-its value once during each loop, not each iteration.
-However, LLVM does not apply its loop-invariant analysis to heap and global
-variables, so \Tool conducts some extra analysis --- it identifies those
-memory reads \texttt{read(v)}, where the address of \texttt{v} 
-is a loop invariant and no instructions 
-inside the loop can possibly write to that address. 
-For example, \Tool can identify that the values of
+its value once during each loop, instead of each iteration.
+LLVM is conservative in lifting heap/global variables out of
+a loop, for fear of changing the location of potential exceptions, etc.
+\Tool conducts a best-effort
+loop invariant analysis for heap/global variables.
+For example, \Tool identifies that the values of
 \texttt{aNode->localName} and \texttt{aNode->namespaceURI} do not change
 throughout one loop instance
-in Figure~\ref{fig:Mozilla477564}. This analysis is sound but not complete.
-\Tool may miss some loop invariants. 
+in Figure~\ref{fig:Mozilla477564}, and hence only traces them once
+outside the loop. This analysis is sound but not complete.
+\Tool may miss some loop invariants. For in-house debugging, since we know
+the problem-triggering inputs do not lead to exceptions, this optimization
+is safe. For production-run usage, users can turn off this heap/global
+variable related optimization.
 
 Second, we leverage the scalar evolution analysis in LLVM to remove the 
 monitoring to some loop-induction related variables.
@@ -518,12 +519,10 @@ When the address of a memory read is a loop induction variable, such as
 \texttt{source[i]} on line 10 of Figure~\ref{fig:Apache34464},
 we only record the address range at run time (i.e., the start and the
 end), instead of every value returned by the memory read.
-Of course, this optimization could lead to false positives, reporting
-non-redundant loop computation as redundant.
-This may happen when the corresponding
-memory locations are modified across different loop instances.
-In that case, although different loop instances work on variables read from
-similar memory locations, the values they read are different.
+This optimization could lead to false positives ---
+different loop instances may work on variables read from
+similar memory locations but with different values.
+We did not encounter such false positives in our experiments.
 
 
 \subsubsection{Fix strategy recommendation}

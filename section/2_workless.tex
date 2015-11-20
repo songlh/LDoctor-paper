@@ -48,15 +48,20 @@ resultless at run time.
 \subsubsection{Static Analysis}
 \label{sec:s_workless}
 
-\Tool first identifies side-effect instructions that write to
-variables defined outside the loop. 
-\Tool analyzes all functions called
+\Tool considers two types of instructions as side-effect instructions:
+(1) write to heap or global variables;
+(2) write to a stack variable, defined outside the loop, and the update value
+may be used after the loop. The second condition is checked through liveness
+analysis.
+\Tool also analyzes all functions called
 by a loop directly or indirectly --- a function $F$ that updates variables
 defined outside $F$ makes the corresponding call statement in $F$'s
 caller a side-effect instruction.
 We consider all calls to library functions or through function pointers 
 as having side effects, 
 unless the library functions are specially marked by us in a white list.
+This analysis is complete, but not sound. We may identify side-effect
+instructions that are actually not.  
 
 \Tool then categorizes loops into four types.
 Given a natural loop $l$, when $l$
@@ -87,8 +92,11 @@ resultless at run time, which will help decide whether the loop worths fixing.
 
 For a 0*1? loop, since it only generates results in the last iteration, we 
 only need to know the total number of loop iterations 
-to figure out the 
-\textit{resultless rate} of the loop. The implementation is straightforward
+to figure out the loop
+\textit{resultful rate}, which we define as the ratio between
+the number of iterations with
+side effects and the total number of iterations. 
+The implementation is straightforward
 --- we initialize a local counter to be 0 in the pre-header of the loop; we 
 increase the counter by 1 in the loop header to count the number of 
 iterations; we dump that counter to log when the loop exits.

@@ -3,8 +3,7 @@ struct hash_entry {
 +  HOST_WIDE_UINT t;
 };
 
-void mult_alg(... HOST_WIDE_UINT t, ...)
-{
+void mult_alg(... HOST_WIDE_UINT t, ...) {
   hash_index = t ...;
   if (alg_hash[hash_index].t == t ...)
   {

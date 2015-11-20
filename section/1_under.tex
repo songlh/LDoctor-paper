@@ -47,6 +47,7 @@ They should simply be deleted from the program.
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true,numbers=left}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla347306.c}}
+\vspace{-0.05in}
 \caption{A resultless 0*1? bug in Mozilla}
 \label{fig:Mozilla347306}
 \end{figure}
@@ -95,6 +96,7 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC46401.c}}
+\vspace{-0.05in}
 \caption{A resultless [0$|$1]* bug in GCC }
 \label{fig:GCC46401}
 \end{figure}
@@ -176,6 +178,7 @@ conducted. They are further categorized below based on their redundancy unit.
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla477564.js}}
+\vspace{-0.05in}
 \caption{A cross-loop redundant bug in Mozilla }
 \label{fig:Mozilla477564}
 \end{figure}
@@ -338,7 +341,7 @@ As shown in Table \ref{tab:root},
 our taxonomy does cover all inefficient loops under study. 
 Resultless loops are about as common as redundant loops
 (24 vs. 21).
-Intuitively, 0* loops, where no iteration produces any results,
+Not surprisingly, 0* loops
 are rare in mature software. In fact, no bugs in this
 benchmark suite belong to this category.
 All other root-cause sub-categories are well represented.
