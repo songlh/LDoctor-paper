@@ -90,26 +90,39 @@ in fixing performance problems.
 \end{figure}
 
 Figure~\ref{fig:GCC27733} shows a performance bug in GCC. 
-Function \texttt{mult\_alg} is used to compute the best algorithm for 
-multiplying \texttt{t}. It is so time consuming that developers used a
+Function \texttt{mult\_alg} is a recursive function 
+that computes the best algorithm for 
+multiplying \texttt{t}, a time-consuming computation. 
+At run time, \texttt{mult\_alg} is often invoked for many times, and often
+with the same parameter partly due to its recursive nature.
+To avoid redundant computation across different instances of
+\texttt{mult\_alg} with the same parameter, developers used a
 hash-table
-\texttt{alg\_hash} to remember which \texttt{t} has been processed
+\texttt{alg\_hash} to remember which parameter \texttt{t} has been processed
 in the past and what is the result. 
 Unfortunately, a mistake in the type declaration of hash-table
-entry \texttt{hash\_entry} makes the memoization useless for large \texttt{t},
-severely hurting performance.
-In reality, developers easily figured out that
-\texttt{mult\_alg} is most correlated with the execution slowness, but
-spent several weeks to finally figure out \texttt{mult\_alg}, 
-containing 400 lines
-of code, is
-inefficient.
-%If a tool can tell them not only which loop\footnote{Recursive functions are
-%handled similarly as loops in this paper.}
-%is the root cause but also why a loop is inefficient (i.e., lot of redundant
-%computation and the need for better memoization in this example), 
-%the diagnosis and bug fixing
-%process would be much easier for developers. 
+entry \texttt{hash\_entry} makes the memoization useless for large \texttt{t}.
+In many cases, a slow path is taken, when the fast path should have been taken.
+This mistake does not affect software correctness, but it causes a large amount
+of redundant computation\footnote{This problem will be considered as 
+cross-loop redundancy later in this paper, as we consider
+recursive functions as a special case of loops.} 
+and hurts GCC performance severely,
+causing hundreds of times slow down for GCC test cases.
+
+Debugging this performance bug is challenging. According to 
+the discussion forum of GCC, developers identified
+\texttt{mult\_alg} as the most time-consuming function
+through profilers early on. However, developers did not figure out 
+whether \texttt{mult\_alg} is inefficient, which part of it is 
+inefficient (\texttt{mult\_alg} is a large function with about 400 lines of 
+code), and how it is inefficient, until several weeks later.
+
+If a tool can tell developers not only \emph{which} loop or function is
+responsible for execution slowness, but also \emph{why} and \emph{how}
+the loop/function is inefficient, 
+the diagnosis and bug fixing
+process would be much easier. 
 
 Clearly, more research is needed to improve the state of the art of performance
 diagnosis --- better diagnosis
