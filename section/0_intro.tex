@@ -104,8 +104,8 @@ Unfortunately, a mistake in the type declaration of hash-table
 entry \texttt{hash\_entry} makes the memoization useless for large \texttt{t}.
 In many cases, a slow path is taken, when the fast path should have been taken.
 This mistake does not affect software correctness, but it causes a large amount
-of redundant computation\footnote{This problem will be considered as 
-cross-loop redundancy later in this paper, as we consider
+of redundant computation\footnote{This will be considered as a
+loop-redundancy problem later in this paper, as we consider
 recursive functions as a special case of loops.} 
 and hurts GCC performance severely,
 causing hundreds of times slow down for GCC test cases.
@@ -140,17 +140,20 @@ inefficient loop problems, the most common type of performance problems
 %}
 
 First, figuring out a root-cause taxonomy for inefficient loops.
-Such a taxonomy is the prerequisite to developing a general and accurate
-diagnosis tool. Guided by a thorough study of 45 real-world inefficient
-loop problems, we come up with a hierarchical root-cause taxonomy for
-inefficient loops that are
 %Specifically, we consider \textit{resultless} and
 %\textit{redundancy} as two main categories of root causes for inefficient
 %loops, representing loops that spend effort without producing
 %any results or producing redundant results. They are further divided into
 %sub-categories based on the granularity of the resultless or redundant work. 
-general enough to cover
-common inefficient loops, and also specific enough to help developers understand
+Our taxonomy categorizes all inefficient loops into two main categories:
+\emph{resultless}, when a large amount of computation produces
+no side effect, and \emph{redundancy}, when a large amount of 
+computation produces already-available results.
+Each main category is then further divided to sub-categories.
+We have strived to make our taxonomy both general enough to cover
+common inefficient loops, and also specific enough to guide the failure
+diagnosis of \Tool, and eventually
+help developers understand
 and fix performance problems. More details are
 in Section \ref{sec:study}.
  
@@ -188,7 +191,9 @@ degrading diagnosis capability. Random sampling is a natural fit for performance
 diagnosis due to the repetitive nature of inefficient code, especially
 inefficient loops.
 
-We evaluated \Tool on 18 real-world performance problems. 
+We evaluated \Tool on \allbugs real-world performance problems,
+coming from two representative benchmark suites 
+\cite{SongOOPSLA2014,Alabama}. 
 Evaluation results show that \Tool can accurately identify detailed
 root cause for all benchmarks and provide correct fix-strategy suggestion for
-16 benchmarks. All of these are achieved with low run-time overhead.
+most benchmarks. All of these are achieved with low run-time overhead.
