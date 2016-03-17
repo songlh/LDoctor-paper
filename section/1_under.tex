@@ -32,16 +32,20 @@ using real-world performance-bug suite in Section \ref{sec:eval_taxonomy}.
 
 \subsection{Resultless loops}
 \label{sec:study_resultless}
-A resultless loop spends a lot of time in computation without
-producing results useful after the loop.
-It is further categorized based on which loop iterations are
-(not) producing useful results.
+Resultless loops spend a lot of time in computation that does not
+produce results useful after the loop (i.e., computation without side effects).
+They can be further categorized to four sub-types 
+based on which part of the loop is
+(not) producing useful results. We explain these four sub-types below, 
+as well as
+how they can be fixed.
 
 
 {\textbf{0*}}: 
 This type of loops never produce any results in any iteration.
 They are rare in mature software systems.
-They should simply be deleted from the program.
+
+{\textit{How to fix?}} This type of loops should simply be deleted from the program.
 %Question: dynamic or static?
 
 \begin{figure}
@@ -49,7 +53,6 @@ They should simply be deleted from the program.
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true,numbers=left}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla347306.c}}
-\vspace{-0.05in}
 \caption{A resultless 0*1? bug in Mozilla}
 \label{fig:Mozilla347306}
 \end{figure}
@@ -64,7 +67,12 @@ fixed by data-structure changes.
 An example is shown in Figure \ref{fig:Mozilla347306}.
 Large JavaScript files often fill the \texttt{script} list with 
 tens of thousands of nodes and cause poor performance.
-The patch simply replaced the \texttt{script} list with a hash table.
+
+{\textit{How to fix?}}
+To make a linear search more efficient, it usually requires a data
+structure change. For example, 
+the patch for the bug in Figure \ref{fig:Mozilla347306}
+simply replaced the \texttt{script} list with a hash table.
 % This improve the performance by 52.60{\bf X}.
 
 \comment{
@@ -98,7 +106,6 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC46401.c}}
-\vspace{-0.05in}
 \caption{A resultless [0$|$1]* bug in GCC }
 \label{fig:GCC46401}
 \end{figure}
@@ -126,6 +133,13 @@ At the end, the patch greatly improved performance through a
 simple checking that allows the loop to be
 skipped in most cases.
 
+{\textit{How to fix?}}
+The patch shown in Figure \ref{fig:GCC46401} reflects the typical fix
+strategy for this type of inefficient loops. The developers should 
+think about what exactly is the condition for the loop to produce
+results, and use that condition to skip the whole loop
+whenever possible.
+
 \comment{
 \textcolor{red}{ 
 %For example, the patch for GCC\#46401 is to skip the sequence point checking loop when one operand is a constant string.
@@ -149,11 +163,19 @@ For example, several Mozilla performance problems are caused by
 loops that contain intensive GUI operations whose graphical outcome may not
 be observed by humans and hence can be optimized.
 
+{\textit{How to fix?}}
+As we can see, a deep understanding of software semantics is required
+to understand the inefficiency root cause of these loops.
+Similarly, the fix strategies for these loops would vary from case to case.
+%At high level, the patch often involves skip some computation that produces
+%side effects that are useless due to semantic reasons.
+
 \subsection{Redundant loops}
 \label{sec:study_redundant}
 
 Redundant loops spend a lot of time in repeating computation that is already
-conducted. They are further categorized below based on their redundancy unit.
+conducted. They can be further categorized to two sub-types
+based on which part of the loop is the unit of redundancy.
 
 %\begin{figure}[h]
 %\centering
@@ -177,16 +199,6 @@ conducted. They are further categorized below based on their redundancy unit.
 \end{figure}
 }
 
-\begin{figure}
-\centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
-     morekeywords={+},keepspaces=true}
-  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla477564.js}}
-\vspace{-0.05in}
-\caption{A cross-loop redundant bug in Mozilla }
-\label{fig:Mozilla477564}
-\end{figure}
-
 
 {\textbf{Cross-iteration Redundancy}}:
 Loop iteration is the redundancy unit here:
@@ -195,8 +207,12 @@ what was already done by an earlier iteration of the same loop.
 Here, we consider a recursive function as a loop, treating one function-call
 instance as one loop iteration. 
 
-This type of inefficiency is often fixed by memoization or batching, depending
-on whether the redundancy involves I/O operations.
+{\textit{How to fix?}}
+Intuitively, most redundancy problems can be fixed through memoization or
+batching --- either caching the earlier computation results and skip
+some of the following iterations; or combining multiple iterations' work
+together.
+
 For example, the GCC bug shown in Figure~\ref{fig:GCC27733} is caused by
 redundant computation across different invocations of recursive function
 \texttt{mult\_alg}. The patch essentially allows memoization to work.
@@ -220,8 +236,13 @@ A whole loop is the redundancy unit:
 one dynamic instance of a loop spends a big chunk, if not all, of its
 computation in repeating the work already done by an
 earlier instance of the same loop.
-Developers often fix this type of inefficiency problems through memoization:
-caching the earlier computation results and skip following redundant loops.
+
+{\textit{How to fix?}}
+Just like that in cross-iteration redundancy, memoization and batching
+are the typical fix strategies for this type of redundancy problems ---
+caching the earlier computation results and skip following redundant loops;
+or combining multiple loop instances together to avoid or alleviate redundancy.
+
 Mozilla\#477564 shown in Figure~\ref{fig:Mozilla477564} is an example for this type of bugs. 
 The buggy loop counts how many previous siblings of the input \texttt{aNode} have the same name and URI. 
 There is an outer loop, not shown in the figure, that repeatedly updates
@@ -231,5 +252,26 @@ This bug is fixed by adding an extra field for each node to save the calculated
 count, so that a new count value can be calculated by simply adding one to the
 saved count value of the nearest previous sibling with the same name and URI.
 
+\begin{figure}
+\centering
+\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+     morekeywords={+},keepspaces=true}
+  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla477564.js}}
+\caption{A cross-loop redundant bug in Mozilla }
+\label{fig:Mozilla477564}
+\end{figure}
 
 
+
+\subsection{Discussion}
+Coverage, actionability, and generality are the principles behind our taxonomy
+design. Intuitively, the categories above cover a lot of common inefficient
+loop problems; each sub-category is concrete enough to guide the design of a
+failure diagnosis tool; none of the categories above involve any application
+specific knowledges or heuristics. We will further assess our taxonomy
+through the design of \Tool (Section \ref{sec:design}) and 
+real-world bug study (Section \ref{sec:eval_taxonomy}).
+
+Of course, our taxonomy does not cover \emph{all} loop inefficiency problems.
+For example, some loops may be vulnerable to false sharing problems or lock
+contention problems, which are out of the scope of our taxonomy. 

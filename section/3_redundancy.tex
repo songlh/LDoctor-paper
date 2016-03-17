@@ -536,6 +536,15 @@ We did not encounter such false positives in our experiments.
 
 \subsubsection{Fix strategy recommendation}
 \label{sec:redundant_fix}
+It is difficult to directly produce patches with correctness guarantee for
+all inefficient loops.
+What \Tool aims to do is to provide fix-strategy suggestion to developers.
+This process is straightforward following our taxonomy discussion in 
+Section \ref{sec:study}, as there is often one or two natural fix strategies for
+each sub-category of root causes.
+
+xxxTODOxxx
+
 As discussed in Section \ref{sec:tax_study}, extra analysis is needed to
 decide whether batching or memoization should be suggested to fix a 
 loop that conducts redundant computation.
