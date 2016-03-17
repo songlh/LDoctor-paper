@@ -1,0 +1,45 @@
+\begin{table}
+  \centering
+  \small
+  \newcommand{\Yes}[1]{\checkmark{}$_#1$}
+  \newcommand{\No}[0]{-}
+  \begin{tabular}{lcccc}
+    \toprule
+   {\bf BugID}           &  {\bf KLOC}     &  {\bf P. L.}           & {\bf RootCause}  & {\bf Fix}\\
+   \midrule
+   Mozilla347306         & 88              & C                      &  0*1?        & C     \\
+   Mozilla416628         & 105             & C                      &  0*1?        & C     \\
+   Mozilla490742         &  -             & JS                     &  C-I         & B       \\
+   Mozilla35294          &  -             & C++                    &  C-L         & B        \\ 
+   Mozilla477564         &  -             & JS                     &  C-L         & M       \\
+   \midrule 
+   MySQL27287            & 995             & C++                    &  0*1?,C-L        & C     \\
+   MySQL15811            & 1127            & C++                    &  C-L         & M \\ 
+   \midrule    
+   Apache32546           &  -             & Java                   &  C-I         & B  \\
+   Apache37184           &  -             & Java                   &  C-I         & M  \\
+   Apache29742           &  -             & Java                   &  C-L         & B \\ 
+   Apache34464           &  -             & Java                   &  C-L         & M  \\
+   Apache47223           &  -             & Java                   &  C-L         & B \\
+   \midrule
+   GCC46401              & 5521            & C                      &  [0$|$1]*    & S   \\
+   GCC1687               & 2099            & C                      &  C-I         & M \\
+   GCC27733              & 3217            & C                      &  C-I         & M \\
+   GCC8805               & 2538            & C                      &  C-L         & B\\
+   GCC21430              & 3844            & C                      &  C-L         & M \\
+   GCC12322              & 2341            & C                      &  1*          & S\\
+\bottomrule
+   \end{tabular}
+  %\nocaptionrule
+  \caption{Benchmark information.
+  (-: benchmarks extracted from real-world applications.
+  ``C-I'': cross-iteration redundancy.
+  ``C-L'': cross-loop redundancy.
+  C, B, M, S: fix strategies as discussed in
+  Table \ref{tab:root}.
+  ) 
+ }
+  \label{tab:benchmarks}
+\end{table}
+
+
