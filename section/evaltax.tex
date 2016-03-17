@@ -4,9 +4,10 @@
 \input section/tab_appbug
 \input section/tab_root
 
-We quantitatively 
-assess the coverage, actionability, and generality of our taxonomy presented
-in Section \ref{sec:study} using
+The root-cause taxonomy presented in Section \ref{sec:study} is the foundation
+of \Tool. In this section,
+we quantitatively 
+assess the coverage, actionability, and generality of our taxonomy using
 a set of
 real-world inefficient loop problems collected by previous work
 \cite{SongOOPSLA2014,PerfBug}.
@@ -131,8 +132,6 @@ all [0$|$1]* resultless loops are
 fixed by conditionally skipping the loop;
 almost all redundant loops are fixed either by 
 memoization or batching. 
-In fact, as we will discuss later, simple analysis can tell whether 
-memoization or batching should be used to fix a redundant loop.
 The only problem is that there are no silver bullets for fixing 1* loops.
 %all inefficient loops with xx root cause are fixed by xxx.
 %xxx
@@ -153,8 +152,7 @@ is suitable to guide our design of \Tool.
 %TODO even for the other, there are things we could do ...
 
 \subsection{Caveats} 
-Just as previous empirical study work, 
-our empirical study above needs to be interpreted with our methodology in mind. 
+We do not intend to overly generalize the evaluation results above.
 The performance bugs examined above cover a variety of applications, workload, 
 development environments and programming languages. 
 However, there are still uncovered cases, like distributed systems, 
