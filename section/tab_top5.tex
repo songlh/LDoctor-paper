@@ -1,0 +1,63 @@
+\begin{table}
+  \centering
+  \small
+  \newcommand{\Yes}[0]{\checkmark}
+  \newcommand{\No}[0]{-}
+  \begin{tabular}{lcccccc}
+    \toprule
+   {\bf BugID}           &  {\bf 0*1?}          &  {\bf [0$|$1]*}             &{\bf C-I$_b$}            &{\bf C-I$_m$}          &   {\bf C-L}     & {\bf Total}  \\
+   \midrule
+   Mozilla347306         &   -                  & -                           & -                       & -                     &   -             & -\\
+   Mozilla416628         &   -                  & -                           & -                       & -                     &   -             & -\\
+   Mozilla490742         &   -                  & -                           & -                       & -                     &   -             & -\\
+   Mozilla35294          &   -                  & -                           & -                       & -                     &   -             & -\\ 
+   Mozilla477564         &   -                  & -                           & -                       & -                     &   -             & -\\
+   \midrule 
+   MySQL27287            &   -                  & 0$_1$                       & -                       & -                     &   -             & 0$_1$\\
+   MySQL15811            &   -                  & -                           & -                       & -                     &   -             & -\\ 
+   \midrule    
+   Apache32546           &   -                  & -                           & -                       & -                     &   -             & -\\
+   Apache37184           &   -                  & -                           & -                       & -                     &   -             & -\\
+   Apache29742           &   -                  & -                           & -                       & -                     &   -             & -\\ 
+   Apache34464           &   -                  & -                           & -                       & -                     &   -             & -\\
+   Apache47223           &   -                  & -                           & -                       & -                     &   -             & -\\
+   \midrule
+   GCC46401              &   -                  & 0$_1$                       & -                       & -                     &   -             & 0$_1$\\
+   GCC1687               &   -                  & -                           & -                       & -                     &   -             & -\\
+   GCC27733              &   -                  & -                           & -                       & -                     &   -             & - \\
+   GCC8805               &   -                  & 0$_1$                       & -                       & -                     &   -             & 0$_1$\\
+   GCC21430              &   0$_1$              & 0$_3$                       & -                       & 0$_1$                 &   0$_1$         & 0$_6$\\
+   GCC12322              &   0$_1$              & 0$_1$                       & -                       & 0$_1$                 &   0$_1$         & 0$_4$\\
+\midrule
+\midrule
+Apache53622		 &   -                  & -                           & -                       & -                     &   -             & -\\	  	
+Apache53637		 &   -                  & -                           & -                       & -                     &   -             & -\\
+Apache53803		 &   -                  & -                           & -                       & -                     &   -             & -\\
+Apache53821	         &   -                  & 0$_1$                       & -                       & -                     &   -             &0$_1$\\
+Apache53822	         &   -                  & 0$_1$                       & -                       & -                     &   -             &0$_1$\\
+\midrule                 
+Collections406           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections407           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections408           &   -                  & 0$_2$                       & -                       & -                     &   -             &0$_2$\\
+Collections409           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections410           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections412           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections413           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections425           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections426           &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections427           &   -                  & 0$_1$                       & -                       & -                     &   -             &0$_1$\\
+Collections429-0         &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections429-1         &   -                  & -                           & -                       & -                     &   -             & -\\  	
+Collections429-2         &   0$_1$              & -                           & -                       & -                     &   -             &0$_1$\\  	
+Collections434           &   0$_1$              & -                           & -                       & -                     &   -             &0$_1$\\  	
+\midrule
+Groovy5739-0             &   -                  & 0$_1$                       & -                       & -                     &   -             &0$_1$\\
+Groovy5739-1             &   -                  & 0$_1$                       & -                       & -                     &   -             &0$_1$\\
+\bottomrule
+   \end{tabular}
+  %\nocaptionrule
+  \caption{False positives of \Tool for top 5 loops reported by 
+    statistical debugging for each benchmark. `-': no false positive. $x_y$: real ($x$) and benign false positives ($y$).
+}
+  \label{tab:top5}
+\end{table}
