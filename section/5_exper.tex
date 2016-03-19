@@ -31,31 +31,32 @@ programs; one is extracted from a very old version of Mozilla.
 %These 18 bugs include all the benchmarks used in the recent
 %statistical performance debugging work~\cite{SongOOPSLA2014}.
 %The extraction is conducted by XXX.
-We extract the original data structures and caller-callees, 
+{\color{red} We extract the original data structures and caller-callees, 
 and translate them into C++ programs, following the original data flow and control flow dependence. 
-We design unit test inputs based on inputs in bug reports and our understanding to run our re-implemented codes.  
+We design unit test inputs based on inputs in bug reports and our understanding to run our re-implemented codes.}  
 We did not use the remaining 27 bugs listed in Table \ref{tab:root}
 as benchmarks, 
 either because they depend on special hardware/software environment
 or because they involve too complex data structures to extract. 
-For example, some bugs can only be triggered on Windows, and some bugs depend on .Net libraries. 
+{\color{red} For example, some bugs can only be triggered on Windows, and some bugs depend on .Net libraries. 
 For example, we have bugs related to GUI widgets, and it is too complex to re-implement these GUI widgets. 
-We also have bugs, in which buggy loops traverse graphs. 
-Without repeating these bugs, it is too difficult to figure out graph structures just through code reading.  
+And we also have bugs, in which buggy loops traverse graphs. 
+Without repeating these bugs, it is too difficult to figure out graph structures just through reading codes. }  
 Overall, these 18 bugs cover a wide variety of inefficiency root causes, as 
 shown in Table~\ref{tab:benchmarks}. 
 
-Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama}.
-We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
+Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama, toddlerbuglist}.
+{\color{red} We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
 All of these bugs come from Java programs. 
 %We extract XXX (how did you
 %extract exactly?) and re-implement in C++. Each extracted benchmark 
 %contains 4--5 loops (how come you always have 4--5 loops??XXX). 
 All these bugs are related to misusing basic data structures in Java, like ArrayList, HashSet, HashMap, and LinkedList. 
-We re-implement these basic data structures following the recent version of openjdk. 
+We re-implement these basic data structures following one recent version of openjdk. 
 We re-implement the buggy codes and test inputs in the bug reports, 
 following the original data flow and control flow dependence. 
-For two benchmarks, there are only 4 loops in our re-implemented versions. For all other benchmarks, there are no less than 5 loops. 
+For two benchmarks, there are only 4 loops in our re-implemented versions. 
+For all other benchmarks, there are no less than 5 loops.} 
 Note that, Toddler focuses on inefficient nested loops, and its
 benchmark bugs only cover two types of inefficiency root causes,
 as shown in Table \ref{tab:benchmarks}.
@@ -79,17 +80,15 @@ What is the run-time overhead of \Tool?
 Our evaluation uses existing statistical performance diagnosis
 tool \cite{SongOOPSLA2014} to process a performance problem and identify 
 one or a few suspicious loops for \Tool to analyze.
-For 14 out of the 18 benchmarks, statistical debugging identifies the
+For 14 out of the 18 benchmarks {\color{red} in the first benchmark set}, statistical debugging identifies the
 real root-cause loop as the most suspicious loop. For the remaining
 benchmarks, the real root-cause loops are ranked number 2, 2, 4, and 10.
 %Overall, we believe future tools can accurately identify the most one or a couple
 %of suspicious loops.
 %XXX (what can we say about Toddler benchmark set here?)
-For all benchmarks from Toddler project, 
-statistical debugging ranks the real root-cause loop as Top 1 or Top 2 (for cases where there are two root-cause loops). 
-During our accuracy experiments, we will apply LDoctor to top 5 loops identified by statistical debugging. 
-For some re-implemented bugs, there may be less than 5 loops returned by statistical debugging. 
-The number of loops we analyze for the first benchmark set is 64, and the number of loops we analyze for Toddler benchmark set is 103. 
+{\color{red} For all benchmarks from Toddler project, 
+statistical debugging ranks the real root-cause loop as the most suspicious loop, 
+or the two most suspicious loops (for cases where there are two root-cause loops). }
 
 \input section/tab_cover
 
@@ -141,18 +140,24 @@ The six cases where the fix strategy suggested by \Tool does not match that of
 developers fall into three categories.
 First, the fix strategy taken by developers is a subset of what suggested by 
 \Tool.
-For MySQL\#27287, the root-cause loop
+{\color{red} For MySQL\#27287, the root-cause loop
 is both cross-loop redundant and 0*1? inefficient. \Tool suggests both changing
 data structures and memoization as fix strategies. In practice, the developers
-only changed the data structure, which eliminated both types of inefficiency,
-in case of MySQL\#27287. 
-For Apache\#53622, there are two buggy loops, one is cross-loop redundant, and the other is 0*1? Inefficient. 
-\Tool suggests batching and changing data structure respectively. 
-In practice, developers only fix the main root cause loop, by using changing data structure. 
+only changed the data structure, which eliminated both types of inefficiency. 
+For Apache\#53622, there are two buggy loops, one is cross-loop redundant, and the other is 0*1? inefficient. 
+\Tool suggests batching and changing data structure, respectively. 
+In practice, developers only fix the main root cause loop, by using changing data structure.} 
 
 Second, the fix strategy taken by developers is a superset of what suggested by
 \Tool.
-In Collections bugs \#407, \#408, and \#425, XXX.
+{\color{red} In Collections bugs \#407, \#408, and \#425, there is a HashSet and ArrayList containing the same set of data. 
+The buggy codes keep trying to remove elements from the HashSet and the ArrayList. 
+The buggy loops search elements to be deleted on the ArrayList, which are 0*1? inefficient in buggy runs. 
+Under buggy inputs, all elements to be deleted are not contained in the HashSet and ArrayList. 
+The return value of removing elements from HashSet can indicate whether elements are really removed. 
+In the patch, an extra check is added to use the return value of removing elements from HashSet 
+to decide whether to skip removing elements from ArrayList. 
+We think in the patch developers change the usage of HashSet to skip removing elements from ArrayList. }
 
 Third, \Tool cannot suggest fix strategy for 1* loops.
 For GCC\#12322, \Tool correctly tells that the loop under study
