@@ -45,24 +45,29 @@ Without repeating these bugs, it is too difficult to figure out graph structures
 Overall, these 18 bugs cover a wide variety of inefficiency root causes, as 
 shown in Table~\ref{tab:benchmarks}. 
 
-Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama, toddlerbuglist}.
-{\color{red} We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
-All of these bugs come from Java programs. 
+%Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama, toddlerbuglist}.
+%{\color{red} We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
+%All of these bugs come from Java programs. 
 %We extract XXX (how did you
 %extract exactly?) and re-implement in C++. Each extracted benchmark 
 %contains 4--5 loops (how come you always have 4--5 loops??XXX). 
+{\color{red}
+Second, we evaluate \Tool on bugs from Toddler~\cite{Alabama, toddlerbuglist} project.
+Toddler project provides the bug-triggering inputs and detailed explanation
+for 21 performance bugs that have been fixed by developers. We evaluate \Tool on all these 21 bugs.
+All of these bugs come from Java programs.
 All these bugs are related to misusing basic data structures in Java, like ArrayList, HashSet, HashMap, and LinkedList. 
 We re-implement these basic data structures following one recent version of openjdk. 
 We re-implement the buggy codes and test inputs in the bug reports, 
 following the original data flow and control flow dependence. 
 For two benchmarks, there are only 4 loops in our re-implemented versions. 
-For all other benchmarks, there are no less than 5 loops.} 
+For all other benchmarks, there are no less than 5 loops.
 Note that, Toddler focuses on inefficient nested loops, and its
 benchmark bugs only cover two types of inefficiency root causes,
 as shown in Table \ref{tab:benchmarks}.
 We use Toddler benchmark suite because it provides a large set of
 repeatable inefficient loop problems. 
-
+}
 
 \paragraph{Metrics}
 Our experiments are designed to evaluate \Tool from three main aspects:
@@ -174,7 +179,7 @@ that it is worthwhile considering the slow-down caused by the original loop.
 \input section/tab_top5
 
 As shown in Table \ref{tab:top5}, \Tool is accurate, having 0 real
-false positive and 23 benign false positives for all the top 5 loops
+false positive and 22 benign false positives for all the top 5 loops
 of the \allbugs benchmarks.
 
 Here, benign false positives mean that the \Tool analysis result is true ---
@@ -184,8 +189,8 @@ problems are \textit{not} fixed by developers in their performance patches.
 
 There are several reasons for these benign performance problems. 
 The main reason is that they are not the main contributor to the 
-performance problem perceived by the users. This happens to 11 out of the
-13 benign cases (XXX subject to change XXX). 
+performance problem perceived by the users. {\color{red} This happens to 20 out of the
+22 benign cases.} % 11 out of 13 in the first benchmark set 
 In fact, this is not really a problem for \Tool in 
 real usage scenarios, because statistical debugging can accurately
 tell that these loops are not top contributors to the performance
@@ -193,17 +198,18 @@ problems.
 Two cases happen when fixing the 
 identified redundant/resultless problems
 are very difficult and hence developers decide not to fix them.
-The remaining cases XXX.
-
 
 The accuracy of \Tool benefits from its run-time analysis.
-For example, there are 7 (XXX to change XXX) benchmarks in total that each contains
+{\color{red} For example, there are 26 % 7 in the first benchmark set
+benchmarks in total that each contains
 a loop that generates side effect only
 in its last iteration. Without run-time information, \Tool would judge
 all of them as inefficient (0*1? resultless). Fortunately,
 \Tool run-time counts the total number of iterations and
-correctly identifies 3 (XXX to change XXX) of them as truly inefficient and severe enough
+correctly identifies 21 %3 in the first benchmark set 
+of them as truly inefficient and severe enough
 to cause the corresponding performance problem.
+}
 
 \Tool can also help improve the accuracy of statistical debugging in
 identifying which loop is the root-cause loop.
@@ -317,7 +323,7 @@ changing the redundancy rate threshold from 0.5 to any value between about
 0.1 and 0.66. We will have 1 more false negative and 1 fewer benign false positive, 
 when the rate is 0.7. The trend is similar for resultless
 loop checking. 
-XXX
+%XXX
 
 Our default setting %is obtained based on our experience
 should work for many problems.
@@ -329,4 +335,31 @@ loops. Based on our experiments, the difference between efficient and inefficien
 loops is usually obvious, based on these rates.
 
 \subsection{Comparison with other tools}
-XXXXXX
+
+{\color{red}
+\cite{Alabama, CARAMEL, IsilDillig.PLDI15} are most recent performance bug detection techniques. 
+These techniques aim to find previously unknown performance bugs inside programs. 
+Compared with diagnosis techniques, they do not consider real-world workload, 
+and they are likely to report performance bugs without user-perceived symptoms. 
+
+Toddler~\cite{Alabama} tries to identify redundant computation through monitoring repetitive memory access patterns. 
+21 out of 45 bugs in our benchmark set can be detected by Toddler, 
+and 12 out of 18 bugs used in our evaluation can be detected by Toddler. 
+All these bugs contain a loop traversing the same data structure many times, 
+including all cross-loop redundant bugs and part of resultless bugs. 
+Except for cross-loop redundant bugs, Toddler does not provide more information than fault localization. 
+Compared with LDoctor, Toddler will incur a large runtime overhead, 
+because it monitors all memory read instructions, 
+and Toddler will report more false positives, because our cross-loop redundancy algorithm is more strict. 
+
+Caramel~\cite{CARAMEL} can statically detect loops with Cond-Break Fix. 
+Caramel cannot detect any bug in our benchmark set, 
+and Caramel cannot detect any bugs from Toddler benchmark set either. 
+Depending on the dynamic workload, bugs detected by caramel can be identified as resultless loops or missed by LDoctor. 
+
+CLARITY~\cite{IsilDillig.PLDI15} can statically detect redundant traversal bugs. 
+Compared with Toddler, the traversed data structures are not changed across different instances of the buggy loop. 
+CLARITY can detect 6 out of 45 bugs in benchmark set, and can detect 5 out of 18 bugs evaluated in our experiment. 
+CLARITY can detect 14 out of 21 bugs in TODDLER benchmark set used in our experiment, 
+and all these bugs belong to RetainAll and ContainAll cases discussed in~\cite{IsilDillig.PLDI15}.
+}
