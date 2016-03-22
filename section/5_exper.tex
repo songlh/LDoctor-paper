@@ -111,7 +111,7 @@ the real root-cause loops are ranked number 2, 2, 4, and 10.
 %of suspicious loops.
 %XXX (what can we say about Toddler benchmark set here?)
 
-\input section/tab_cover
+%\input section/tab_cover
 
 To evaluate the coverage, accuracy, and performance of \Tool, we mainly conduct
 three sets of evaluation. First, we apply \Tool to the real root-cause loop to
@@ -152,7 +152,7 @@ how to set them and how sensitive they are, are discussed in Section
 
 \subsection{Coverage Results}
 \label{sec:coverage}
-Overall, \Tool provides good diagnosis coverage, as shown in Table~\ref{tab:cover}. 
+Overall, \Tool provides good diagnosis coverage, as shown in Table~\ref{tab:benchmarks}. 
 \Tool identifies the correct root cause for \textbf{all} \allbugs benchmarks, and 
 suggests fix strategies that exactly match what developers took in practice
 for 33 out of \allbugs cases. 
@@ -193,9 +193,9 @@ that it is worthwhile considering the slow-down caused by the original loop.
 \subsection{Accuracy Results}
 \label{sec:result_acc}
 
-\input section/tab_top5
+%\input section/tab_top5
 
-As shown in Table \ref{tab:top5}, \Tool is accurate, having 0 real
+As shown in Table \ref{tab:benchmarks}, \Tool is accurate, having 0 real
 false positive and 22 benign false positives for all the top 5 loops
 of the \allbugs benchmarks.
 
@@ -362,7 +362,7 @@ hence can only cover about half of the bugs in our \emph{general} benchmark suit
 Being a dynamic tool, it also incurs 10X or more slowdowns, which is much more
 expensive than \Tool. 
 Caramel~\cite{CARAMEL} statically detects inefficient loops that can be fixed
-by adding conditional-breaks. Very few bugs in Table \ref{tab:} are like this.
+by adding conditional-breaks. Very few bugs in Table \ref{tab:root} are like this.
 CLARITY~\cite{IsilDillig.PLDI15} statically detects redundant traversal bugs. 
 We expect it to automatically detect a sub-set of the cross-loop redundancy
 loops in our benchmark set, but not for other types of inefficient
