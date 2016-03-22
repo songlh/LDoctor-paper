@@ -24,26 +24,40 @@ happened in real world, and we will reproduce these problems to evaluate \Tool.
 To conduct a thorough evaluation, we use
 benchmarks from two sources.
 
-First, we evaluate \Tool on 18 out of the 45 bugs listed in Table \ref{tab:root}. 
+First, we evaluate \Tool on all bugs, 18 in total, that we can reproduce 
+among the 45 bugs listed in Table \ref{tab:root}. 
 Among these 18, seven are extracted from Java or JavaScript
 programs and re-implemented in C++, as \Tool currently only handles C/C++
-programs; one is extracted from a very old version of Mozilla.
+programs; one is extracted from a very old version of Mozilla that can no longer be
+compiled as it is.
 %These 18 bugs include all the benchmarks used in the recent
 %statistical performance debugging work~\cite{SongOOPSLA2014}.
 %The extraction is conducted by XXX.
-{\color{red} We extract the original data structures and caller-callees, 
-and translate them into C++ programs, following the original data flow and control flow dependence. 
-We design unit test inputs based on inputs in bug reports and our understanding to run our re-implemented codes.}  
-We did not use the remaining 27 bugs listed in Table \ref{tab:root}
-as benchmarks, 
-either because they depend on special hardware/software environment
-or because they involve too complex data structures to extract. 
-{\color{red} For example, some bugs can only be triggered on Windows, and some bugs depend on .Net libraries. 
-For example, we have bugs related to GUI widgets, and it is too complex to re-implement these GUI widgets. 
-And we also have bugs, in which buggy loops traverse graphs. 
-Without repeating these bugs, it is too difficult to figure out graph structures just through reading codes. }  
+When we extract code, we try our best to keep all bug-related data structures,
+caller functions, and callee functions intact, and re-implement them in C++, 
+following the original data flow and control flow. For these extracted benchmarks, 
+we design bug-triggering inputs for them based on the bug-triggering inputs in 
+the original bug reports and our understanding about how original program inputs
+map to the inputs of our re-implemented programs.
 Overall, these 18 bugs cover a wide variety of inefficiency root causes, as 
 shown in Table~\ref{tab:benchmarks}. 
+We will refer to this set of bugs as our \emph{general} benchmark suite.
+
+Note that, we expect \Tool algorithm to also work for the remaining 27 bugs 
+listed in Table \ref{tab:root}, but they are too difficult to be reproduced
+on our machines.
+First, they all depend on 
+special hardware/software environment that our machine is not equipped with.
+For example, some bugs can only be triggered on Windows, and some bugs depend on 
+.Net libraries. 
+Furthermore, the bug-related code for these 27 cases
+cannot be easily extracted or reimplemented, as we did for the eight 
+benchmarks mentioned above. 
+For example, some bugs are related to GUI widgets, which are too complicated to 
+re-implement or emulate. As another example, some bugs' inefficient 
+loops traverse big graphs. Although we can extract the buggy code regions, it is 
+too difficult to figure out the bug-triggering inputs
+(i.e., the graphs) without reproducing the original bugs. 
 
 %Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama, toddlerbuglist}.
 %{\color{red} We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
@@ -51,23 +65,27 @@ shown in Table~\ref{tab:benchmarks}.
 %We extract XXX (how did you
 %extract exactly?) and re-implement in C++. Each extracted benchmark 
 %contains 4--5 loops (how come you always have 4--5 loops??XXX). 
-{\color{red}
-Second, we evaluate \Tool on bugs from Toddler~\cite{Alabama, toddlerbuglist} project.
+Second, we evaluate \Tool on Toddler~\cite{Alabama, toddlerbuglist} benchmark suite.
 Toddler project provides the bug-triggering inputs and detailed explanation
-for 21 performance bugs that have been fixed by developers. We evaluate \Tool on all these 21 bugs.
-All of these bugs come from Java programs.
-All these bugs are related to misusing basic data structures in Java, like ArrayList, HashSet, HashMap, and LinkedList. 
-We re-implement these basic data structures following one recent version of openjdk. 
-We re-implement the buggy codes and test inputs in the bug reports, 
-following the original data flow and control flow dependence. 
-For two benchmarks, there are only 4 loops in our re-implemented versions. 
-For all other benchmarks, there are no less than 5 loops.
-Note that, Toddler focuses on inefficient nested loops, and its
+for 21 inefficient-loop bugs that have been confirmed and fixed by developers, and
+we evaluate \Tool on \emph{all} of these 21 bugs.
+Due to the focus of Toddler, all of these bugs 
+are related to misusing basic data structures in Java, like ArrayList, HashSet, 
+HashMap, and LinkedList. We extract these bugs and re-implemented them in 
+C/C++, following the procedure discussed above. In doing so,
+we also re-implement basic Java data structures following a recent version of 
+\texttt{openjdk}. At the end, each extracted benchmark contains at least five
+loops, except for two cases where only 4 loops exist in the extracted version. 
+Note that, Toddler focuses on inefficient nested loops, and hence its
 benchmark bugs only cover two types of inefficiency root causes,
 as shown in Table \ref{tab:benchmarks}.
-We use Toddler benchmark suite because it provides a large set of
-repeatable inefficient loop problems. 
-}
+
+We use Toddler benchmark suite for two reasons.
+First, it was set up for completely different reasons and methodology from our
+\emph{general} benchmark suite,
+and hence can well complement the latter suite.
+Second, it provides the largest set of 
+repeatable inefficient loop problems that we can find. 
 
 \paragraph{Metrics}
 Our experiments are designed to evaluate \Tool from three main aspects:
@@ -85,15 +103,13 @@ What is the run-time overhead of \Tool?
 Our evaluation uses existing statistical performance diagnosis
 tool \cite{SongOOPSLA2014} to process a performance problem and identify 
 one or a few suspicious loops for \Tool to analyze.
-For 14 out of the 18 benchmarks {\color{red} in the first benchmark set}, statistical debugging identifies the
-real root-cause loop as the most suspicious loop. For the remaining
-benchmarks, the real root-cause loops are ranked number 2, 2, 4, and 10.
+For all but four benchmarks, statistical debugging identifies the
+real root-cause loop as the most suspicious loop. For the remaining four
+benchmarks, which all come from Table \ref{tab:root},
+the real root-cause loops are ranked number 2, 2, 4, and 10.
 %Overall, we believe future tools can accurately identify the most one or a couple
 %of suspicious loops.
 %XXX (what can we say about Toddler benchmark set here?)
-{\color{red} For all benchmarks from Toddler project, 
-statistical debugging ranks the real root-cause loop as the most suspicious loop, 
-or the two most suspicious loops (for cases where there are two root-cause loops). }
 
 \input section/tab_cover
 
@@ -145,24 +161,25 @@ The six cases where the fix strategy suggested by \Tool does not match that of
 developers fall into three categories.
 First, the fix strategy taken by developers is a subset of what suggested by 
 \Tool.
-{\color{red} For MySQL\#27287, the root-cause loop
-is both cross-loop redundant and 0*1? inefficient. \Tool suggests both changing
+For MySQL\#27287 and Apache\#53622, the root-cause loops contain both
+cross-loop redundancy and 0*1? inefficiency. \Tool suggests both changing
 data structures and memoization as fix strategies. In practice, the developers
-only changed the data structure, which eliminated both types of inefficiency. 
-For Apache\#53622, there are two buggy loops, one is cross-loop redundant, and the other is 0*1? inefficient. 
-\Tool suggests batching and changing data structure, respectively. 
-In practice, developers only fix the main root cause loop, by using changing data structure.} 
+acknowledge both types of inefficiencies, but the patches
+only changed the data structures, which eliminated both types of inefficiencies 
+in case of MySQL\#27287 and left the cross-loop redundancy unsolved in
+Apache\#53622. 
+%For Apache\#53622, there are two buggy loops, one is cross-loop redundant, and the other is 0*1? inefficient. 
+%\Tool suggests batching and changing data structure, respectively. 
+%In practice, developers only fix the main root cause loop, by using changing data structure.} 
 
-Second, the fix strategy taken by developers is a superset of what suggested by
-\Tool.
-{\color{red} In Collections bugs \#407, \#408, and \#425, there is a HashSet and ArrayList containing the same set of data. 
-The buggy codes keep trying to remove elements from the HashSet and the ArrayList. 
-The buggy loops search elements to be deleted on the ArrayList, which are 0*1? inefficient in buggy runs. 
-Under buggy inputs, all elements to be deleted are not contained in the HashSet and ArrayList. 
-The return value of removing elements from HashSet can indicate whether elements are really removed. 
-In the patch, an extra check is added to use the return value of removing elements from HashSet 
-to decide whether to skip removing elements from ArrayList. 
-We think in the patch developers change the usage of HashSet to skip removing elements from ArrayList. }
+Second, the fix strategy taken by developers is related but not exactly the same as
+what suggested by \Tool.
+The root-cause loops in 
+Collections bugs \#407, \#408, and \#425 all conduct frequent linear searches in arrays.
+\Tool suggests data-structure changes for these three cases. Developers' patches 
+still keep the original data structure and the original buggy loop, but they
+did use hash-sets, which contain the same content as the arrays do,
+to help conditionally skip the loops. 
 
 Third, \Tool cannot suggest fix strategy for 1* loops.
 For GCC\#12322, \Tool correctly tells that the loop under study
@@ -189,8 +206,8 @@ problems are \textit{not} fixed by developers in their performance patches.
 
 There are several reasons for these benign performance problems. 
 The main reason is that they are not the main contributor to the 
-performance problem perceived by the users. {\color{red} This happens to 20 out of the
-22 benign cases.} % 11 out of 13 in the first benchmark set 
+performance problem perceived by the users. This happens to 20 out of the
+22 benign cases. % 11 out of 13 in the first benchmark set 
 In fact, this is not really a problem for \Tool in 
 real usage scenarios, because statistical debugging can accurately
 tell that these loops are not top contributors to the performance
@@ -200,16 +217,16 @@ identified redundant/resultless problems
 are very difficult and hence developers decide not to fix them.
 
 The accuracy of \Tool benefits from its run-time analysis.
-{\color{red} For example, there are 26 % 7 in the first benchmark set
-benchmarks in total that each contains
-a loop that generates side effect only
-in its last iteration. Without run-time information, \Tool would judge
+%{\color{red} For example, there are 26 
+For example, our run-time analysis has correctly pruned out 24 false positives
+in 0*1? inefficiency detection for our benchmarks. Each of these 24 loops is a
+top-5 suspicious loops in one of our benchmarks; it only generates side effect
+in its last iteration, and hence is identified as by \Tool static analysis. 
+Without run-time information, \Tool would judge
 all of them as inefficient (0*1? resultless). Fortunately,
 \Tool run-time counts the total number of iterations and
-correctly identifies 21 %3 in the first benchmark set 
-of them as truly inefficient and severe enough
-to cause the corresponding performance problem.
-}
+correctly identifies them as false positives. Similarly, \Tool run-time analysis
+helps prune out 19 false positives for [0$|$1]* loop identification.
 
 \Tool can also help improve the accuracy of statistical debugging in
 identifying which loop is the root-cause loop.
@@ -336,30 +353,28 @@ loops is usually obvious, based on these rates.
 
 \subsection{Comparison with other tools}
 
-{\color{red}
-\cite{Alabama, CARAMEL, IsilDillig.PLDI15} are most recent performance bug detection techniques. 
-These techniques aim to find previously unknown performance bugs inside programs. 
-Compared with diagnosis techniques, they do not consider real-world workload, 
-and they are likely to report performance bugs without user-perceived symptoms. 
+Automated tools have been developed to detect inefficient loop bugs
+\cite{Alabama, CARAMEL, IsilDillig.PLDI15}. 
+As discussed in Section \ref{sec:intro}, although these tools are very
+useful, they are not suitable for failure diagnosis. 
+For example, Toddler~\cite{Alabama} only targets inefficient nested loops, and
+hence can only cover about half of the bugs in our \emph{general} benchmark suite.
+Being a dynamic tool, it also incurs 10X or more slowdowns, which is much more
+expensive than \Tool. 
+Caramel~\cite{CARAMEL} statically detects inefficient loops that can be fixed
+by adding conditional-breaks. Very few bugs in Table \ref{tab:} are like this.
+CLARITY~\cite{IsilDillig.PLDI15} statically detects redundant traversal bugs. 
+We expect it to automatically detect a sub-set of the cross-loop redundancy
+loops in our benchmark set, but not for other types of inefficient
+loops. In summary, \Tool aims to explain performance problems that have 
+already manifested,
+yet bug detection tools aim to predict problems that may not have manifested.
+\Tool achieves higher generality and accuracy at the cost of the prediction
+capability.
 
-Toddler~\cite{Alabama} tries to identify redundant computation through monitoring repetitive memory access patterns. 
-21 out of 45 bugs in our benchmark set can be detected by Toddler, 
-and 12 out of 18 bugs used in our evaluation can be detected by Toddler. 
-All these bugs contain a loop traversing the same data structure many times, 
-including all cross-loop redundant bugs and part of resultless bugs. 
-Except for cross-loop redundant bugs, Toddler does not provide more information than fault localization. 
-Compared with LDoctor, Toddler will incur a large runtime overhead, 
-because it monitors all memory read instructions, 
-and Toddler will report more false positives, because our cross-loop redundancy algorithm is more strict. 
-
-Caramel~\cite{CARAMEL} can statically detect loops with Cond-Break Fix. 
-Caramel cannot detect any bug in our benchmark set, 
-and Caramel cannot detect any bugs from Toddler benchmark set either. 
-Depending on the dynamic workload, bugs detected by caramel can be identified as resultless loops or missed by LDoctor. 
-
-CLARITY~\cite{IsilDillig.PLDI15} can statically detect redundant traversal bugs. 
-Compared with Toddler, the traversed data structures are not changed across different instances of the buggy loop. 
-CLARITY can detect 6 out of 45 bugs in benchmark set, and can detect 5 out of 18 bugs evaluated in our experiment. 
-CLARITY can detect 14 out of 21 bugs in TODDLER benchmark set used in our experiment, 
-and all these bugs belong to RetainAll and ContainAll cases discussed in~\cite{IsilDillig.PLDI15}.
-}
+Comparing with existing profiling and performance
+statistical debugging technique \cite{SongOOPSLA2014}, \Tool provides much
+more detailed root-cause information. Instead of just identifying loops that
+are highly correlated-with/responsible-for the execution slowness, \Tool
+can accurately point out whether these suspicious loops are efficient or not,
+and which type of inefficiency a loop contains, if any, and make fix suggestions.
