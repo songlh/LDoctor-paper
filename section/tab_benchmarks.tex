@@ -60,14 +60,14 @@ Groovy5739-1&  -	 &Java	    &0*1?	   &C      &\Yes &\Yes                        
 \bottomrule
    \end{tabular}
   %\nocaptionrule
-  \caption{Benchmark information and evaluation results.
-  (-: benchmarks extracted from real-world applications.
-  ``C-I'': cross-iteration redundancy.
-  ``C-L'': cross-loop redundancy.
-  C, B, M, S: fix strategies as discussed in
+  \caption{\Tool evaluation results.
+  (In the benchmark-information columns, `-' denotes benchmarks extracted from real-world applications,
+  C-I denotes cross-iteration redundancy, and
+  C-L denotes cross-loop redundancy.
+  C, B, M, and S represent fix strategies, as discussed in
   Table \ref{tab:root}.
   Apache53622, Collections406, and Collections412 contain two inefficient loops, with two root-causes listed;
-  MySQL27287's contains one root-cause loop that conducts two types of inefficient computation.
+  MySQL27287 contains one root-cause loop that conducts two types of inefficient computation.
   In false-positive columns, `-' denotes no false positive, and $x_y$ denotes real ($x$) and benign false positives ($y$) reported by \Tool in top-5
   suspicious loops of each benchmark.
   ) 

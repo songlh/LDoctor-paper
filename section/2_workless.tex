@@ -4,13 +4,14 @@
 judges whether a given loop belongs to any root-cause type discussed in
 Section \ref{sec:study}.
 Its design
-follows the following principles.
+follows three principles.
 \begin{itemize}
 \item Failure diagnosis, not bug detection. \Tool will be  
 used together with other performance diagnosis tools \cite{SongOOPSLA2014}
+or profilers,
 and focus on a small
 number of loops that are most correlated with a specific performance symptom,
-instead of being applied to the whole program. Therefore, we will have different
+instead of the whole program. Therefore, we will have different
 design trade-offs in terms of coverage and accuracy, comparing with 
 bug detection tools.
 
@@ -60,7 +61,7 @@ resultless at run time.
 %\label{fig:block_type}
 %\end{figure}
 
-\subsubsection{Static Analysis}
+\subsubsection{Static analysis}
 \label{sec:s_workless}
 
 \Tool considers two types of instructions as side-effect instructions:
@@ -98,15 +99,15 @@ root-cause type as 1*, if more informative root-cause type is identified
 for this loop (e.g., cross-iteration or cross-loop redundancy).
 
 %TODO Shan will rewrite the next two paragraphs
-\subsubsection{Dynamic Monitoring}
+\subsubsection{Dynamic monitoring}
 \label{sec:d_workless}
 
-Except for 0*, none of the other three type of loops are inefficient for sure.
+Except for 0*, none of the other three types of loops are inefficient for sure.
 We need dynamic analysis to figure out what portion of loop iterations are
 resultless at run time, which will help decide whether the loop worths fixing.
 
 For a 0*1? loop, since it only generates results in the last iteration, we 
-only need to know the total number of loop iterations 
+only need to know the total number of loop iterations of each loop instance
 to figure out the loop
 \textit{resultful rate}, which we define as the ratio between
 the number of iterations with

@@ -85,7 +85,8 @@ in fixing performance problems.
 \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC27733.c}}
-\caption{A real-world performance bug in GCC (the `-' and `+' demonstrate the patch)}
+\caption{A real-world performance bug in GCC (the `-' and `+' demonstrate the patch; variable and 
+function names are simplified for demonstration purposes)}
 \label{fig:GCC27733}
 \end{figure}
 
@@ -164,7 +165,7 @@ We achieve this following several principles:
 
 \begin{itemize}
 \item Focused checking. 
-Different from performance-bug detectors that blindly checks the whole
+Different from performance-bug detectors that blindly check the whole
 software, \Tool focuses on loops that are
 most correlated with performance symptoms. 
 This focus is crucial for \Tool to achieve both high

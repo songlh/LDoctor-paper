@@ -52,13 +52,6 @@ time and spatial overhead.
 %TODO static analysis alone is not sufficient, because some redundant is
 %workload dependent
 
-\emph{How to suggest the most suitable fix strategy?}
-As discussed in Section \ref{sec:study_ob} and Table \ref{tab:root},
-memoization and batching are both common fix strategies for redundant loops.
-To pick the right strategy,
-extra analysis is conducted by \Tool and presented in 
-Section \ref{sec:redundant_fix}.
-
 \subsubsection{Identifying and recording \textit{inputs}}
 \label{sec:dependence}
 
@@ -534,7 +527,7 @@ similar memory locations but with different values.
 We did not encounter such false positives in our experiments.
 
 
-\subsubsection{Fix strategy recommendation}
+\subsection{Fix Strategy Recommendation}
 \label{sec:redundant_fix}
 \Tool suggests how to fix an inefficient loop to developers.
 This process is straightforward following our taxonomy discussion in 
@@ -554,7 +547,7 @@ redundancy problem.
 For cross-iteration redundancy, \Tool suggests batching if the
 redundancy is related to I/O operations and suggests memoization otherwise.
 Specifically, 
-when the only side effect of a loop is I/O operations
+when the only side effect of a loop is from I/O operations
 and the same statement(s) is executed in every loop iteration, \Tool reports 
 this
 as an I/O related redundancy problem and suggests batching as a potential fix
@@ -579,7 +572,7 @@ since \Tool knows what exactly are the memory reads that return the same values
 again and again, it can help decide what to memoize; in case of
 I/O-related batching, \Tool points out the exact I/O operations that should
 be considered batching; and so on. 
-Generating the exact patch is out of the scope of \Tool.
+Generating complete patches is out of the scope of \Tool.
 
 
 %TODO what does batching mean for cross-loop redundancy???

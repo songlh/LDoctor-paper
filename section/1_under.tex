@@ -2,8 +2,9 @@
 \label{sec:study}
 
 Previous work has identified a wide variety of performance root-cause 
-categories. However, no existing taxonomy satisfies all the three 
-requirements below and hence cannot be directly used for our diagnosis tool
+categories. However, existing taxonomies do not satisfy all the three 
+requirements below and hence cannot be directly used to guide our 
+diagnosis-tool
 design.
 \begin{enumerate}
 \item Coverage: covering
@@ -101,22 +102,13 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 %treating it like bug detection will inevitably lead to false positives
 %we are providing information to developers
 
-\begin{figure}
-\centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
-     morekeywords={+},keepspaces=true}
-  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC46401.c}}
-\caption{A resultless [0$|$1]* bug in GCC }
-\label{fig:GCC46401}
-\end{figure}
-
 
 {\textbf{[0$|$1]*}}:
 Each iteration in this type of loops may or may not produce results.
 For some workload, the majority of iterations do not produce
 results and cause performance problems perceived by users.
-These problems are often solved
-by adding a simple check to conditionally skip the expensive loop.
+%These problems are often solved
+%by adding a simple check to conditionally skip the expensive loop.
 Figure~\ref{fig:GCC46401} shows such an example.
 %how users perceive this problem
 %explain how every iteration may or may not produce any results
@@ -132,6 +124,16 @@ had any side-effects, as the \texttt{if} condition was rarely satisfied.
 At the end, the patch greatly improved performance through a
 simple checking that allows the loop to be
 skipped in most cases.
+
+\begin{figure}[t!]
+\centering
+\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+     morekeywords={+},keepspaces=true}
+  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC46401.c}}
+\caption{A resultless [0$|$1]* bug in GCC }
+\label{fig:GCC46401}
+\end{figure}
+
 
 {\textit{How to fix?}}
 The patch shown in Figure \ref{fig:GCC46401} reflects the typical fix
@@ -164,9 +166,9 @@ loops that contain intensive GUI operations whose graphical outcome may not
 be observed by humans and hence can be optimized.
 
 {\textit{How to fix?}}
-As we can see, a deep understanding of software semantics is required
-to understand the inefficiency root cause of these loops.
-Similarly, the fix strategies for these loops would vary from case to case.
+Since a deep understanding of software semantics is required
+to understand the inefficiency of these loops,
+the fix strategies for these loops will likely vary from case to case.
 %At high level, the patch often involves skip some computation that produces
 %side effects that are useless due to semantic reasons.
 
@@ -212,10 +214,9 @@ Intuitively, most redundancy problems can be fixed through memoization or
 batching --- either caching the earlier computation results and skip
 some of the following iterations; or combining multiple iterations' work
 together.
-
 For example, the GCC bug shown in Figure~\ref{fig:GCC27733} is caused by
 redundant computation across different invocations of recursive function
-\texttt{mult\_alg}. The patch essentially allows memoization to work.
+\texttt{mult\_alg}. The patch essentially enables memoization.
 %Another bug similar to GCC\#27733 is shown in Figure~\ref{fig:GCC1687}. 
 %This bug is fixed by using a hash table to avoid visiting the same sub-tree twice.
 \comment{
@@ -242,7 +243,6 @@ Just like that in cross-iteration redundancy, memoization and batching
 are the typical fix strategies for this type of redundancy problems ---
 caching the earlier computation results and skip following redundant loops;
 or combining multiple loop instances together to avoid or alleviate redundancy.
-
 Mozilla\#477564 shown in Figure~\ref{fig:Mozilla477564} is an example for this type of bugs. 
 The buggy loop counts how many previous siblings of the input \texttt{aNode} have the same name and URI. 
 There is an outer loop, not shown in the figure, that repeatedly updates
@@ -270,7 +270,7 @@ loop problems; each sub-category is concrete enough to guide the design of a
 failure diagnosis tool; none of the categories above involve any application
 specific knowledges or heuristics. We will further assess our taxonomy
 through the design of \Tool (Section \ref{sec:design}) and 
-real-world bug study (Section \ref{sec:eval_taxonomy}).
+a real-world bug study (Section \ref{sec:eval_taxonomy}).
 
 Of course, our taxonomy does not cover \emph{all} loop inefficiency problems.
 For example, some loops may be vulnerable to false sharing problems or lock

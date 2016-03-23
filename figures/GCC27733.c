@@ -4,10 +4,13 @@ struct hash_entry {
 };
 
 void mult_alg(... HOST_WIDE_UINT t, ...) {
-  hash_index = t ...;
-  if (alg_hash[hash_index].t == t ...)
+  hash_index = hash (t); 
+  if (alg_hash[hash_index].t == t) 
   {
-    //reuse previous results
+    //fast path: reuse previous results
+  }else{
+    //slow path: expensive recursive computation
+    ...
+    mult_alg (...);
   }
-  //recursive computation
 }
