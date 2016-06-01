@@ -1,0 +1,499 @@
+===========================================================================
+                           PLDI '16 Review #141A
+                     Updated 14 Jan 2016 7:53:07am EST
+---------------------------------------------------------------------------
+          Paper #141: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: Y. Knowledgeable
+                      Overall merit: B. OK paper, but I will not champion
+                                        it
+
+                         ===== Paper summary =====
+
+This work focuses on diagnosing loop related performance problems which contribute to a significant proportion of the real world performance issues (based on [11]). Existing approaches based on statistical performance diagnosis report suspicious control flows/loops which cause execution slowness. This paper extends this further to identify the root cause of the slowness and suggests fixes. 
+
+The paper divides the problematic loops into multiple categories and illustrates the problems well with examples from real codebases. Subsequently, a mix of static and dynamic analysis is applied to associate the suspicious loops with one of the categories. This can be useful to developers as identifying the root cause can be a manually intensive task. 18 of the 45 bugs from another paper is studied to investigate the effectiveness of LDoctor (tool based on the proposed approach). The results are favorable.
+
+                      ===== Comments for author =====
+
+The paper is well written and articulates the various issues pertaining to the inefficiencies with loops well. Using examples from real code bases is a big positive because it shows that these problems happen in practice. From the perspective of a developer, detecting these problems can be very useful. Experimental evaluation is performed on bugs reported by [31]. Positives from this evaluation include the low overhead of LDoctor and its ability to identify root causes effectively. 
+
+However, it is quite surprising that the paper does not discuss some related efforts in more detail [24,25,26]. My understanding is that [24] and [26] are dynamic and static analysis approaches to detect problems with nested loops. It seems that some aspects of [24] can be directly applied to LDoctor. While the current paper is not restricted to nested loops, the discussion with these papers should have been more elaborate. In the rebuttal, can you clearly explain how this effort is different from these approaches (24,25,26)? How many issues found in your experimental results can be detected by these tools? 
+
+There are a few concerns regarding the experiments. First, what were the performance gains obtained by performing the fixes proposed by LDoctor? Second, out of 45 bugs, only 18 bugs are analyzed and the other bugs are not considered because they correspond to complicated data structures or hardware/software issues. What is the complication with these data structures that causes LDoctor to fail? Knowing this can also help future efforts in addressing the problem. What are the environment issues? Can it not be simulated? Can you clarify this in the rebuttal? Third, the experimental setup to modify programs from other languages (Java/JS) to C/C++ is a bit unsatisfying. Is it the case that these problems occur more often in other languages rather in C/C++? If not, why not find other benchmarks from C/C++? Fourth, the experiments are performed on bugs found in [31]. Is the approach extensible to loops identified by generic profilers? 
+
+While the presentation is good, there are some gaps that need to be filled. Despite multiple reads, there are many outstanding questions. The input to LDoctor is not clearly specified. Do you analyze the entire benchmark, or just the function that contains the loop? If it is the function, what are the inputs and how do you setup the heap? Also, how is coverage guaranteed? Also, were there any interesting design/implementation challenges? 
+ Is data from [31] used or tests automatically generated? What happens to the benchmarks that are transformed from other languages to C/C++? What are the inputs there? Can you clarify the relation between coverage and overall precision? It will help if experimental results are provided to support this. In general, the informal nature of the presentation helps in readability. But, it will be better if an algorithm is given in Section 3 to provide a comprehensive picture. 
+
+Minor issues:
+
+1) 0* does not add much value to the discussion. 
+
+2) The performance problem in Figure 1 is never explained. What happens due to the change from unsigned int to HOST_WIDE_UINT? What are the gains? 
+
+3) The background material on [31] should be discussed more elaborately (may be after Section 1). 
+
+4) Section 3.2.6 discusses only memoization and branching strategies. More discussion on other fix strategies mentioned in Table 1 will complete the section.
+
+5) page 2, "16 benchmarks" should be 16 performance bugs. 
+
+6) page 9, "For all benchmarks ... bug bugs" -- unclear. Will poor coverage not lead to FPs? 
+
+Overall, a well written paper addressing performance inefficiencies due to loops. Its incremental nature (not restricted to reliance on [31]), the experimental setup, and the absence of detailed comparison with other related efforts are sources of concern.
+
+ADDED AFTER AUTHOR RESPONSE:
+
+Thanks for the elaborate response. It appears that 9 out of the 18 bugs could not be detected by either [24] or [26] (calculated from the response and table3). However, my concerns regarding why only 18 bugs were studied were not addressed completely. For instance, instead of picking old software that does not compile, it would have helped if the experiments were performed on latest versions. 
+
+Overall, I think there is a good idea here. I encourage the authors to strengthen the paper by addressing the concerns raised in these reviews (including addressing the concern related to overfitting).
+
+===========================================================================
+                           PLDI '16 Review #141B
+                     Updated 13 Jan 2016 8:34:19pm EST
+---------------------------------------------------------------------------
+          Paper #141: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: X. Expert
+                      Overall merit: C. Weak paper, though I will not fight
+                                        strongly against it
+
+                         ===== Paper summary =====
+
+This paper presents a tool, called LDoctor, for finding root causes of performance problems and suggesting an appropriate fix. The proposed approach focuses specifically on "inefficient" loops, that are pinpointed using an existing tool for statistical performance debugging. The design of the tool is guided by an empirical study of real-world performance problems, in which they categorize performance bugs in a taxonomy. The two main categories of performance problems are "resultless loops", which waste computational resources without producing useful results, and "redundant loops", which recompute values that shouldn't be recomputed. Guided by this empirical study, the paper goes on describe a combination of static and dynamic analyses for addressing each subclass of performance problems. The paper evaluates LDoctor on a subset (18) of the 45 performance problems considered in the empirical study for classification. The tool seems to have a low false positive rate and low run
+ time overhead.
+
+                      ===== Comments for author =====
+
+I agree with the authors that performance bugs are an important and often overlooked aspect of software development, and program analysis tools for finding performance problems are certainly useful. I also appreciate that the authors performed a thorough case study of real-world performance bugs and identified common root causes of performance problems in mature software.
+
+However, in its current form, I believe the paper has a number of flaws that make it unsuitable for publication at PLDI. In particular, my main criticisms are as follows:
+
+* It is not clear if the paper has a significant technical contribution beyond introducing a taxonomy of performance bugs. In particular, it seems that the overwhelming majority of the program analysis  techniques used for identifying performance problems in this paper are already well known (e.g., die effect analysis, slicing, sampling...), so it wasn't entirely clear what the contributions are. Also, from a presentation perspective, the paper reads a little bit like a laundry list of different techniques, one for each subclass of performance problems. Can the authors perhaps clarify the novel and reusable program analysis idea that would be of interest to the PLDI community? From a presentation perspective, it might be a good idea to focus on one key aspect of the analysis and elaborate on it a bit more.
+
+* I think it's great that this paper makes a step towards suggesting fixes for performance bugs, but it seems like the suggested fixes are too coarse and not program-specific. Based on my understanding, LDoctor only suggests global, high-level fixes, such as "can be fixed using memoization/batching". However, the tool does not suggest what to memoize, for example. Is my understanding correct? I would have found it much more interesting if the tool could automatically repair the performance problem and ask the user to accept/reject the repair. 
+
+* While the results in the evaluation seem pretty good, the choice of the benchmarks themselves seem rather biased. In particular, since these are the same 18 benchmarks that were already part of the earlier empirical taxonomy evaluation, it's not surprising that the tool works fairly well on these benchmarks. It would seem more impressive if the authors had applied LDoctor to a different set of benchmarks than the ones they had developed the tool for. In fact, using the "training set" (over which you build your model) as your "test set" (to verify its effectiveness) is considered a methodological sin in many disciples (e.g., machine learning), and it seems to me that the methodology used in this paper can be viewed as using the training set also as the test set.
+
+* Also regarding the evaluation, the paper mentions that the remaining 27 bugs were unsuitable for the evaluation due to "dependence on special hardware/software" or "involving complex data structures". I found this a bit worrisome, particularly since the paper seems to be motivated by very pragmatic goals and does not make a deep technical contribution. After all, it seems that LDoctor cannot analyze more than half the performance problems that serve as its motivation. 
+
+Minor comments:
+* It would be helpful to elaborate on the performance problem from Figure 1. It was not entirely clear to me.
+* In Section 2.1.1, it would be useful to give an example of a 1* loop.
+* Section 3.1.2, typo at the end of last paragraph: "worths" => "is worth"
+* I found the discussion in Section 3.2.2 before the example a bit cryptic.
+* In Section 3.2.2, it seems odd to defer to instructions as "inputs" -- maybe consider a different term?
+* I would have liked to learn more about the fix strategy recommendation, but this section is very brief.
+
+UPDATE AFTER AUTHOR RESPONSE:
+----------------------------
+Thanks for the clarification regarding training data vs. testing set. However, my main concern still stands: Beyond the taxonomy, I don't see what the paper's key technical contributions are.
+
+===========================================================================
+                           PLDI '16 Review #141C
+                    Updated 16 Jan 2016 10:47:31pm EST
+---------------------------------------------------------------------------
+          Paper #141: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: Y. Knowledgeable
+                      Overall merit: B. OK paper, but I will not champion
+                                        it
+
+                         ===== Paper summary =====
+
+This paper presents a tool (LDoctor) to identify and help fix performance bugs specifically caused by inefficient loops. The tool is based on a taxonomy of loop inefficiencies developed via an empirical study of 45 real-world performance bugs caused by inefficient loops. The two top-level types of loop inefficiencies are loops where some (or all) iterations do not produce results, and loops with redundant computations. LDoctor detects "resultless" loops by using static analysis to identify side-effecting instructions, refined by dynamic analysis to figure out how often loop iterations do not produce results. LDoctor detects "redundant" loops by identifying loop iterations with the same inputs -- first loop inputs are identified via static analysis and then a dynamic analysis (leveraging random sampling) is used to pinpoint the values of those inputs on various loop iterations.
+
+      ===== Comments for author =====
+
+I enjoyed reading this paper, particularly the section describing the taxonomy of loop inefficiencies. Diagnosing and fixing performance problems automatically remains a difficult problem, and the taxonomy guided design is a compelling approach to address this. I also like how the approach provides fixes.
+
+However, this paper did have some issues. The design and implementation of LDoctor read like a collection of heuristics merged into one "tool". There was not a cohesive, unique analysis. Perhaps this follows from a taxonomy-based approach though.
+
+I also had some questions about the evaluation section. 18 of the 45 empirically studied bugs were used as evaluation benchmarks. It looks like LDoctor would not work on the remaining bugs? How difficult would it be to address this limitation in LDoctor? Also, how were these benchmarks "extracted"? Do they consist of a test case provided in the bug report that exercises an inefficient loop? What if an inefficient loop call is difficult to reproduce?
+
+Although I was initially very excited to see the tool provides fixes, it is not clear how useful these fixes are. Are they just a general hint as to where in the taxonomy a performance issue falls (e.g. "use memoization")? What exactly to the provided fixes look like? How easy is it to apply them? How much effort is entailed for going from fix to patch?
+
+I found the discussion of "benign" false positives confusing. The phrase "benign performance problems" is used. Are these still performance problems, just not as severe as other existing problems? Or would fixing them not actually improve program performance? How exactly were these reports validated as benign? Since the benchmarks were also the subjects used to develop the taxonomy, would LDoctor have more false positives when run on other benchmarks?
+
+Actually, this is a major issue with the paper. The fact that the same benchmarks were used to both develop the analysis and evaluate it throws the results into question. How do you guard against overfitting?
+
+Small notes:
+* Figures 3 & 4 do not have line numbers (and figure 3 has "+" symbols on two lines).
+* Section 2.2.2, Generality: "each appears" ==> "each appear"
+* 3.2.3: "inputs values" ==> input values
+* 4.1, evaluation settings: "bug bugs"
+* inconsistent tenses in section 4.2
+* Section 5 title should be "Related Work"
+
+UPDATED AFTER AUTHOR RESPONSE
+
+Thank you for your detailed response. However, it still sounds like the taxonomy was developed using a suite of programs, then an analysis was developed from that taxonomy, then the analysis was tested on the same suite of programs used when developing the taxonomy. If this is inaccurate, it should be clarified in the paper.
+
+===========================================================================
+                           PLDI '16 Review #141D
+                     Updated 17 Jan 2016 4:42:50pm EST
+---------------------------------------------------------------------------
+          Paper #141: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: Y. Knowledgeable
+                      Overall merit: D. Reject
+
+                         ===== Paper summary =====
+
+The goal of this paper is to build a tool that helps programmers
+identify performance problems and fix them. The work focuses on loops.
+The input to the tool is loops that appear to have performance
+problems (e.g., identified using profiling). 
+
+The tool uses simple static analysis to classify each loop as either a
+possibly dead code or a possibly redundant code. 
+
+For redundant code, the paper considers two cases:
+1) iterations of the same loop instance are redundant if their
+observable effect is the same given the same input, and 
+2) loop instances are redundant if their observable effect is *almost*
+the same given the same input.
+
+For each of these classes and cases, a metric is defined that compares
+the number of inefficient instances of the relevant granularity to the
+total number of instances of that granularity in any given program
+execution.
+
+The tool collects some static information that helps instrument the
+program to measure the metrics. Then, program executions are monitored
+and results reported to the user.
+
+The fixes proposed to the programmer for each case are also predefined.
+
+The tool is implemented on top of LLVM.
+The paper reports on analysing 18 benchmarks and finding known
+performance problems in them.
+
+ ===== Comments for author =====
+
+ADDED AFTER AUTHOR RESPONSE
+
+I have read the author response in full. 
+It clarifies some of the issues that were raised, but fails to address the main concern of overfitting. Moreover, it confirms that the evaluation is inadequate. 
+
+My original review follows.
+
+
+----
+
+The work is motivated by practical and real need in software
+developement to identifying and fixing performance problems. This paper tries to identify
+opportunities for loop optimization by observing performance problems
+during execution.  In general, it is not possible to guarantee soundness of such optimizations
+in a compiler. The programmer needs to find them and manually rewrite the code. 
+
+There are very few tools that help with it especially in production
+code. The existing tools from research use static and dynamic analysis
+to help in certain situations.  This paper claims to provide a more
+general approach but in fact it can tackle limited cases of dead and
+redundant code in loops and provides no guarantees.
+
+Static and dynamic analysis are quite straightforward. They are
+described with enough detail to understand the ideas, although some
+details that would be needed to implement these analysis are left
+unspecified.
+
+There is no formal definition of what it means to "produce any
+results" or have "side effects". The paper informally says that it
+means global variables in the relevant code and local variables used
+outside the relevant code.  The relevant code seems to include
+interprocedurally all reachable callees. It is not clear how output
+operations (such as printing) are treated. It is not clear how
+indirect calls are resolved. Presumably the standard LLVM machinery is
+used (as hinted in sec 3.2.5).
+
+The main contribution of this paper seems to be experimental but the
+evaluation is not sufficient.
+
+The classification of performance problems considered in this paper is
+based on experiemental results reported and studied in previous work
+[11,31].  That previous study included 65 benchmarks, out of them 45
+were chosen by the current work to be related to loops and guide the
+design. Out of these 18 were used in the experiements. 
+
+In fact, these 18 benchmarks consist of several different versions of
+4 different large programs: gcc, mysql, mozilla, apache. Not clear
+exactly what components of the last 2 are used, but that is described
+in [31].
+
+If the classification is a contribution, it should be attributed to
+the previous study [31] and the fact that [31] didn't do a good
+analysis of its findings. This analysis is perhaps valuable but 
+very incremental over [31].  Moreover, the classification is
+straightforward and provides no insight.
+
+It is not surprising and in fact expected that a tool motivated by
+this analysis can deal well with a subset of its training set, that is
+the benchmarks the analysis is based upon. The tool should have been
+evaluated on different benchmarks to show that "coverage, precision,
+and performance" is transferrable. 
+
+Moreover, some of the benchmarks were manually translated from Java or
+JS to C++.  First, it is compeletely uclear why this translation
+preserves "usability".  Second, I wonder if using an LLVM frontend for
+Java or some more direct means of handing java bytecode to LLVM would
+also extend applicability of LDoctor.
+
+Not all 45 training set benchmarks are handled and the stated reason
+for it is that their translation to C would be too hard.  
+
+Sec 3.2.2 mentiones multithreaded C/C++ programs but no treatment of
+multithreading is done anywhere else in the paper. Moreovere,
+redundancy of computation can be a benefit in the presence of
+concurrency as it reduces sharing.
+
+If the analysis in sec 3.2.5 that identifies values that do not change
+throughout the loop is sound as stated why not just adding it to LLVM?
+It would be useful for optimizations in general.
+
+The motivating example fig 1 in sec 1 is questionable.
+
+Which gcc version are is this? I cannot find any method
+named mult_alg and has never been any such method as far as I know.
+Is this example talking about synth_mult in gcc/expmed.c?  The
+hash_entry unsigned_int bug is not performance bug, it's functionality
+bug.  The type of the hash entry is simply wrong in the original code
+introduced in Nov 2004.  The bug was reported in May 2006 and fixed in
+June 2006.
+
+I don't see any indication in the PR that Paolo Bonzini spent all his
+time since the bug was filed to figure out what was causing the
+inefficiency. I doubt it, unless Paolo himself says so.
+
+https://gcc.gnu.org/bugzilla/show_bug.cgi?id=27733
+https://gcc.gnu.org/ml/gcc-patches/2004-11/msg01420.html
+
+There has been quite a bit of progress in software
+development tools since 2006. I am not convinced that this bug would
+not have been easier to detect in 2006 than 2004, even
+without this paper's contribution.  
+
+I therefore don't understand how this example supports the conclusion
+that follows it: "Clearly, more research is neeeded to improve the
+state of the art of performance diagnosis"
+
+* reference 26 title: shouldn't it be [A]?
+
+References
+==========
+
+
+[A] Oswaldo Olivo, Isil Dillig, Calvin Lin: Static detection of
+asymptotic performance bugs in collection traversals. PLDI 2015:
+369-378
+
+===========================================================================
+                           PLDI '16 Review #141E
+                     Updated 15 Jan 2016 2:07:09pm EST
+---------------------------------------------------------------------------
+          Paper #141: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: X. Expert
+                      Overall merit: B. OK paper, but I will not champion
+                                        it
+
+                         ===== Paper summary =====
+
+This paper is an empirical investigation of performance bugs in real
+systems. The paper (i) generates a taxonomy of performance issues in loops and
+then (ii) provides root-cause strategies to deal with each issue in the
+taxonomy, and then (iii) demonstrates how to automatically find and suggest such
+a mapping from issue to potential fix to a user.  The paper's taxonomy deals
+with loops which a) only do useful work at the last iterate, b) may or may not
+do work in the last iterate, or c) always generate results in every iterate.
+Furthermore, the taxonomy also includes loops which do redundant work, either
+within the same loop but across loop iterations, or across loops.  The paper
+maps each of these items in the taxonomy to actions to fix such issues and then
+demonstrates that this system in concert can help pin-point and root cause
+common types of performance problems on a wide variety of real systems which
+have real performance bugs.
+
+===== Comments for author =====
+
+I like the spirit of this work; I often spend many hours a day fixing
+performance bugs in large and complex software and I welcome anything that helps
+automate this process!  The paper is well-written and the evaluation seems
+reasonable.  With a bit more work this could be a really awesome paper (and a
+really useful tool).  Please see my comments below that I hope help make the
+paper stronger in future versions.
+
+The paper states:
+
+"Unfortunately, existing performance diagnosis techniques are still
+preliminary. Performance-bug detectors can identify specific type of inefficient
+computation, but are not suitable for accurately diagnosing a wide variety of
+real-world performance problems..."
+
+This is a strong statement and really jumps out at the reader as at this point
+in the text there is little motivation or reason to believe such a statement.
+Please consider re-phrasing to something akin to "This paper argues existing
+performance diagnosis techniques are still preliminary" as I get by solving
+performance bugs at my day-to-day job with the existing techniques (albeit, as
+the paper correctly argues, with more burden on my brain and less on automated
+tooling).
+
+The notion that "accuracy" includes root-cause reasons in addition to pointing
+out hot loops seems a bit stringent. A profiler can be accurate with one and not
+the other (indeed even making a profiler accurate with respect to finding hot
+loops can be challenging). I would consider breaking out causal analysis on its
+own as it is an important and often overlooked part of performance bugs.
+Further, since a large part of the paper is on finding root causes correlated
+with a taxonomy, calling this part out strengthens the contribution in addition
+to differentiates this work from prior art.
+
+Figure 1 and the corresponding text could use more explanation. What is
+"severely hurting performance" in terms of numbers?  Why is such a change
+associated with a loop as the prior paragraph points out is where prior work in
+this space is deficient? I see no loop in the code nor is it clear why fixing
+this bug is difficult. The details here do not come out till 2.1.2.
+
+I like the taxonomy in 2.1.1: clear and obvious why such a view of the world is
+useful in diagnosing performance problems.
+
+Does memoization/batching ever cause a performance regression? Memoization, for
+example, can add memory overheads which adversely impact performance.
+
+I was excited to read the abstract/intro as this part of the paper makes it
+sound like LDoctor is something I can use today.  Then, I read the evaluation
+and saw that the paper only uses 18 of the 45 benchmarks.  Being an empirical
+paper, the results live and die by how usable LDoctor is on real programs.  Can
+you please elaborate as to why over half of the programs in Table 1 do not work
+with LDoctor?  The current explanation is not really sufficient.
+
+Why does the evaluation of accuracy only look at false-positives? Why not
+false-negatives?  This is particularly important given the earlier definition of
+accuracy---knowing that the root causes are in the set described by the paper is
+paramount to knowing if I can use the tool. 
+
+The root-cause and taxonomy were built from looking at these programs /
+bugs. How do we know the taxonomy is sufficient to find interesting bugs in
+programs NOT in this set. [31] it seems to have almost the same set of bugs
+(i.e., table 1 in this paper vs table 7 of 31) and that paper finds the
+redundant loops manually.  What would make this paper stronger is a set of
+programs which have redundant/resultless loops but are not drawn from the same
+set of programs which were used to come up with this taxonomy.  In other words,
+how general is the set of fixes the paper provides? If I were to download the
+tool today, would the fix strategies in table 1 solve all of my performance
+issues?  I find this unlikely (e.g., blocking is an important optimization in
+matrix-multiplication and does not seem to fit into the taxonomy/fix
+strategies), so the question is, by looking at this set of programs, how general
+is LDoctor?  Do the authors feel their evaluation answers this question?
+
+The paper states that its approach is actionable.  And, I agree that it
+is. However, the actions require of the programmer may not be as trivial as it
+appears in these examples. For example, I may be able to twist a blocking
+optimization into one that batches memory reads --- however, implementing such
+an optimization is nontrivial! In this instance, the important part the
+performance tool is to point me to the location of a potential issue (i.e., poor
+memory locality) rather than suggesting the fix.  And, pointing me to a
+problematic loop is already done by standard profilers. Do the authors feel such
+a problem exists and if so how does LDoctor help a user here?
+
+ADDED AFTER AUTHOR RESPONSE: Thank you for the detailed rebuttal. I agree with other reviewers and worry about the selection of benchmarks both used to generate the taxonomy in addition to evaluating whether LDoctor can find and fix bugs according to that taxonomy.
+
+===========================================================================
+                 Response by Shan Lu <shanlu@uchicago.edu>
+          Paper #141: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+We thank the reviewers for their valuable comments.
+
+* Comparing with [24,25,26] (#A)
+
+[24] detects redundant nested loops. It helps diagnose cross-loop redundancies, but not
+ other types. Being a dynamic tool, it incurs 10X or more slowdowns; it has more false 
+positives than LDoctor, without focusing on suspicious loops.
+
+[25] detects loops with conditional-break fixes, which does not match any bugs
+in our benchmark. 
+
+[26] statically detects a sub-set of cross-loop redundancies, not other types.
+
+
+* Explain Figure-1 Example (#A,#B,#D,#E)
+
+It is from GCC bug-database (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=27733). 
+We changed the function-name from synth_mult to mult_alg for illustration purpose.
+The bug makes memoization not always work, but not affecting correctness.
+GCC developers tagged it as ``compile-time-hog''. 
+The patch achieves hundreds-of-times speedup for GCC test cases.
+There is no loop in Figure-1, but mult_alg is a recursive function.
+Discussion on the GCC forum shows that the problematic function was identified
+through profiling early on, but the root-cause and patch were not figured
+out until rounds of discussion/testing later. We wanted to demonstrate 
+the need for performance diagnosis tools beyond profilers.
+
+* Why only 18 bugs (out of 45) are evaluated (#A,#B,#C,#D,#E)
+
+There is no fundamental challenges in applying LDoctor to the remaining 27
+cases. We didn't try them due to a mix of:
+(1) difficult to repeat (e.g., the buggy software only runs on Windows machines;
+the buggy software is too old to compile);
+(2) programs written in non-C/C++ languages, although there are no reasons 
+why similar bugs cannot appear in C/C++ programs;
+(3) programs difficult to extract (e.g., containing a lot of GUI actions or
+complicated data structures). Note that complicated data structures making
+code extracting difficult, but does not affect LDoctor's diagnosis in these cases.
+
+* Apply LDoctor beyond the 45 bugs (#B,#C,#D)
+
+We do not believe that we are committing the sin of using the training set as test set.
+LDoctor is designed following the taxonomy presented in Section 2.
+Our taxonomy is designed in a general way, as mentioned by several reviewers.
+The 45 bugs is a test set, *not* a training set, for the taxonomy or LDoctor design.
+The taxonomy and LDoctor design simply share common tests.
+There is no over-fitting in LDoctor. For parameters used in LDoctor, our paper reported
+ how results change with parameter changes.
+
+Similar methodology has been shared by many previous work, where a common
+benchmark suite is used to evaluate many tools.
+
+We agree with reviewers that more benchmarks can make the evaluation stronger. 
+
+The challenge is that LDoctor is a failure-diagnosis tool, *not* a bug-detection tool. 
+That is, we cannot feed LDoctor with a random program and expect LDoctor to 
+report performance problems. Instead, like performance diagnosis in practice, 
+LDoctor needs to be provided with a performance-slowdown/problem symptom 
+that is already observed, together with triggering inputs.
+This severely limits the benchmarks we can use. [31] provides the 
+best performance-debugging benchmarks, and hence we use it.
+
+* Can LDoctor suggest what to memoize? (#B)
+
+Good suggestion! Since LDoctor knows what exactly are the memory reads that 
+return the same values again and again, it can help decide what to memoize. 
+Generating a concrete patch goes beyond the scope of LDoctor.
+
+* Are output-operations considered having side-effect? (#D)
+Yes
+
+* What are false negatives of LDoctor? (#E)
+Discussed in Section-4.1 (Coverage Results).
+
+* How is a benchmark extracted? (#C,#D)
+
+We extract the buggy code and its related code (callers, callees, etc.) and translates
+them to C/C++. We keep all related data structures and control/data flows unchanged.
+We design unit tests for the re-implemented code based on inputs in bug reports 
+and our understanding of the bug. 
+
+* Is LDoctor extensible to loop identified by generic profilers (#A)?
+Yes
+
+* What is the input to LDoctor? (#A)
+
+We run the whole applications using the inputs suggested by bug
+reports. The analysis only focuses on top-ranked suspicious loops.
+
+* There is no new program-analysis techniques in LDoctor (#B)
+
+We don't invent new program-analysis techniques. Instead, we aim to solve
+an important problem, performance diagnosis, using program analysis.

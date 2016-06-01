@@ -1,0 +1,286 @@
+===========================================================================
+                         OOPSLA 2016 Review #108A
+---------------------------------------------------------------------------
+          Paper #108: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: X. I am an expert in this area
+                Reviewer confidence: 3. High
+                      Overall merit: 2. Some merit, significant objections
+
+                         ===== Paper summary =====
+
+This paper addresses the problem of automatically finding performance bugs that are caused by inefficient loops. Towards this goal, the paper first presents a taxonomy of inefficiencies in loops: The two main classes are so-called "resultless" loops which perform computation with no observable side effects. The second main class of inefficiency arises from "redundant" loops which perform redundant computation. The paper further categorizes these inefficiencies into subclasses, such as (0|1)* loops, 0*1 loops, cross-iteration redundant loops etc. Based on this taxonomy, the paper proposes a tool called LDoctor for finding inefficient loops. The tool employs a hybrid (static + dynamic) analysis approach: The static analysis is used to identify possible inefficiencies while the dynamic analysis is used to assess the existence/severity of the inefficiency. The paper performs two kinds of evaluations: First, it assesses the generality of the proposed taxonomy on performance proble
+ ms from Apache, Chrome, GCC, Mozilla, and MySQL. Second, it evaluates the usefulness of the LDoctor tool on the benchmarks from Toddler as well as a subset of the benchmarks used for evaluating the taxonomy.
+
+                      ===== Comments for author =====
+
+On the positive side, the paper addresses an important problem, and tools for finding performance issues in software are likely to be quite useful. However, as detailed below, the paper has a number of weaknesses with respect to novelty, writing, evaluation etc.
+
+* Novelty/contributions: One of the main selling points of the paper is the root-cause taxonomy, but I did not find this taxonomy to be particularly useful/insightful. For instance, consider "resultless" loops: Out of the four classes, 0* loops basically never seem to arise, and 1* loops do not seem to indicate a root cause. The techniques underlying the LDoctor tool also do not seem particularly novel -- from what I could tell, it seems to use basic and standard static analysis techniques.
+
+* Evaluation: The overall experimental results are not very convincing for two reasons: 1) The authors picked 65 performance problems from an existing bug database but only 18 of them are used to evaluate LDoctor. 2) Although additional Java benchmarks from previous papers are included, LDoctor can only analyze C++ code, so the authors seem to have manually translated Java to C++. The evaluation would be significantly more convincing if the authors show that LDoctor finds previously unknown performance issues in real programs. I was also not convinced that the "fix strategies" suggested by LDoctor are very insightful/useful.
+
+* Writing: The writing seems quite imprecise, and the paper generally lacks a formal treatment of the concepts that are introduced. The paper could also really benefit from a running example that puts everything together.
+
+* Usefelness:  In order to generate a useful report, LDoctor relies on the existence of inputs that trigger the performance problem. However, such inputs may be hard to obtain in practice, so the usefulness of LDoctor for detecting performance problems is a bit questionable. Also, even though the paper claims that LDoctor provides accurate diagnosis for inefficient loops, its "fix strategy" mainly relies on some global, predefined templates which are well-known (e.g., batching, memoization.).
+
+* Comparison with other tools: Section 5.6 seems completely out of place -- this discussion belongs in Related Work, not in Evaluation. You should either do a quantitative comparison with these tools or not include this discussion in Evaluation.
+
+===========================================================================
+                         OOPSLA 2016 Review #108B
+                     Updated 26 May 2016 8:27:45am EDT
+---------------------------------------------------------------------------
+          Paper #108: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: Y. I am knowledgeable in this area,
+                                        but not an expert
+                Reviewer confidence: 2. Medium
+                      Overall merit: 4. Significant merit, some objections
+
+                      ===== Comments for author =====
+
+This paper introduces the LDoctor tool, which uses static analysis to identify
+possibly ill-performing loops and dynamic sampling to confirm whether the loops
+really do perform badly when a program is run. This is not an area of
+performance I was previously familiar with, so I can't validate LDoctor's
+novelty. However, I really liked the core idea in this paper, and can imagine
+using something like this to help improve the performance of real programs. [I
+quite often see, for example, people writing loops which are accidentally
+quadratic, when they could easily be linear.]
+
+In many ways, the paper is fairly easy to read, possibly in part because I found
+the basic concepts easy to understand. However, the writing is often more vague
+and confusing than it needs to be. A few major examples follow.
+
+1) The introduction spends a lot of effort explaining why existing tools aren't
+good enough, but this is rather confusing, because (until Section 1.2) there is
+no hint given as to the approach the authors are proposing. This is a problem
+because the reader can't tell if the authors are simply putting up strawmen
+arguments or not. For example, the paragraph on p1 with the sentence
+"Unfortunately, these tools are not designed for and are consequently unsuitable
+for performance diagnosis" makes no sense to the reader at that point in the
+paper, as the reader has no idea what the difference between a "performance
+bug" and "performance diagnosis" might be? An easy fix might be to put the
+paper's solutions into the abstract, so that the reader has some idea of what
+those solutions are when reading the introduction.
+
+2) The authors sensibly consider arbitrary library functions to be side-effecting
+(unless they're part of a manually maintained whitelist). However, I'm unclear
+as to how this effects the calculation of input recording. For example, if I
+have an expression "if getchar() == 32" (and assuming getchar is an external
+function), is that considered to be equivalent to a memory read? It's clearly
+something that can vary in each iteration of the loop, but Section 3.2.2 doesn't
+seem to explain this (in Figure 5, the output of getchar() is stored into
+memory, which bypasses the issue I'm raising). [p8 suggests that LDoctor
+considers IO as a special thing, but that's the only mention I can find.]
+
+3) Something that puzzled me whilst reading the paper is what languages LDoctor can
+work on. Some of the examples appear to be given in JavaScript (though this is
+vague), and it is only on p9 that we discover that "Among these 18 [benchmarks],
+seven are extracted from Java or JavaScript programs and re-implemented in C++,
+as LDoctor currently only handles C/C++ programs". I don't know why the paper is
+so vague about this, because, in my mind, this is not a negative point: I would
+have been astonished if LDoctor could handle multiple languages!
+
+Unfortunately, I didn't find the evaluation section hugely convincing. The
+authors seem only to to focus on showing that LDoctor can find bugs and fixes
+that other people have already discovered (in some cases, I think, on rather
+ancient software). As one technique for evaluating LDoctor this is fine, but I
+really wanted to see LDoctor applied to modern systems. Can LDoctor find
+performance bugs in Firefox or Chrome, for example? I'd like to think it can
+and, if so, I'd almost certainly find that really convincing.
+
+As a technical benchmarking comment, as I understand things, Table 4's
+performance figures result from a single run of a program. This is not an
+appropriate way of benchmarking, as program performance frequently varies
+significantly from run to run -- 5% performance differences can easily vanish
+when a program is rerun. It is therefore important that benchmarks are run
+multiple times and confidence intervals reported.
+
+So, in summary, this paper has a really interesting idea, just about explains it
+well enough, and misses some opportunities to convince readers in the
+evaluation. That makes it a little hard to give a verdict, but I like the core
+idea here enough to score it fairly highly. In a revision of this paper, I would
+encourage the authors to first rethink the evaluation section somewhat, and then
+to tighten the paper's general explanation of the ideas herein.
+
+
+  Minor comments
+
+p3, Figure 2: I've stared at this for a while and, based on the information
+in the figure, I can't work out why is resultless. Can offset never equal
+target (the latter var isn't defined, so I have no idea what possible value(s)
+it may contain). [The additional information in the prose below helps a bit,
+but I still don't fully get the example.]
+
+p3: What are the "+" figures in Figure 3 for? Output from diff maybe? <Reads
+further> Aha, the prose below makes it clear that this is both a performance
+bottleneck *and* the patch that fixes the bug. So I was right that it's diff
+output. The caption could, then, be much clearer.
+
+p3: "0*1" and "[0|1]*" are easily misread as being the same. There again, I
+couldn't come up with better names myself, so perhaps they should just stay as
+they are!
+
+p4: What's a "natural" loop?
+
+p5: "Except for 0*, none of the other three types of loops are inefficient for
+sure." might better be something like "Although 0* loops are obviously
+inefficient, all we can say statically about the other three loop types is that
+they may be inefficient."
+
+p5: "For a 0*1? loop, since it only generates results in the last iteration, we
+only need to know the total number of loop iterations of each loop instance to f
+i gure out the loop resultful rate, which we define as the ratio between the
+number of iterations with side effects and the total number of iterations."
+Isn't this ratio always "1/num_iterations"? Is the point of the description to
+show that the same idea can be used for [0|1]* loops, where the ratio will be
+"M/N" for arbitrary integers(where M<=N)?
+
+p6, Figure 5: I found the figure a little hard to understand, partly because
+what it's doing seems to be really silly. Maybe it would help to explain why the
+loop is doing what it's doing (i.e. what's the context of the function).
+
+p7: The change of gears into talking about LLVM feels a little out of place. I
+wonder if Section 3.2.4 should be a new section (rather than a subsubsection).
+
+p8: "LDoctor will suggest a data-structure change in case of 0*1? loops." I'd
+like to see an example of the output in this case.
+
+p8, Table 1: I think it would be better not to call these "bugs", as that is
+much more commonly used to mean "semantic flaw" rather than "non-functional
+property flaw".
+
+p8: "Generating complete patches is out of the scope of LDoctor." Presumably
+this is impossible for the tool to guess, in general? Or is it just "this
+might be possible, but it's too hard given the current scope of LDoctor"?
+
+p8, Table 1: This table must include software version numbers, otherwise there's
+no way that the study can be replicated.
+
+p9, Table 2: I don't know how to interpret this table (what do the shaded boxes
+mean?).
+
+p12, Table 4: This table is a little easier to interpret, but I still had to
+read the prose in the main body of text to work out what the important numbers
+were (what are the other numbers in the table telling me? I'm not really sure).
+[As a minor nit, the acronym "C-L R." was just "C-L" in Table 3.]
+
+
+
+==============================
+
+Comments after PC meeting
+
+Whilst I still like the basic idea in this paper, I admit that my confidence in the paper has been slightly chipped away at over time. This meant that I ended up being unable to champion it, hence its rejection.
+
+What the Programme Committee largely (though not wholly) agree is that there are good ideas in this paper.
+
+The major problem that ultimately the PC agreed on is that the evaluation is not good enough for a conference like OOPSLA. The authors really need to evaluate more systems and, preferably, to find performance bugs in real systems. It would also help a great deal if performance numbers were then presented of the performance before and afterheads (with timings given as means and confidence intervals).
+
+A lesser (though not insignificant) problem is that the paper's presentation needs improving: there are plenty of comments in the reviews above to help the authors in this regard.
+
+                 ===== Questions for Author Response =====
+
+None
+
+===========================================================================
+                         OOPSLA 2016 Review #108C
+                     Updated 28 May 2016 7:59:51pm EDT
+---------------------------------------------------------------------------
+          Paper #108: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+                 Reviewer expertise: Y. I am knowledgeable in this area,
+                                        but not an expert
+                Reviewer confidence: 2. Medium
+                      Overall merit: 3. Some merit, weak objections
+
+                         ===== Paper summary =====
+
+This paper presents a tool, called LDoctor, focused on identifying root causes of performance problems caused by inefficient loops. LDoctor assumes a set of loops that seem to be correlated with performance problems as input; the goal is to use LDoctor in conjunction with other performance diagnostic tools. LDoctor checks for two types of issues: resultless loops (where some iterations do not produce results) and redundant loops (where some/all iterations of the loop are identical to previous iterations), using a combination of dynamic and static analysis focused on the specific loop types.
+
+                      ===== Comments for author =====
+
+I enjoyed reading this paper. I particularly liked the taxonomy of loop-related performance problems, and I can see the appeal of a tool like LDoctor when solving real issues. However, there were a few issues with the evaluation/implementation.
+
+I was excited to read that LDoctor provides fixes for loop-related performance issues. From the motivating examples, it seems clear that just pinpointing a loop that has performance problems is not enough information to debug the issue. However, it was not clear that the provided fixes would be useful enough to fix the problem. From the description in section 3.3, it sounds like the fixes only point to which area in the taxonomy the loop problem falls, without providing specific guidance. Is this actually enough information to help developers fix the problem?
+
+Secondly, I had some serious concerns about the effectiveness of LDoctor after reading the evaluation section. It seems that LDoctor is only applicable on 18/45 loop bugs. The remaining bugs are "too difficult to be reproduced". Since the goal is to help identify and fix real-world performance bugs, does this mean LDoctor is often not effective in practice because performance bugs are difficult to reproduce? Since the implementation of LDoctor is essentially heuristic-based, how could the tool be expanded to deal with these other 27 cases?
+
+I am also concerned that several benchmarks were reimplemented in C++ in order to run LDoctor. It fact, it seems LDoctor was able to run directly on only 11/39 benchmarks.
+
+The paper also had a number of typos and could use a proofreading pass. e.g.:
+"loop worths fixing" ==> loop is worth fixing
+"one iteration have side effects" ==> one iteration has side effects
+"We will compare the computation" ==> we compare the computation
+
+ADDED AFTER AUTHOR RESPONSE
+
+Thank you for the response. Although there are several things I like about this paper, I still have some confusion.
+
+* The "diagnosis not detection" distinction is still not totally clear when reading the paper. How exactly does LDoctor fit in the workflow of a developer who is concerned about performance? How much time does it take to act based on the tool output, and what other tasks are required? Including some actual examples of LDoctor output would be helpful.
+
+* The evaluation is still giving me pause. Reimplementing benchmarks and not being able to fix most performance issues highlighted as possible benchmarks both give me pause. Also, how much did the benchmarks speed up after making the suggested fixes?
+
+* You say you "picked" a taxonomy. How was this choice validated?
+
+                 ===== Questions for Author Response =====
+
+1) Can you provide some examples of fixes? Would LDoctor typically just output "conditionally skip this loop" or "use batching"?
+
+2) Sometimes LDoctor "can" provide some detailed information to help with the patch. When is LDoctor able to do this? What does the detailed information look like (i.e. a few specific output examples)?
+
+3) How was the taxonomy developed?
+
+===========================================================================
+                 Response by Shan Lu <shanlu@uchicago.edu>
+          Paper #108: Performance Diagnosis for Inefficient Loops
+---------------------------------------------------------------------------
+
+We thank the reviewers’ feedback. We will take the reviewers’ insightful suggestion about writing and evaluation in the next version of this paper.
+
+Review#A
+
+Question: LDoctor didn’t find previously unknown performance issues? Are the inputs hard to obtain for performance diagnosis?
+
+Answer: As emphasized in Section-5.1, “LDoctor is a tool that helps diagnose already-manifested performance problems, not a detection tool that can help predict not-yet-manifested problems.”
+
+Inputs are easy to obtain in the context of diagnosing already-manifested performance problems. Previous study found that almost all performance bug reports contain detailed input information [32].
+
+Review#B
+
+Question: How to treat getchar()-like library functions?
+
+Answer: Indeed, we treat them like memory reads and record their return values. We will clarify this in the next version of paper.
+
+Question: Apply LDoctor to modern systems?
+
+Answer: Good suggestion. In fact, many of our benchmarks, including all the 21 bugs from Toddler suite, are from code released within last 5 years. Most of our Mozilla bugs are indeed from the Firefox component.
+
+Question: Did you run each benchmark multiple times for performance measurement?
+
+Answer: Sorry that our writing led to the confusion. To compute each overhead number, we always run 10 times and use the average execution time. For each version of a benchmark that requires sampling, we use the same random seed in different performance-measurement runs. The run-time difference across these 10 runs is always less than 5%.
+
+Review#C
+
+Question 1) and 2): How does LDoctor help patching?
+
+Answer: For every inefficient loop, LDoctor suggests a fix strategy and provides related information for carrying out that strategy.
+
+For example, when suggesting iteration-memoization for a cross-iteration redundant loop, LDoctor reports the run-time iteration-redundancy ratio, the memory-read instructions M that each iteration’s side-effect instructions S depend on, and run-time values read by M. If developers decide to take the fix suggestion, they simply need to refactor the loop to cache S results indexed by values returned by M.
+
+When suggesting conditional-skip for a [0|1]* loop, LDoctor identifies the side effect instructions S in the loop and reports what percentage of loop iterations have executed each such instruction. If developers decide to take the fix suggestion, they simply need to refactor the loop, lifting the path condition of S outside the loop.
+
+Overall, LDoctor provides information to help developers decide whether and how to fix.
+
+Question 3): How was the taxonomy developed?
+
+Answer: Based on our understanding of real-world performance problems, we tried several taxonomies and finally picked the one that best fit the three principles listed in Section 2 --- coverage, actionability, and generality.
+
+Question: Is LDoctor only applicable on 18/45 loop bugs?
+
+Answer: No. These 27 bugs have all been reliably reproduced by users and developers when they were reported. Table-2 shows that developers should be able to apply LDoctor (or its Java/JavaScript-version) to these bugs and obtain good diagnosis results. We couldn’t reproduce these bugs because either (1) we do not have the machine settings that developers had a few years ago or (2) some reproducing information may be omitted by developers in on-line discussion.
+HotCRP
