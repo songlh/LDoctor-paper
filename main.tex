@@ -2,13 +2,13 @@
 
 
 %\documentclass[pldi]{sigplanconf-pldi16}
-\documentclass[10pt]{sigplanconf}
+\documentclass[10pt,conference]{IEEEtran}
 % standard LaTeX packages
 
 % standard LaTeX packages
 %\usepackage{changebar}
 
-\usepackage[final]{oopsla2016}
+%\usepackage[final]{oopsla2016}
 \usepackage{balance}
 \usepackage{alltt}
 \usepackage{amsmath}
@@ -34,7 +34,7 @@
 \usepackage{pifont}
 %\usepackage{pgfplotstable}
 
-\usepackage[linesnumbered, vlined, ruled]{algorithm2e}
+%\usepackage[linesnumbered, vlined, ruled]{algorithm2e}
 % font selection
 %\usepackage{courier}
 %\usepackage[scaled]{helvet}
@@ -112,13 +112,27 @@
 \input macros.tex
 
 %\numberofauthors{2}
-\authorinfo{Linhai Song}
-           {University of Wisconsin--Madison}
-           {songlh@cs.wisc.edu}
+%\authorinfo{Linhai Song}
+%           {University of Wisconsin--Madison}
+%           {songlh@cs.wisc.edu}
 
-\authorinfo{Shan Lu}
-           {University of Chicago}
-           {shanlu@uchicago.edu}
+%\authorinfo{Shan Lu}
+%           {University of Chicago}
+%           {shanlu@uchicago.edu}
+
+\author{\IEEEauthorblockN{Linhai Song}
+\IEEEauthorblockA{University of Wisconsin--Madison\\
+%line 2: name of organization, acronyms acceptable\\
+%line 3: City, Country\\
+songlh@cs.wisc.edu}
+\and
+\IEEEauthorblockN{Shan Lu}
+\IEEEauthorblockA{University of Chicago\\
+%line 2: name of organization, acronyms acceptable\\
+%line 3: City, Country\\
+shanlu@uchicago.edu}
+}
+
 
 \maketitle
 \begin{abstract}
