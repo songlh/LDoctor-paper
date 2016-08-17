@@ -14,7 +14,7 @@ We implement \Tool in LLVM-3.4.2 \cite{llvm}, and conduct our
 %with 4748 for instrumenter, 674 for resultless analysis, 
 %5802 for redundancy analysis, 
 %and the remaining 6430 for common utilities. 
-experiments on a i7-960 machine, with Linux 3.11 kernel. 
+experiments on a i5-3330S machine, with Linux 3.19 kernel. 
 
 \paragraph{Benchmarks}
 Note that \Tool is a tool that helps diagnose already-manifested performance problems,
@@ -242,7 +242,8 @@ any form of inefficiency, resultless or redundancy.
 
 \begin{table}
   \centering
-  \scriptsize
+  %\scriptsize
+  \tiny
   \newcommand{\Yes}[1]{\checkmark{}$_#1$}
   \newcommand{\No}[0]{-}
   \begin{tabular}{lccccc}
@@ -252,18 +253,18 @@ any form of inefficiency, resultless or redundancy.
      \cmidrule(lr){5-6}
      {\bf BugID}  & {\bf Resultless}  &  {\bf C-L R. } & {\bf C-I R. }  & {\bf C-L R.}  & {\bf C-I R. } \\
     \midrule
-    Mozilla347306 &  1.07\%           &  22.40\%       &  10.17\%       & 304.37{\bf X} & 468.74{\bf X} \\ 
-    Mozilla416628 &  0.80\%           &  4.10\%        &  2.99\%        & 567.51{\bf X} & 85.6{\bf X} \\
+    Mozilla347306 &  $<0.01\%\pm0.73\%$  & $18.29\%\pm1.33\%$       &  $18.84\%\pm4.44\%$  & 355.51{\bf X}$\pm$8.59{\bf X} & 661.49{\bf X}$\pm$81.63{\bf X} \\ 
+    Mozilla416628 &  $<0.01\%\pm1.76\%$  & $4.87\%\pm2.09\%$        &  $2.41\%\pm1.58\%$   & 72.52{\bf X}$\pm$1.57{\bf X}  & 112.15{\bf X}$\pm$2.01{\bf X} \\
     \midrule
-     MySQL27287   & $<$0.01\%           &   1.66\%       &   -            & 109.55{\bf X} & 352.07{\bf X} \\
-     MySQL15811   &  -                &   0.03\%       &   -            & 227.04{\bf X} & 424.44{\bf X} \\
+     MySQL27287   &  $5.47\%\pm1.29\%$   & $0.20\%\pm2.04\%$        &   -                  & 263.74{\bf X}$\pm$8.50{\bf X} & 880.95{\bf X}$\pm$101.24{\bf X} \\
+     MySQL15811   &  -                   & $0.35\%\pm2.81\%$        &   -                  & 413.59{\bf X}$\pm$53.94{\bf X}& 1087.16{\bf X}$\pm$43.26{\bf X} \\
     \midrule
-      GCC46401    & 3.12\%         & 3.80\%            &  5.95\%        & 21.07{\bf X}  & 38.44{\bf X}\\ 
-      GCC1687     & -              & /                 &  $<$0.01\%       &   /           & 142.29{\bf X} \\
-      GCC27733    & $<$0.01\%        & /                 &  4.73\%        &   /           & 17.41{\bf X}     \\
-      GCC8805     & -              & $<$0.01\%           & $<$0.01\%        & 2.22{\bf X}   &  3.52{\bf X}\\
-      GCC21430    & -              & 5.46\%            &   0.69\%       & 107.20{\bf X} & 159.89{\bf X} \\
-      GCC12322    & -              & 1.75\%            &  $<$0.01\%       & 21.07{\bf X}  & 38.44{\bf X} \\
+      GCC46401    &  $<0.01\%\pm0.17\%$  & $<0.01\%\pm0.27\%$       &  $<0.01\pm0.22\%$    & 32.89 {\bf X}$\pm$0.38{\bf X} & 59.07{\bf X}$\pm$1.24{\bf X}\\ 
+      GCC1687     & -              & /                 &  $1.84\%\pm0.28\%$                &   /                           & 223.30{\bf X}$\pm$17.75{\bf X} \\
+      GCC27733    & $<0.01\%\pm0.26\%$   & /           &  $<0.01\%\pm0.25\%$               &   /                           & 18.44{\bf X}$\pm$0.32{\bf X}     \\
+      GCC8805     & -              & $0.50\%\pm1.26\%$ &  $0.19\%\pm1.43\%$                & 2.89{\bf X}$\pm$0.35{\bf X}    & 3.36{\bf X}$\pm$0.44{\bf X}\\
+      GCC21430    & -              & $4.86\%\pm0.81\%$ &  $2.37\%\pm1.38\%$                & 164.02{\bf X}$\pm$20.35{\bf X} & 254.9{\bf X}$\pm$22.34{\bf X} \\
+      GCC12322    & -              & $4.77\%\pm2.48\%$ &  $<0.01\%\pm2.24\%$               & 25.56{\bf X}$\pm$2.50{\bf X}  & 24.87{\bf X}$\pm$2.52{\bf X} \\
    \bottomrule
    \end{tabular}
   %\nocaptionrule
@@ -290,8 +291,8 @@ As we can also see from the table, our performance optimization discussed in
 Section \ref{sec:inst} and \ref{sec:perf} has helped.
 
 The performance benefit of sampling is huge.
-Without sampling, even with all the static optimization, redundancy
-analysis lead to over 100X slowdown for five benchmarks.
+Without sampling, redundancy
+analysis lead to over 100X slowdown for six benchmarks.
 
 The benefit of static optimization is also non-trivial. 
 For example, for MySQL\#15811 and MySQL\#27287, static analysis alone can
@@ -303,8 +304,8 @@ As another example, the buggy loops of MySQL\#27287 and MySQL\#15811 access
 arrays. 
 After changing to tracking the initial and ending memory-access addresses
 of the array, instead of the content of the whole array accesses,
-the overhead is reduced from 11.77\% to 1.66\% for MySQL\#27287, 
-and from 20.46\% to 0.03\% for MySQL\#15811 respectively 
+the overhead is reduced from 12.18\% to 0.20\% for MySQL\#27287, 
+and from 20.53\% to 0.35\% for MySQL\#15811 respectively 
 (sampling is conducted consistently here). 
 
 \subsection{Parameter Setting and Sensitivity}
@@ -317,7 +318,7 @@ results. Due to space constraints, we briefly summarize the results below.
 When we lower the sampling rate from 1/100 to 1/1000 
 in cross-loop redundancy analysis,
 among all the benchmarks in Table \ref{tab:performance},
-Mozilla\#347306 still incurs the largest overhead (merely 0.49\%). 
+Mozilla\#416628 incurs the largest overhead (merely 4.51\%). 
 The diagnosis results remain the same for all but
 GCC\#12322, where too few samples are available
 to judge redundancy.
@@ -325,7 +326,7 @@ to judge redundancy.
 When we lower the sampling rate from 1/1000 to 1/10000
 in cross-iteration redundancy analysis,
 among all the benchmarks in Table \ref{tab:performance},
-Mozilla\#347306 has the largest overhead (merely 4.47\%). 
+Mozilla\#347306 has the largest overhead (merely 7.38\%). 
 %In fact, Mozilla347306 is the only one whose overhead is larger than 2\%. 
 The diagnosis results remain 
 the same for all but GCC\#12322.
