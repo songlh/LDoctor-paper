@@ -529,7 +529,10 @@ We did not encounter such false positives in our experiments.
 
 \subsection{Fix Strategy Recommendation}
 \label{sec:redundant_fix}
-\Tool suggests how to fix an inefficient loop to developers.
+
+\Tool suggests how to fix an inefficient loop 
+{\color{red} and provides related information for carrying out that fix} 
+to developers.
 This process is straightforward following our taxonomy discussion in 
 Section \ref{sec:study}, as there is often only one or two natural fix 
 strategies for each sub-category of root causes.
@@ -538,6 +541,9 @@ Once a loop is identified as \emph{resultless}, \Tool will suggest
 the loop to be completely deleted, in case of 0$^*$ resultless, or
 conditionally skipped, in case of [0$|$1]*; \Tool will suggest a 
 data-structure change in case of 0*1? loops.
+{\color{red}Besides these fix strategies, \Tool also reports side-effect instructions 
+and what percentage of loop iterations executing each such instruction. 
+These information can help developers refactor the loop or change data structures processed by the loop. }
 
 When a loop is identified as \emph{redundant}, \Tool conducts
 extra analysis to
@@ -550,8 +556,11 @@ Specifically,
 when the only side effect of a loop is from I/O operations
 and the same statement(s) is executed in every loop iteration, \Tool reports 
 this
-as an I/O related redundancy problem and suggests batching as a potential fix
-strategy. Otherwise, \Tool suggests memoization.
+as an I/O related redundancy problem, 
+{\color{red}pointing out I/O instructions,} 
+and suggests batching as a potential fix
+strategy. Otherwise, \Tool suggests memoization, 
+{\color{red}and provides information for input instructions and redundancy rate.}
 
 For cross-loop redundancy, whether to use memoization or batching often
 depends on which strategy is cheaper.
@@ -564,7 +573,9 @@ we recommend memoization. Instead, if the side effect is to update
 a sequence of memory locations, with the number of locations increasing
 with the workload, memoization is unlikely to save much and
 hence batching is suggested.
+{\color{red} \Tool will also provide information for input instructions and side-effect instructions to developers. }
 
+{\color{red} [redundant]
 In addition to the above high-level fix strategies, \Tool can also provide some 
 detailed information to help developers design the patch.
 For example, in case of memoization fix strategy,
@@ -573,7 +584,7 @@ again and again, it can help decide what to memoize; in case of
 I/O-related batching, \Tool points out the exact I/O operations that should
 be considered batching; and so on. 
 Generating complete patches is out of the scope of \Tool.
-
+}
 
 %TODO what does batching mean for cross-loop redundancy???
 

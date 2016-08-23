@@ -56,7 +56,9 @@ get ranked by the profiler \cite{SongOOPSLA2014}.
 Performance bug detection tools use static or dynamic analysis to identify
 code regions that match specific inefficiency patterns 
 \cite{Alabama,CARAMEL, Cachetor,Xu:2010:FLD:1806596.1806617,Dufour:2008:STC:1453101.1453111, Xu:2009:GFP:1542476.1542523, Xu:2010:DIC:1806596.1806616,IsilDillig.PLDI15}. 
-Unfortunately, these tools are not designed for and are consequently
+Unfortunately, these tools are not designed %for
+{\color{red} to identify code regions for a specific execution slowness}  
+and are consequently
 unsuitable for performance diagnosis.
 They are not designed to provide \textit{coverage} for a wide
 variety of real-world problems; their analysis is not guided by
@@ -136,6 +138,9 @@ especially loop-related performance problems.
 This paper presents a tool, \Tool, that can help effectively diagnose
 inefficient loop problems, the most common type of performance problems
 \cite{SongOOPSLA2014,PerfBug}, with good coverage, accuracy, and performance.
+{\color{red} \Tool does not target identifying previously unknown performance bugs, 
+but aims to provide root causes for execution slowness caused by inefficient loops.}
+
 
 \Tool tackles this challenging problem in three steps.
 %}
