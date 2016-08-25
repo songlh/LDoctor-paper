@@ -1,21 +1,21 @@
 Writing efficient software is difficult.
-Design and implementation defects can easily
+Design and implementation defects can
 cause severe performance 
 degradation. 
-Unfortunately, existing performance diagnosis techniques are still preliminary.
+Unfortunately, existing performance diagnosis techniques like profilers are still preliminary.
 %failing to provide the desired diagnosis coverage, accuracy, and performance. 
-Performance-bug detectors can identify specific type
-of inefficient computation, but are not suitable for accurately diagnosing
-a wide variety of real-world performance problems. 
-Profilers can locate code regions that consume resources, but 
+%Performance-bug detectors can identify specific type
+%of inefficient computation, but are not suitable for accurately diagnosing
+%a wide variety of real-world performance problems. 
+They can locate code regions that consume resources, but 
 not the ones that \textit{waste} resources.
-Statistical performance diagnosis can
-identify loops or branches that are most correlated with a performance
-symptom, but cannot decide whether and why a loop is inefficient, and
-how developers might fix it.
+%Statistical performance diagnosis can
+%identify loops or branches that are most correlated with a performance
+%symptom, but cannot decide whether and why a loop is inefficient, and
+%how developers might fix it.
 
 In this paper, we first design a root-cause
-and fix-strategy taxonomy for real-world inefficient loops, 
+and fix-strategy taxonomy for inefficient loops, 
 one of the most common performance problems in the field.
 We then design a static-dynamic hybrid analysis tool, \Tool, to
 provide accurate performance diagnosis for loops.

@@ -6,24 +6,26 @@ Performance bugs\footnote{We also refer performance bugs as performance problems
 following previous works in this area~\cite{PerfBug,Alabama,SongOOPSLA2014}} 
 are software implementation mistakes that cause unnecessary performance
 degradation in software. They widely exist in deployed software due to the 
-complexity of modern software and the lack of performance testing support
-~\cite{s2e,PerfBug,perf.fse10,rily.perftest,perfantipattern,xiao13:context}. 
+complexity of modern software
+~\cite{PerfBug,perf.fse10,rily.perftest,perfantipattern,xiao13:context}. 
 They annoy end users and waste energy during production runs, and 
 have already caused highly publicized failures~\cite{ACA-health,colorado}.
 Tools that can help
 developers quickly and accurately diagnose performance problems
 are sorely desired.
 
-Like general failure diagnosis, 
-performance diagnosis starts from studying a problem symptom and hopefully ends
-at identifying the root cause and suggesting a fix strategy. 
-In the context of performance problems,
-the symptom is 
-execution 
+Performance diagnosis is different from performance testing or
+bug detection: it does \textit{not} aim to expose previously unknown performance
+anomalies. 
+Instead, it is similar with general failure diagnosis: 
+it is applied \textit{after} an unexpected software behavior (i.e., symptom)
+is observed, hoping to identify the root cause of this symptom and suggest
+strategies to eliminate this symptom.
+In the context of performance problems, the symptom is execution 
 slowness \cite{SongOOPSLA2014}; the root cause is about
 which code region is inefficient and why.
-An effective diagnosis tool can help developers quickly
-and correctly figure out a fix to the performance problem.
+An effective diagnosis tool can help developers quickly and correctly understand 
+and fix already-exposed performance symptoms.
 
 Also like general failure diagnosis, ideal performance diagnosis tools should
 satisfy three criteria.
@@ -33,13 +35,12 @@ Real-world performance problems are caused by a wide variety of reasons.
 A good diagnosis tool should handle a good portion of them.
 
 \item Accuracy. 
-First, the inefficient code regions need to be accurately located.
-Second, the reason a specific region is inefficient needs to be accurately
-explained, so that developers can fix the problem.
+Which code regions are inefficient and why they are inefficient
+need to be accurately identified.
 
 \item Performance. 
 Diagnosis often requires collecting run-time information. The lower the overhead
-is, the easier for the diagnosis tool to be deployed, especially for 
+is, the easier for the tool to deploy, especially for 
 production-run usage. 
 \end{itemize}
 
@@ -53,16 +54,14 @@ but not where and why resources are wasted.
 In many cases, the root-cause function may not even
 get ranked by the profiler \cite{SongOOPSLA2014}.
 
-Performance bug detection tools use static or dynamic analysis to identify
+Performance bug detection tools use program analysis to identify
 code regions that match specific inefficiency patterns 
 \cite{Alabama,CARAMEL, Cachetor,Xu:2010:FLD:1806596.1806617,Dufour:2008:STC:1453101.1453111, Xu:2009:GFP:1542476.1542523, Xu:2010:DIC:1806596.1806616,IsilDillig.PLDI15}. 
-Unfortunately, these tools are not designed %for
-{\color{red} to identify code regions for a specific execution slowness}  
-and are consequently
-unsuitable for performance diagnosis.
-They are not designed to provide \textit{coverage} for a wide
-variety of real-world problems; their analysis is not guided by
-performance failure symptom, and hence are at disadvantage in terms of diagnosis
+Unfortunately, these tools are not designed and hence are unsuitable
+to identify code regions that contribute to a specific slowness symptom.
+They do not provide \textit{coverage} for a wide
+variety of real-world problems; they are not guided by
+performance failure symptoms, and hence are at disadvantage in terms of diagnosis
 \textit{accuracy}; dynamic detection tools often lead to 
 10X slowdowns or more \cite{Cachetor,Xu:2010:FLD:1806596.1806617,Alabama}, 
 not ideal in terms of \textit{performance}.
@@ -70,17 +69,16 @@ not ideal in terms of \textit{performance}.
 Recently, progress has been made on statistical debugging for
 performance diagnosis \cite{SongOOPSLA2014}.
 This approach compares runs with and without problematic performance, and
-accurately identifies control-flow constructs, such as a branch $b$ or 
+identifies control-flow constructs, such as a branch $b$ or 
 a loop $l$, that are most correlated with
-the execution slowness.%, referred to as slowness-predictor.
+the execution slowness.
 Unfortunately, this approach is \textit{not} effective
 for loop-related 
 performance problems, which contribute to two thirds of
 real-world performance problems studied in previous work 
 \cite{SongOOPSLA2014,PerfBug}. It cannot
 tell whether and how loop $l$ is inefficient 
-and hence is not very helpful
-in fixing performance problems.
+and hence is limited in its diagnosis \textit{coverage} and \textit{accuracy}.
 
 \begin{figure}
 \centering
@@ -92,54 +90,58 @@ function names are simplified for demonstration purposes)}
 \label{fig:GCC27733}
 \end{figure}
 
-Figure~\ref{fig:GCC27733} shows a performance bug in GCC. 
-Function \texttt{mult\_alg} is a recursive function 
-that computes the best algorithm for 
+Figure~\ref{fig:GCC27733} shows a performance problem in GCC. 
+Recursive function \texttt{mult\_alg} computes the best algorithm for 
 multiplying \texttt{t}, a time-consuming computation. 
 At run time, \texttt{mult\_alg} is often invoked for many times, and often
 with the same parameter partly due to its recursive nature.
 To avoid redundant computation across different instances of
-\texttt{mult\_alg} with the same parameter, developers used a
+\texttt{mult\_alg}, developers used a
 hash-table
 \texttt{alg\_hash} to remember which parameter \texttt{t} has been processed
 in the past and what is the result. 
 Unfortunately, a mistake in the type declaration of hash-table
 entry \texttt{hash\_entry} makes the memoization useless for large \texttt{t}.
 In many cases, a slow path is taken, when the fast path should have been taken.
-This mistake does not affect software correctness, but it causes a large amount
+This mistake does not affect software correctness, but causes a large amount
 of redundant computation\footnote{This will be considered as a
 loop-redundancy problem later in this paper, as we consider
 recursive functions as a special case of loops.} 
 and hurts GCC performance severely,
 causing hundreds of times slow down for GCC test cases.
 
-Debugging this performance bug is challenging. According to 
+Debugging this performance problem is challenging. According to 
 the discussion forum of GCC, developers identified
 \texttt{mult\_alg} as the most time-consuming function
-through profilers early on. However, developers did not figure out 
+through profilers early on. However, they did not figure out 
 whether \texttt{mult\_alg} is inefficient, which part of it is 
 inefficient (\texttt{mult\_alg} is a large function with about 400 lines of 
 code), and how it is inefficient, until several weeks later.
 
 If a tool can tell developers not only \emph{which} loop or function is
 responsible for execution slowness, but also \emph{why} and \emph{how}
-the loop/function is inefficient, 
-the diagnosis and bug fixing
-process would be much easier. 
+it is inefficient, 
+diagnosis and fixing
+would be much easier. 
 
+\iffalse
+%to save space
 Clearly, more research is needed to improve the state of the art of performance
 diagnosis --- better diagnosis
 coverage, better diagnosis accuracy, and low run-time
 overhead for common performance problems,
 especially loop-related performance problems.
+\fi
 
 
 \subsection{Contributions}
-This paper presents a tool, \Tool, that can help effectively diagnose
+This paper presents a tool \Tool that can help effectively diagnose
 inefficient loop problems, the most common type of performance problems
 \cite{SongOOPSLA2014,PerfBug}, with good coverage, accuracy, and performance.
-{\color{red} \Tool does not target identifying previously unknown performance bugs, 
-but aims to provide root causes for execution slowness caused by inefficient loops.}
+After users or developers observe a performance failure symptom, \Tool can 
+automatically judge whether the symptom is caused by inefficient loops and
+provide detailed root-cause information that helps understand and fix 
+inefficient loops. 
 
 
 \Tool tackles this challenging problem in three steps.
@@ -153,20 +155,18 @@ First, figuring out a root-cause taxonomy for inefficient loops.
 %sub-categories based on the granularity of the resultless or redundant work. 
 Our taxonomy categorizes all inefficient loops into two main categories:
 \emph{resultless}, when a large amount of computation produces
-no side effect, and \emph{redundancy}, when a large amount of 
+no side effects, and \emph{redundancy}, when a large amount of 
 computation produces already-available results.
-Each main category is then further divided to sub-categories.
-We have strived to make our taxonomy both general enough to cover
-common inefficient loops, and also specific enough to guide the failure
-diagnosis of \Tool, and eventually
-help developers understand
-and fix performance problems. More details are
-in Section \ref{sec:study}.
+Each main category is further divided to sub-categories.
+We strive to make the taxonomy both general enough to cover
+common inefficient loops, and specific enough to guide the design
+of \Tool and eventually help developers understand
+and fix performance problems
+(Section \ref{sec:study}).
  
 Second, building a tool(kit) \Tool that can automatically and accurately
 identify whether and how a suspicious loop is inefficient, 
-together with fix-strategy suggestions. 
-We achieve this following several principles:
+following these principles (Section \ref{sec:design}):
 
 \begin{itemize}
 \item Focused checking. 
@@ -179,23 +179,22 @@ accuracy and high coverage.
 \item Taxonomy guided design. To provide good coverage, we follow
 the root-cause taxonomy discussed above and design analysis routines for
 every root-cause category. Given a candidate loop, \Tool
-applies a series of analysis to it to see if it matches any type of inefficiency.
+applies a series of analysis to see if it matches any type of inefficiency.
 %We will also put the analysis results from different analysis routines together
 %to figure out the most likely root cause category for an inefficient loop.
 
 \item Static-dynamic hybrid analysis.
-As we will see, static analysis alone cannot accurately identify 
-inefficiency root causes, especially because some inefficiency problems only
-happen under specific workload. However, pure dynamic analysis will 
+Static analysis alone cannot accurately identify 
+inefficiency root causes, because some inefficiency problems only
+happen or matter under specific workload. However, pure dynamic analysis will 
 cause too large 
-run-time overhead. Therefore, we take a hybrid approach to achieve both
+run-time overhead. Therefore, we use a hybrid approach to achieve both
 performance and accuracy goals.
 \end{itemize}
 
 Third, using sampling to further lower the run-time overhead of \Tool, without
 degrading diagnosis capability. Random sampling is a natural fit for performance
-diagnosis due to the repetitive nature of inefficient code, especially
-inefficient loops.
+diagnosis due to the repetitive nature of inefficient loops (Section \ref{sec:inst}).
 
 We evaluated \Tool on \allbugs real-world performance problems,
 coming from two representative benchmark suites 
