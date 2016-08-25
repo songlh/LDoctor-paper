@@ -1,3 +1,4 @@
+\comment{
 \begin{table*}[tb!]
   \centering
   \scriptsize
@@ -33,13 +34,14 @@
   execution time is measured in seconds.}
   \label{tab:performance}
 \end{table*}
+}
 
 \begin{table}[tb!]
   \centering
   \scriptsize
   \newcommand{\Yes}[1]{\checkmark{}$_#1$}
   \newcommand{\No}[0]{-}
-  \begin{tabular}{lccccc}
+  \begin{tabular}{lrrrrr}
     \toprule
       & \multicolumn{3}{c}{\Tool w/ optimization} & \multicolumn{2}{c}{w/o optimization} \\
      %\cmidrule(lr){2-3}
@@ -62,11 +64,12 @@
    \bottomrule
    \end{tabular}
   %\nocaptionrule
-  \caption{Run-time overhead of applying \Tool to the buggy loop
-    (only non-extracted benchmarks are shown). 
+  \caption{Run-time overhead of \Tool
+   \small{
+    (only non-extracted benchmarks are shown;
   -: dynamic analysis is not needed;
-  /: not applicable;
-  execution time is measured in seconds.}
+  /: not applicable).
+  }}
   \label{tab:performance}
 \end{table}
 

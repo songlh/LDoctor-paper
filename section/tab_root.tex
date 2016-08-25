@@ -11,7 +11,7 @@
                       & Apache &Chrome & GCC  & Mozilla & MySQL &&M$_{\text{emoization}}$  & B$_{\text{atching}}$   &  C & S  & O$_{\text{ther}}$ && Total\\
 \cmidrule{2-6}
 \cmidrule{8-12}
-                      & 11    & 4     & 8    & 12      & 10     && 12  & 12 & 4  & 9  & 8  && 45\\
+\# of Bugs            & 11    & 4     & 8    & 12      & 10     && 12  & 12 & 4  & 9  & 8  && 45\\
 \hline
 \multicolumn{1}{l}{Cross-{\bf iteration} Redundancy}
 &7&1&2&1&1&&\cca{7}&\cca{4}&0&0&\cca{1}&&12\\
@@ -30,8 +30,10 @@
 \end{tabular}
 }
 %\end{adjustwidth}
-\caption{The distribution among different applications and different fix strategies for bugs with each root-cause category.
-(S: conditionally skip the loop; C: change the data structure; darker color in the background means more correlation between root causes and fixes)
+\caption{Distribution among different applications and fix strategies for bugs with each root-cause category.
+\footnotesize{
+(C: change data structure; S: conditionally skip loop; darker background means more correlation between root causes and fixes)
+}
 }
 \label{tab:root}
 \end{table*}

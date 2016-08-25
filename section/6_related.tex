@@ -1,7 +1,6 @@
 \section{Related Works}
 \label{sec:related}
 
-\subsection{Performance Diagnosis}
 Profilers are the most commonly used tools that help developers understand
 performance
 \cite{Zaparanuks:2012:AP:2254064.2254074,Coppa:2012:IP:2254064.2254076,
@@ -9,7 +8,7 @@ D'Elia:2011:MHC:1993498.1993559,
 Mytkowicz:2010:EAJ:1806596.1806618,
 Ravindranath:2012:AMA:2387880.2387891,
 Jovic:2011:CMY:2048066.2048081,IntroPerf}.
-Different from our work, profiling aims to tell where 
+They aim to tell where 
 computation resources are spent, 
 not where and why computation resources are wasted. 
 The root-cause code region of a performance problem often is not inside
@@ -17,19 +16,17 @@ the top-ranked function in the profiling result \cite{SongOOPSLA2014}.
 Even if it is, developers still need to spend a lot of effort to understand
 whether and what kind of computation inefficiency exists.
 
-Recently, tools that go beyond profiling and provide more automated analysis
-have been proposed.
-StackMine~\cite{Han:2012:PDL:2337223.2337241} 
-identifies slow call-stack patterns inside event handlers. The work by
-\citet{TaoAsplos2014} analyzes system traces to understand 
-performance impact propagation and 
-causality relationship among system components. 
-X-ray~\cite{Attariyan:2012:XAR:2387880.2387910} helps identify inputs
-or configuration entries that are most responsible for performance problems.
-Coz~\cite{coz.sosp15} can estimate the performance impact of any
-potential optimization at any point of a multi-threaded program.
-Although these techniques are all very useful, 
-they target different problems from \Tool. 
+Recently proposed tools go beyond profiling and provide more automated analysis.
+They can identify slow call-stack patterns inside event handlers
+\cite{Han:2012:PDL:2337223.2337241}, help understand performance causality
+relationship among system components
+\citet{TaoAsplos2014}, identify inputs 
+or configuration entries that are most responsible for performance problems
+\cite{Attariyan:2012:XAR:2387880.2387910},
+and estimate the performance impact of any
+potential optimization at any point of a multi-threaded program
+\cite{coz.sosp15}. 
+They all target different problems from \Tool. 
 \comment{
 \Tool targets 
 inefficient loops, a common
@@ -48,9 +45,9 @@ a performance symptom through statistical analysis,
 but cannot answer whether or 
 what type of inefficiency this loop contains.
 \Tool complements it by
-providing detailed root cause information and fix strategy suggestions.
-
-\subsection{Performance Bug Detection}
+accurately pointing out whether the suspicious loop is inefficient,
+which type of inefficiency a loop contains if any, and 
+what is the best fix strategy.
 
 Many dynamic and static analysis tools have been built to detect different
 types of performance problems, such as 
@@ -65,19 +62,18 @@ input-dependent loops~\cite{xiao13:context}.
 %specific efficiency rules, often related to API usage. 
 
 As discussed in 
-Section \ref{sec:intro}, these tools are all useful in improving software
-performance, but are not suitable for performance diagnosis.
-With different design goals from \Tool, these bug detection tools are not 
-guided by any specific
+Section \ref{sec:intro}, these tools are all useful, 
+but are not suitable for performance diagnosis.
+Bug detectors are not guided by any specific
 performance symptoms. Consequently, they take different coverage-accuracy
 trade-offs from \Tool. \Tool tries to cover a wide variety of root-cause 
 categories and is more aggressive in identifying root-cause categories, because
-it is only applied to a small number of loops that are known to be highly
-correlated with the specific performance symptom under study.
-Performance-bug detection tools has to be more conservative and tries hard
-to lower false positive rates, because it needs to process the
+it is only applied to a few loops known to be highly
+correlated with a specific performance symptom.
+Performance-bug detection tools are more conservative and try hard
+to lower false positive rates, because they need to process the
 whole program, instead of just a few loops. This requirement causes bug
-detection tools to each focus on a specific root-cause category.
+detectors to each focus on a specific root-cause category.
 %In fact, most inefficient loops in our study are very difficult to be detected
 %by a generic performance bug detectors --- it is very difficult to prove them to
 %be inefficient without application-specific domain knowledge.
@@ -85,14 +81,27 @@ detection tools to each focus on a specific root-cause category.
 %in Table \ref{tab:root} can be detected by recent static inefficient
 %loop checkers
 %\cite{CARAMEL,IsilDillig.PLDI15}.
-Performance bug detection tools also do not aim to provide fix suggestions.
+Bug detectors also do not aim to provide fix suggestions.
 For the few that do provide \cite{CARAMEL}, they only focus on very specific
 fix patterns, such as adding a break into the loop. 
-In addition, dynamic performance bug detectors do not try to achieve any
-performance goals. None of them has tried applying sampling to their
-bug detection and often leads to 10X slowdowns or more.
+In addition, dynamic performance bug detectors often lead to 10X slowdowns or 
+more, and never tried sampling.
 
-\subsection{Other Techniques to Fight Performance Bugs}
+Automated tools have been developed to detect inefficient loop bugs
+\cite{Alabama, CARAMEL, IsilDillig.PLDI15}. 
+As discussed above, these tools are good detection tools but not suitable for 
+diagnosis. 
+For example, Toddler~\cite{Alabama} only targets inefficient nested loops, and
+hence can only cover about half of the bugs in our \emph{general} benchmark suite.
+Being a dynamic tool, it also incurs 10X or more slowdowns, which is much more
+expensive than \Tool. 
+Caramel~\cite{CARAMEL} statically detects inefficient loops that can be fixed
+by adding conditional-breaks. Very few bugs in Table \ref{tab:root} are like this.
+CLARITY~\cite{IsilDillig.PLDI15} statically detects redundant traversal bugs, 
+which arise if a program fragment repeatedly iterates over a data structure, such as an array or list, that has not been modified between successive traversals of the data structure.
+Like Toddler, it targets nested loops.
+We expect it to detect a sub-set of the cross-loop redundancy
+loops and a sub-set of 0*1? resultless loops in our benchmark set.
 
 There are many test inputs generation techniques that help
 performance testing 

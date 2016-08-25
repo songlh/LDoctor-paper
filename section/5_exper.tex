@@ -8,7 +8,7 @@
 
 \input section/tab_benchmarks
 
-\paragraph{Implementation and Platform}
+\noindent\textbf{Implementation and Platform}
 We implement \Tool in LLVM-3.4.2 \cite{llvm}, and conduct our
 %Our implementation consists of 17654 lines of C++ code, 
 %with 4748 for instrumenter, 674 for resultless analysis, 
@@ -16,47 +16,47 @@ We implement \Tool in LLVM-3.4.2 \cite{llvm}, and conduct our
 %and the remaining 6430 for common utilities. 
 experiments on a i5-3330S machine, with Linux 3.19 kernel. 
 
-\paragraph{Benchmarks}
-Note that \Tool is a tool that helps diagnose already-manifested performance problems,
-not a detection tool that can help predict not-yet-manifested
+\noindent\textbf{Benchmarks}
+\Tool is a diagnosis tool that helps understand and fix 
+already-manifested performance problems,
+not a detection tool that help predict not-yet-manifested
 problems. Consequently, our benchmarks are performance problems that have already
-happened in real world, and we will reproduce these problems to evaluate \Tool.
-To conduct a thorough evaluation, we use
+happened in real world, and we will reproduce them to evaluate \Tool.
+For a thorough evaluation, we use
 benchmarks from two different sources.
 
-First, we evaluate \Tool on all bugs, 18 in total, that we can reproduce 
-among the 45 bugs listed in Table \ref{tab:root}. 
-Among these 18, seven are extracted from Java or JavaScript
-programs and re-implemented in C++, as \Tool currently only handles C/C++
-programs; one is extracted from a very old version of Mozilla that can no longer be
-compiled as it is.
+First, \emph{general} benchmark suite.
+We evaluate \Tool on all bugs, 18 in total, that we can reproduce 
+among the 45 bugs discussed in Section \ref{sec:eval_taxonomy}. 
+These 18 bugs cover a wide variety of inefficiency root causes, as 
+shown in Table~\ref{tab:benchmarks}. 
+We use the problem-triggering inputs reported by real-world
+users in \Tool run-time analysis.
+Among these 18, seven are extracted from Java/JavaScript
+programs.
+%, as \Tool currently only handles C/C++
+%programs; one is extracted from a very old version of Mozilla that can no longer be
+%compiled as it is.
 %These 18 bugs include all the benchmarks used in the recent
 %statistical performance debugging work~\cite{SongOOPSLA2014}.
 %The extraction is conducted by XXX.
-When we extract code, we try our best to keep all bug-related data structures,
-caller functions, and callee functions intact, and re-implement them in C++, 
-following the original data flow and control flow. For these extracted benchmarks, 
-we design bug-triggering inputs for them based on the bug-triggering inputs in 
-the original bug reports and the mapping relationship between inputs of original programs 
-and re-implemented programs.
-Overall, these 18 bugs cover a wide variety of inefficiency root causes, as 
-shown in Table~\ref{tab:benchmarks}. 
-We will refer to this set of bugs as our \emph{general} benchmark suite.
+For these benchmarks, we did our best to keep all bug-related data structures
+and caller/callee functions intact, and re-implement them in C++
+following the original data and control flow. 
+%Their
+%bug-triggering inputs are produced based on the bug-triggering inputs in 
+%the original bug reports.
 
-Note that, we expect \Tool algorithm to also work for the remaining 27 bugs 
-listed in Table \ref{tab:root}, but they are too difficult to be reproduced.
-First, they all depend on 
-special hardware/software environment that our machines are not equipped with.
-For example, some bugs can only be triggered on Windows, and some depend on 
-.Net libraries. 
-Furthermore, the bug-related code for these 27 cases
-cannot be easily extracted or reimplemented, as we did for the eight 
-benchmarks mentioned above. 
+Note that, we expect \Tool to also work for most, if not all, of 
+the remaining 27 bugs listed in Table \ref{tab:root}.
+However, these 27 bugs are too difficult to be reproduced, as they 
+depend on special hardware/software environment (e.g., Windows OS and 
+.Net libraries) and cannot be easily extracted or reimplemented. 
 For example, some bugs are related to GUI widgets, which are too complicated to 
-re-implement or emulate. As another example, some bugs' inefficient 
-loops traverse big graphs. Although we can extract the buggy code regions, it is 
-too difficult to figure out the bug-triggering inputs
-(i.e., the graphs) without reproducing the original bugs. 
+re-implement. Some bugs' inefficient 
+loops traverse big graphs, whose bug-triggering inputs
+(i.e., the graphs) are difficult to figure out 
+without reproducing the original bugs. 
 
 %Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama, toddlerbuglist}.
 %{\color{red} We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
@@ -67,39 +67,27 @@ too difficult to figure out the bug-triggering inputs
 Second, we evaluate \Tool on Toddler~\cite{Alabama, toddlerbuglist} benchmark suite.
 Toddler project provides the bug-triggering inputs and detailed explanation
 for 21 inefficient-loop bugs that have been confirmed and fixed by developers, and
-we evaluate \Tool on \emph{all} of these 21 bugs.
-Due to the focus of Toddler, all of these bugs 
-are related to misusing basic data structures in Java, like ArrayList, HashSet, 
-HashMap, and LinkedList. We extract these bugs and re-implemented them in 
-C/C++, following the procedure discussed above. In doing so,
-we also re-implement basic Java data structures following a recent version of 
-\texttt{openjdk}. At the end, each extracted benchmark contains at least five
-loops, except for two cases where only four loops exist in the extracted version. 
-
-We use Toddler benchmark suite for two reasons.
-First, it provides a large set of 
-repeatable inefficient loop problems that we can access. 
-Second, it was set up for a completely different reason and with a different 
-methodology from our
-\emph{general} benchmark suite,
-and hence can well complement the \emph{general} suite.
-We should also note that, Toddler focuses on inefficient nested loops, and hence its
-benchmark bugs only cover two types of inefficiency root causes,
+we evaluate \Tool on \emph{all} of them.
+Due to the focus of Toddler, all of these bugs are caused by inefficient
+\textit{nested} loops and only cover two types of inefficiency root causes,
 as shown in Table \ref{tab:benchmarks}.
+We extract these bugs and re-implemented them in 
+C/C++;
+we also re-implement basic Java data structures following a recent version of 
+\texttt{openjdk}. Each extracted benchmark contains at least five
+loops, except for two that contain four loops each.
 
-\paragraph{Metrics}
-Our experiments are designed to evaluate \Tool from three main aspects:
-(1) 
-\textit{Coverage}. Given our benchmark suite that covers a wide variety
-of real-world root causes, can \Tool identify all those root causes?
-(2)
-\textit{Accuracy}. 
-When analyzing non-buggy loops, will \Tool generate any false positives?
-(3) 
-\textit{Performance}.
-What is the run-time overhead of \Tool?
+The general benchmark suite and Toddler benchmark suite both provide
+a large set of repeatable inefficient loop problems that we can access. 
+At the same time, they were initially set up for different reasons and
+methodologies,
+and hence well complement each other.
+All the benchmarks led to severe performance problems.
+After developers fixed these problems, the performance of each benchmark improves
+4X -- 500X under the user-reported workload in our experiments. 
 
-\paragraph{Evaluation settings}
+
+\noindent\textbf{Evaluation settings}
 Our evaluation uses existing statistical performance diagnosis
 tool \cite{SongOOPSLA2014} to process a performance problem and identify 
 one or a few suspicious loops for \Tool to analyze.
@@ -123,39 +111,33 @@ have fewer than 5 loops. We simply apply \Tool to all loops in these cases.}
 to see how accurate \Tool is. Third, we evaluate the run-time performance of
 applying \Tool to the real root-cause loop. 
  
-For all benchmarks we use, real-world
-users have provided at least one problem-triggering input in their on-line 
-bug reports. We use these inputs in our run-time analysis.
 
-As discussed in Section \ref{sec:design}, our analysis contains 
-several configurable thresholds. In our evaluation,
-we use 0.001 as the \textit{resultful rate} threshold for identifying
+We use 0.001 as the default \textit{resultful rate} threshold for identifying
 0*1? 
 %loops, 0.01 as the \textit{resultful rate} threshold for identifying 
 and [0$|$1]* resultless loops; we use 
-0.5 as the \textit{redundancy rate} threshold for identifying redundant loops.
+0.5 as the default \textit{redundancy rate} threshold for identifying redundant loops.
 %, and 
 %2 as the \textit{cross-iteration redundancy rate} (i.e., 
 %the number of distinct iterations is less than half of the total iterations).
-
-All the analysis and performance results presented below regarding
-cross-loop analysis is obtained using $1/100$ sampling rate; all the
-results regarding cross-iteration analysis is obtained using $1/1000$ sampling
-rate. We use sparser sampling rate in the latter case, because there tend to
-be more loop iterations than loop instances.
+We use $1/100$ sampling rate for cross-loop redundancy analysis and 
+$1/1000$ sampling rate for cross-iteration redundancy analysis
+(there tend to be more loop iterations than loop instances).
 All our diagnosis results require only \textbf{one} run under the 
 problem-triggering input.
+All our performance results are obtained by taking average of \textbf{ten} runs, 
+with the variation among different runs always less than 5\%.
 
-More discussions about all the parameters/thresholds presented above, including
-how to set them and how sensitive they are, are discussed in Section
-\ref{sec:sensi}. 
+%More discussions about all the parameters/thresholds presented above, including
+%how to set them and how sensitive they are, are discussed in Section
+%\ref{sec:sensi}. 
 
 \subsection{Coverage Results}
 \label{sec:coverage}
 Overall, \Tool provides good diagnosis coverage, as shown by the check-marks in Table~\ref{tab:benchmarks}
 (the ``Did \Tool Identify ..?'' columns). 
 \Tool identifies the correct root cause for \textbf{all} \allbugs benchmarks, and 
-suggests fix strategies that exactly match what developers took in practice
+suggests fix strategies that match what developers took in practice
 for 33 out of \allbugs cases. 
 
 The six cases where the fix strategy suggested by \Tool does not match that of 
@@ -173,7 +155,7 @@ Apache\#53622.
 %\Tool suggests batching and changing data structure, respectively. 
 %In practice, developers only fix the main root cause loop, by using changing data structure.} 
 
-Second, the fix strategy taken by developers is related to but not exactly the same as
+Second, the fix strategy taken by developers is related to
 what suggested by \Tool.
 The root-cause loops in 
 Collections bugs \#407, \#408, and \#425 all conduct frequent linear searches in arrays.
@@ -188,8 +170,9 @@ does not contain any form of inefficiency and produce results in every
 iteration, and hence fails to suggest any fix strategy. In practice, GCC
 developers decide to skip the loop, which will cause some programs compiled by
 GCC
-to be less performance-optimal than before. However, GCC developers feel
-that it is worthwhile considering the slow-down caused by the original loop.
+to be less performance-optimal than before. 
+%However, GCC developers feel
+%that it is worthwhile considering the slow-down caused by the original loop.
 
 \subsection{Accuracy Results}
 \label{sec:result_acc}
@@ -244,14 +227,14 @@ any form of inefficiency, resultless or redundancy.
 
 As shown in Table \ref{tab:performance}, 
 the performance of \Tool is good. The overhead is consistently under or around 5\% 
-except for one benchmark, Mozilla\#347306. We believe \Tool is promising for potential production
+except for one benchmark, Mozilla\#347306. 
+We believe \Tool is promising for potential production
 run usage.
 We can easily further lower the overhead through sparser sampling.
-As we will discuss later, 
-the current diagnosis results are obtained by running the
-program only \textbf{once} under the problem-triggering workload.
-If we use sparser sampling, more failure runs will be needed to obtain good
-diagnosis results.
+%the current diagnosis results are obtained by running the
+%program only \textbf{once} under the problem-triggering workload.
+%If we use sparser sampling, more failure runs will be needed to obtain good
+%diagnosis results.
 
 As we can also see from the table, our performance optimization discussed in 
 Section \ref{sec:inst} and \ref{sec:perf} has helped.
@@ -259,13 +242,12 @@ Section \ref{sec:inst} and \ref{sec:perf} has helped.
 The performance benefit of sampling is huge.
 Without sampling, redundancy
 analysis lead to over 100X slowdown for six benchmarks.
-
 The benefit of static optimization is also non-trivial. 
-For example, for MySQL\#15811 and MySQL\#27287, static analysis alone can
+For example, for MySQL\#15811 and MySQL\#27287, static analysis alone
+(i.e., no run-time overhead) can
 judge that they do not contain cross-iteration redundancy: the computation of 
 each iteration depends on loop induction variables, which are naturally different
-in different iterations. Consequently, run-time overhead is completely
-eliminated for these two benchmarks.
+in different iterations. 
 As another example, the buggy loops of MySQL\#27287 and MySQL\#15811 access 
 arrays. 
 After changing to tracking the initial and ending memory-access addresses
@@ -276,7 +258,7 @@ and from 20.53\% to 0.35\% for MySQL\#15811 respectively
 
 \subsection{Parameter Setting and Sensitivity}
 \label{sec:sensi}
-\paragraph{Sampling rates}
+\noindent\textbf{Sampling rates}
 We have tried different sampling rates for redundancy analysis.
 Intuitively, sparser sampling leads to lower overhead but worse diagnosis
 results. Due to space constraints, we briefly summarize the results below.
@@ -285,65 +267,30 @@ When we lower the sampling rate from 1/100 to 1/1000
 in cross-loop redundancy analysis,
 among all the benchmarks in Table \ref{tab:performance},
 Mozilla\#416628 incurs the largest overhead (merely 4.51\%). 
-The diagnosis results remain the same for all but
-GCC\#12322, where too few samples are available
-to judge redundancy.
-
 When we lower the sampling rate from 1/1000 to 1/10000
 in cross-iteration redundancy analysis,
 among all the benchmarks in Table \ref{tab:performance},
 Mozilla\#347306 has the largest overhead (merely 7.38\%). 
 %In fact, Mozilla347306 is the only one whose overhead is larger than 2\%. 
-The diagnosis results remain 
-the same for all but GCC\#12322.
+In both cases,
+the diagnosis results remain 
+the same for all but GCC\#12322, where too few samples are available
+to judge redundancy.
 %If we increase the sampling rate to 1/100, we will 
 %have two benchmarks whose overhead is larger than 30\%.
 
-\paragraph{Resultful and redundancy rate}
-Since the severity of resultless and redundant loops depends on
-workload, it is natural that \Tool uses two thresholds in its diagnosis.
+\noindent\textbf{Resultful and redundancy rate}
+Our default setting should work in most cases.
 In fact, the diagnosis results are largely {\bf in}sensitive to the threshold
 setting. For example, the results would remain the same when
 changing the redundancy rate threshold from 0.5 to any value between about
 0.1 and 0.66. We will have 1 more false negative and 1 fewer benign false positive, 
-when the rate is 0.7. The trend is similar for resultless
-loop checking. 
-%XXX
-
-Our default setting %is obtained based on our experience
-should work for many problems.
+when the rate is 0.7. The trend is similar for resultless loop checking. 
 Developers can adjust these thresholds. 
 They can even get rid of thresholds, and only
 use the raw values of resultful/redundancy rates to understand
 the absolute and relative (in)efficiency nature of suspicious 
 loops. Based on our experiments, the difference between efficient and inefficient
-loops is usually obvious, based on these rates.
+loops is obvious based on these rates.
 
-\subsection{Comparison with other tools}
 
-Automated tools have been developed to detect inefficient loop bugs
-\cite{Alabama, CARAMEL, IsilDillig.PLDI15}. 
-As discussed in Section \ref{sec:intro}, although these tools are very
-useful, they are not designed for failure diagnosis. 
-For example, Toddler~\cite{Alabama} only targets inefficient nested loops, and
-hence can only cover about half of the bugs in our \emph{general} benchmark suite.
-Being a dynamic tool, it also incurs 10X or more slowdowns, which is much more
-expensive than \Tool. 
-Caramel~\cite{CARAMEL} statically detects inefficient loops that can be fixed
-by adding conditional-breaks. Very few bugs in Table \ref{tab:root} are like this.
-CLARITY~\cite{IsilDillig.PLDI15} statically detects redundant traversal bugs, 
-which arise if a program fragment repeatedly iterates over a data structure, such as an array or list, that has not been modified between successive traversals of the data structure.
-Like Toddler, it targets nested loops.
-We expect it to detect a sub-set of the cross-loop redundancy
-loops and a sub-set of 0*1? resultless loops in our benchmark set.
-In summary, \Tool aims to explain performance problems that have 
-already manifested,
-yet bug detection tools aim to predict problems that may not have manifested.
-They are suitable for different usage scenarios.
-
-Comparing with existing profiling and performance
-statistical debugging technique \cite{SongOOPSLA2014}, \Tool provides much
-more detailed root-cause information. Instead of just identifying loops that
-are highly correlated-with/responsible-for the execution slowness, \Tool
-can accurately point out whether these suspicious loops are efficient or not,
-and which type of inefficiency a loop contains, if any, and make fix suggestions.

@@ -1,0 +1,189 @@
+\section{Assessment of Root-Cause Taxonomy}
+\label{sec:eval_taxonomy}
+
+%\input section/tab_appbug
+\input section/tab_root
+
+\subsection{Methodology}
+
+Previous work \cite{PerfBug,SongOOPSLA2014} studied the on-line bug
+databases of five representative open-source software projects:
+(1) Apache suite, including HTTPD web server written in C/C++,
+TomCat server written in Java, and Ant build management tool in Java;
+(2) Chromium Google Chrome browser in C/C++;
+(3) GCC compiler suite in C/C++;
+(4) Mozilla suite, including Firefox web browser and Thunderbrid
+Email client in C/C++ and JavaScript; 
+(5) MySQL database server in C/C++.
+
+Through a mix of random sampling and 
+manual inspection, they 
+found 65 performance problems that are perceived and reported by users. 
+Among these 65 problems, 45 problems are related to inefficient loops and 
+hence are the target of the study 
+here.
+\comment{
+\footnote{The definition of ``loop-related'' in this paper is a little
+bit broader than earlier paper~\cite{SongOOPSLA2014}, which only considers
+43 problems as loop-related. }.
+More details can be found in previous papers that collected
+these bugs. 
+}
+
+\subsection{Assessment}
+\label{sec:study_ob}
+
+\comment{
+\begin{table*}[tb!]
+%\begin{adjustwidth}{-.5in}{-.5in}
+\small
+\centering
+{
+\begin{tabular}{|lcccccc|}
+\hline
+&Apache&Chrome&GCC&Mozilla&MySQL&Total\\
+\hline
+Total \# of loop bugs & 11 & 4 & 8 & 12 & 10 & 45 \\
+\hline
+\multicolumn{1}{|l}{Cross-{\bf iteration} Redundancy}
+&7&1&2&1&1&12\\
+\multicolumn{1}{|l}{ Cross-{\bf loop} Redundancy}
+&3&0&2&2&2&9\\
+\multicolumn{1}{|l}{ {\bf 0*} Resultless}
+&0&0&0&0&0&0\\
+\multicolumn{1}{|l}{ {\bf 0*1?} Resultless}
+&0&0&0&2&3&5\\
+\multicolumn{1}{|l}{{\bf [0$|$1]*} Resultless}
+&0&1&1&1&1&4\\
+\multicolumn{1}{|l}{{\bf 1*} Resultless}
+&1&2&3&6&3&15\\
+%&0&2&0&5&0&7&B(4)$|$S(3)\\
+%&1&0&3&1&3&8&\\
+  %MySQL15811 is moved from 1* to here; consider it as fixed by M
+%\hline
+%\multicolumn{8}{|c|}{ \# of {\textit {Other}} bugs}\\
+%\multicolumn{1}{|l}{Not in above categories}
+\hline
+\end{tabular}
+}
+%\end{adjustwidth}
+\caption{Number of bugs in each root-cause category. 
+}
+\label{tab:root}
+\end{table*}
+}
+
+
+
+\comment{
+\def\cca#1{\cellcolor{black!#10}\ifnum #1>5\color{white}\fi{#1}}
+%For ranges 0-10, multiply by 10 by adding 0 after #1
+\begin{table}[tb!]
+%\begin{adjustwidth}{-.5in}{-.5in}
+\small
+\centering
+{
+\begin{tabular}{lcccccc}
+%\hline
+                                 &{\bf 0*}    & {\bf 0*1?} & {\bf [0$|$1]*}   & {\bf 1*} & {\bf C-I}  & {\bf C-L} \\
+%\hline
+ B                               & \cca{0}    & \cca{0}    & \cca{0}          & \cca{4}  & \cca{4}     & \cca{4}   \\
+%\hline
+ M                               & \cca{0}    & \cca{0}    & \cca{0}          & \cca{0}  & \cca{7}     & \cca{5}   \\
+ S                               & \cca{0}    & \cca{1}    & \cca{4}          & \cca{4}  & \cca{0}     & \cca{0}   \\
+ C                               & \cca{0}    & \cca{4}    & \cca{0}          & \cca{0}  & \cca{0}     & \cca{0}   \\
+ O                               & \cca{0}    & \cca{0}    & \cca{0}          & \cca{7}  & \cca{1}     & \cca{0}   \\
+%\hline
+
+\end{tabular}
+}
+%\end{adjustwidth}
+\caption{Number of bugs fixed by each strategy:
+B(atching),  
+M(emoization), 
+S(kipping the loop),
+C(hange the data structure), and O(thers). 
+``C-I'': cross- iteration redundancy. 
+``C-L'': cross-loop redundancy. 
+}
+\label{tab:correlation}
+\end{table}
+}
+
+
+\paragraph{Coverage}
+As shown in Table \ref{tab:root}, 
+our taxonomy does cover all inefficient loops under study. 
+Resultless loops are about as common as redundant loops
+(24 vs. 21).
+Not surprisingly, 0* loops
+are rare in mature software. 
+%In fact, no bugs in this
+%benchmark suite belong to this category.
+All other root-cause sub-categories are well represented.
+
+
+\paragraph{Actionability}
+As demonstrated in Table \ref{tab:root}, 
+the root-cause categories in our taxonomy are well correlated with
+fix strategies.
+This indicates that our taxonomy is actionable --- once the root cause
+is identified, developers roughly know how to fix the problem.
+For example, 
+almost all 0*1? resultless loops are fixed by data-structure changes;
+all [0$|$1]* resultless loops are
+fixed by conditionally skipping the loop;
+almost all redundant loops are fixed either by 
+memoization or batching. 
+The only problem is that there are no silver bullets for fixing 1* loops.
+%all inefficient loops with xx root cause are fixed by xxx.
+%xxx
+
+\paragraph{Generality}
+The root-cause categories in our taxonomy are designed to be 
+generic. Table \ref{tab:root} also shows that these categories 
+each appears in multiple
+application in our study. The only exception is $0^*$-resultless, which
+never appears. 
+
+
+In summary, the study above informally demonstrates that our taxonomy
+is suitable to guide our design of \Tool.
+%chances to satisfy the coverage and accuracy requirements of performance 
+%diagnosis.
+%
+%TODO even for the other, there are things we could do ...
+
+\subsection{Threats to Validity} 
+What presented above reflects our best effort in assessing our root-cause
+taxonomy using a non-biased set of real-world inefficient loop problems that
+have been perceived by users and fixed by developers.
+
+The numbers presented above should be interpreted together with our methodology
+and should not be overly generalized.
+The performance bugs examined above cover a variety of applications, workload, 
+development environments and programming languages. 
+However, there are definitely uncovered cases, like problems in distributed systems
+and scientific computing systems, and others. 
+
+Previous work~\cite{PerfBug, SongOOPSLA2014} uses developers tagging and
+on-line discussion to judge whether a bug report is about
+performance problems and whether 
+the performance problem under discussion is noticed and reported by users
+or not.
+%We follow the methodology used in previous work~\cite{SongOOPSLA2014} to judge 
+%whether the root-cause of a performance problem is related to loops or not.
+We do not intentionally ignore any aspect of loop-related performance problems. 
+Some loop-related performance problems may never be noticed by end users
+or never be fixed by developers, and hence skip our study. However,
+there are no conceivable ways to study them. 
+
+\comment{
+We believe that the bugs in our study provide a representative sample of the 
+well-documented and
+fixed performance bugs that are user-perceived and loop-related in the studied 
+applications. 
+Since we did not set up the root-cause taxonomy to fit particular
+bugs in this bug benchmark suite, we believe our taxonomy and diagnosis
+framework presented below will go beyond these sampled performance bugs. 
+}
