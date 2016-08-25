@@ -1,54 +1,45 @@
 \section{\Tool design}
 \label{sec:design}
-\Tool consists of a series of analysis that
-judges whether a given loop belongs to any root-cause type discussed in
-Section \ref{sec:study}.
-Its design
-follows three principles.
-\begin{itemize}
-\item Failure diagnosis, not bug detection. \Tool will be  
+The design of \Tool follows three principles.
+First, \textit{symptom oriented}. \Tool will be  
 used together with other performance diagnosis tools \cite{SongOOPSLA2014}
 or profilers,
 and focus on a small
-number of loops that are most correlated with a specific performance symptom,
+number of loops that are most correlated with a specific already-observed 
+performance symptom,
 instead of the whole program. Therefore, we will have different
 design trade-offs in terms of coverage and accuracy, comparing with 
 bug detection tools.
-
-\item Static-dynamic hybrid analysis. Static analysis alone
-will not be able to provide all the needed information to judge whether
+Second, \textit{static--dynamic hybrid}. Static analysis alone
+cannot provide all the needed information to judge whether
 a loop is inefficient. However, 
 dynamic analysis alone will incur too much overhead.
 Therefore, we use a hybrid approach throughout our design.
-
-\item Sampling. Loop-related 
+Third, \textit{sampling}. Loop-related 
 performance problems have the unique nature of repetitiveness, which make 
 them a natural fit for random sampling. We will design different
 sampling schemes for different analysis.
-\end{itemize}
 
-\paragraph{Usage scenario}
-Existing profilers and statistical debugging tool can
+We envision \Tool to be used in the following way.
+Existing profilers and statistical debugging tool first
 identify suspicious loops that are most correlated with 
 certain performance 
 symptoms \cite{SongOOPSLA2014}. 
-\Tool will analyze
-these suspicious loops, identify which loop(s) is inefficient, why it is
-inefficient, and provide fix suggestions. This analysis could be
-conducted during in-house diagnosis, where failure-triggering inputs
-are available. It could also be conducted during production runs, with
-the run-time analysis component of \Tool running 
-at user sites.
-
-
+\Tool will then apply a series of analysis to judge whether a given
+loop belongs to any root-cause type discussed in Section \ref{sec:study}
+and recommend corresponding fix strategy. This series of analysis could be
+conducted during either in-house diagnosis, where failure-triggering inputs
+are available, or production runs, with
+the run-time analysis component of \Tool running at user sites.
 
 \subsection{Resultless Checker}
 \label{sec:workless}
 
 Our resultless checker includes two parts. First, we use static analysis
 to figure out which are the side-effect instructions in a loop and hence
-decide whether a loop belongs to 0*, 0*1?, [0$|$1]*, or 1*. Second, to
-accurately determine 0*1? and [0$|$1]* loops, we use
+decide whether a loop might belong to 0*, 0*1?, [0$|$1]*, or 1*. Second, to
+determine whether 0*1? and [0$|$1]* loops are indeed inefficient
+under specific workload, we use
 dynamic analysis to figure out what portion of loop iterations are
 resultless at run time.
 %, which will help decide whether the loop is indeed
@@ -73,11 +64,13 @@ analysis.
 by a loop directly or indirectly --- a function $F$ that updates variables
 defined outside $F$ makes the corresponding call statement in $F$'s
 caller a side-effect instruction.
+\comment{
 We consider all calls to library functions or through function pointers 
 as having side effects, 
 unless the library functions are specially marked by us in a white list.
+}
 This analysis is complete, but not sound. We may identify side-effect
-instructions that are actually not.  
+instructions that are actually not. %to be moved to threats to validity 
 
 \Tool then categorizes loops into four types.
 Given a natural loop $l$, when $l$
@@ -86,25 +79,26 @@ starts from the loop header and ends at the loop header, it is a 1* loop;
 if there exists at least one side-effect instruction inside $l$, but not on
 every path,
 it is a [0$|$1]* loop; if there is no side-effect instructions inside $l$,
-$l$ is either a 0* or a 0*1? loop.
-In the last case, \Tool further checks all the loop exit-blocks. If there 
-exists an exit-block of $l$ that contains a side-effect instruction and is  
-post-dominated by another exit-block of $l$, this is a 0*1? loop.
-For example, line 5 in Figure \ref{fig:Mozilla347306} is such an exit block.
-Otherwise, $l$ is a 0* loop.
+$l$ is either a 0* or a 0*1? loop, which will be differentiated by checking
+all the loop exit-blocks.
+%If there 
+%exists an exit-block of $l$ that contains a side-effect instruction and is  
+%post-dominated by another exit-block of $l$, this is a 0*1? loop.
+For example, the loop in Figure \ref{fig:Mozilla347306} is 0*1?, because 
+its exit block on Line 5 contains side effects.
 
+\comment{
 Note that since the 1* pattern contains the least amount of information
 about computation \textit{inefficiency}, \Tool will not report a loop's
 root-cause type as 1*, if more informative root-cause type is identified 
 for this loop (e.g., cross-iteration or cross-loop redundancy).
+}
 
-%TODO Shan will rewrite the next two paragraphs
 \subsubsection{Dynamic monitoring}
 \label{sec:d_workless}
 
-Except for 0*, none of the other three types of loops are inefficient for sure.
-We need dynamic analysis to figure out what portion of loop iterations are
-resultless at run time, which will help decide whether the loop worths fixing.
+Further checking is conducted to determine whether 0*1? and [0$|$1]* 
+loops are inefficient.
 
 For a 0*1? loop, since it only generates results in the last iteration, we 
 only need to know the total number of loop iterations of each loop instance
@@ -124,11 +118,14 @@ To do that, our instrumentation uses a local boolean variable
 \texttt{HasResult} to represent whether one iteration have side effect or not. 
 \texttt{HasResult} is set to \texttt{False} in the loop header, and set to
 \texttt{True} after each side-effect instruction. It will be used to help
-count the number of side-effect iterations. For performance concerns,
+count the number of side-effect iterations. 
+\comment{
+For performance concerns,
 before instrumenting side-effect blocks, we check whether there are 
 post-domination relation between each pair of side-effect blocks. 
 If both block A and block B are side-effect blocks and block A post-dominates 
 block B, we only instrument block A to update \texttt{HasResult}. 
+}
 
 \comment{
 We could speed up the above counting using sampling. However, since the 

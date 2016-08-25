@@ -1,32 +1,33 @@
 \section{Assessment of Root-Cause Taxonomy}
 \label{sec:eval_taxonomy}
 
-\input section/tab_appbug
+%\input section/tab_appbug
 \input section/tab_root
-
-The root-cause taxonomy presented in Section \ref{sec:study} is the foundation
-of \Tool. In this section,
-we quantitatively 
-assess the coverage, actionability, and generality of our taxonomy using
-a set of
-real-world inefficient loop problems collected by previous work
-\cite{SongOOPSLA2014,PerfBug}.
-
 
 \subsection{Methodology}
 
 Previous work \cite{PerfBug,SongOOPSLA2014} studied the on-line bug
-databases of five representative open-source software projects, as 
-shown in Table \ref{tab:app_bug}. Through a mix of random sampling and 
+databases of five representative open-source software projects:
+(1) Apache suite, including HTTPD web server written in C/C++,
+TomCat server written in Java, and Ant build management tool in Java;
+(2) Chromium Google Chrome browser in C/C++;
+(3) GCC compiler suite in C/C++;
+(4) Mozilla suite, including Firefox web browser and Thunderbird
+Email client in C/C++ and JavaScript; 
+(5) MySQL database server in C/C++.
+Through a mix of random sampling and 
 manual inspection, they 
 found 65 performance problems that are perceived and reported by users. 
 Among these 65 problems, 45 problems are related to inefficient loops and 
 hence are the target of the study 
-here\footnote{The definition of ``loop-related'' in this paper is a little
+here.
+\comment{
+\footnote{The definition of ``loop-related'' in this paper is a little
 bit broader than earlier paper~\cite{SongOOPSLA2014}, which only considers
 43 problems as loop-related. }.
 More details can be found in previous papers that collected
 these bugs. 
+}
 
 \subsection{Assessment}
 \label{sec:study_ob}
@@ -109,23 +110,24 @@ C(hange the data structure), and O(thers).
 }
 
 
-\paragraph{Coverage}
+\textit{Coverage:}
 As shown in Table \ref{tab:root}, 
 our taxonomy does cover all inefficient loops under study. 
 Resultless loops are about as common as redundant loops
 (24 vs. 21).
 Not surprisingly, 0* loops
-are rare in mature software. In fact, no bugs in this
-benchmark suite belong to this category.
+are rare in mature software. 
+%In fact, no bugs in this
+%benchmark suite belong to this category.
 All other root-cause sub-categories are well represented.
 
 
-\paragraph{Actionability}
-As demonstrated in Table \ref{tab:root}, 
+\textit{Actionability:}
+As shown in Table \ref{tab:root}, 
 the root-cause categories in our taxonomy are well correlated with
 fix strategies.
 This indicates that our taxonomy is actionable --- once the root cause
-is identified, developers roughly know how to fix the problem.
+is identified, developers roughly know how to fix.
 For example, 
 almost all 0*1? resultless loops are fixed by data-structure changes;
 all [0$|$1]* resultless loops are
@@ -136,7 +138,7 @@ The only problem is that there are no silver bullets for fixing 1* loops.
 %all inefficient loops with xx root cause are fixed by xxx.
 %xxx
 
-\paragraph{Generality}
+\textit{Generality:}
 The root-cause categories in our taxonomy are designed to be 
 generic. Table \ref{tab:root} also shows that these categories 
 each appears in multiple
@@ -151,7 +153,7 @@ is suitable to guide our design of \Tool.
 %
 %TODO even for the other, there are things we could do ...
 
-\subsection{Caveats} 
+\subsection{Threats to Validity} 
 What presented above reflects our best effort in assessing our root-cause
 taxonomy using a non-biased set of real-world inefficient loop problems that
 have been perceived by users and fixed by developers.
@@ -168,8 +170,8 @@ on-line discussion to judge whether a bug report is about
 performance problems and whether 
 the performance problem under discussion is noticed and reported by users
 or not.
-We follow the methodology used in previous work~\cite{SongOOPSLA2014} to judge 
-whether the root-cause of a performance problem is related to loops or not.
+%We follow the methodology used in previous work~\cite{SongOOPSLA2014} to judge 
+%whether the root-cause of a performance problem is related to loops or not.
 We do not intentionally ignore any aspect of loop-related performance problems. 
 Some loop-related performance problems may never be noticed by end users
 or never be fixed by developers, and hence skip our study. However,

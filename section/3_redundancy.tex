@@ -1,7 +1,6 @@
 \subsection{Redundancy Checker}
 \label{sec:redundant}
 
-\subsubsection{Design overview}
 We will compare the computation of different iterations
 from one loop instance and that of different loop instances from 
 one static loop,
@@ -11,17 +10,16 @@ Specifically, several questions need to be answered.
 \emph{What to compare?}
 Given two loop iterations (or loop instances) $c_1$ and $c_2$, since they 
 originate from the same source code $C$, 
-a naive approach is to record the value read by
+a naive approach is to record and compare the value read by
 every memory read instruction in $c_1$ and $c_2$. 
-We will know whether $c_1$ and $c_2$ are redundant with each other by comparing
-these values.
-Of course, we could do better by checking fewer instructions, as
-some of these values are determined by values read earlier in $c_1$ and/or 
+%We will know whether $c_1$ and $c_2$ are redundant with each other by comparing
+%these values.
+We could do better by checking fewer instructions, as
+some of these values are determined by values read earlier in $c_1$ and
 $c_2$. Informally speaking, we only need to compare \textit{input}
 values of $c_1$ and $c_2$ to decide whether they are redundant with each other. 
-We will present our formal definition of \textit{input} values, and
-how we identify and record them in
-Section \ref{sec:dependence}.
+We will present formal definition of \textit{input} and the detailed algorithms
+in Section \ref{sec:dependence}.
 
 %TODO
 %Among the the above two potential solutions, our design chooses the second one,
@@ -68,8 +66,8 @@ Specifically, \Tool first identifies side-effect instructions in $C$,
 similar with that in Section \ref{sec:s_workless}. 
 It then conducts 
 backward static slicing 
-from these instructions, considering both control and data
-dependency. For every memory read instruction $r$ 
+from these instructions, considering control and data
+dependency. For every memory read $r$ 
 (\texttt{read(v)}) that static slicing encounters, \Tool checks whether $r$
 satisfies either one of the following two conditions. 
 If $r$ does, it is marked as
@@ -83,7 +81,6 @@ unnecessary for redundancy judgement among instances of $C$.
 The rationale for the second condition is that tracking data-dependency
 through heap or global variables is complicated in multi-threaded C/C++
 programs.
-
 The analysis for cross-iteration and cross-loop redundancy analysis is similar
 --- simply replacing $C$ in the above algorithm with one iteration or
 the whole loop body.
@@ -97,8 +94,9 @@ inside callees.
 %we calculate previous writes conducted to the same address for each local-structure read and local-array read. 
 %Since local structures and local arrays are mainly used in the declared functions, 
 %it is easy to know whether read or write conducted on them are applied to the same address. 
-We omit encountered constant values through slicing, because constant values will not affect the redundancy judgement. 
+We omit encountered constant values through slicing, as they do not affect redundancy judgement. 
 
+\comment{
 Note that another possible approach is to simply record and compare what
 are written by the side-effect instructions in $C$.
 We did not choose this approach because we believe it is not sufficient
@@ -109,6 +107,7 @@ variable denoting its checking result. Running this loop on
 different arrays is not redundant, but could easily be judged as redundant
 when only comparing the loop side-effect (e.g., always returning 
 \texttt{FALSE}).
+}
 
 %We conduct slicing to for return values of callees and side-effect instructions
 %inside callees. In order to reduce the number of memory read we need to record, 
@@ -135,27 +134,24 @@ when only comparing the loop side-effect (e.g., always returning
 %  //We only do this for read from structure and array declared in the same function. 
 % }
 
-%TODO why not directly judge side-effect values
 
-\paragraph{Example}
-Figure \ref{fig:Apache34464} shows a simplified code-snippet from Apache,
-containing a cross-loop redundancy bug. 
-The \texttt{for} loop starting on line 7 
-searches a string \texttt{source} for a target sub-string 
-\texttt{target}. Since the outer loop, which starts on line 2, appends one 
-character to \texttt{source} in every iteration (line 30), 
-every execution of the \texttt{for} loop is working on a similar 
-\texttt{source} string from its previous execution, with a lot of redundancy. 
 
 \begin{figure}
   \centering
   \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
      morekeywords={+},keepspaces=true,numbers=left}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Apache34464.c}}
-  \caption{A cross-loop redundant bug in Apache}
+  \caption{A cross-loop redundant bug in Apache (The \texttt{for} loop on line 7 
+searches a string \texttt{source} for a target sub-string 
+\texttt{target}. Since the outer loop on line 2 appends one 
+character to \texttt{source} in every iteration (line 30), 
+the \texttt{for} loop is always working on a similar 
+\texttt{source} from its previous execution, with a lot of redundancy.) 
+}
   \label{fig:Apache34464}
 \end{figure}
 
+\comment{
 Take the simple loop at line 10 of Figure~\ref{fig:Apache34464} as an example.
 Its only side-effect is to update \texttt{i}.
 For cross-loop redundancy analysis, we will consider the whole loop and 
@@ -178,21 +174,20 @@ three values defined outside the loop
 This set is already smaller than the set of all data read by the loop.
 We will further shrink this set, removing invariant and others, 
 in Section \ref{sec:perf}.
-
+}
 
 
 \subsubsection{Identifying redundant loops}
 \label{sec:cal}
 
 After identifying \textit{inputs} using static analysis, 
-\Tool then instruments the program to record \textit{inputs} values at run time.
+\Tool instruments the program to record \textit{inputs} values at run time.
 %Specifically, we will assign
 %a unique ID for each source instruction, and a pair of $<InstID, Value>$
 %will be recorded at run time with the execution of a source instruction.
-The run-time trace will also include delimiters and meta information that allows
-trace analysis to differentiate values recorded from different instructions, 
-loop
-iterations, loop instances, and so on.
+The run-time trace also includes information that
+differentiate values recorded from different instructions, loop
+iterations, loop instances, etc.
 %TODO
 %All values defined outside the loop is recorded in block O. 
 %We record a delimiter, loop instance number and values defined in previous iterations in block H1'.
@@ -202,29 +197,48 @@ Once the trace under problematic workload is collected either during
 off-line debugging or production runs, 
 \Tool will process the trace and decide
 whether the loops under study contain cross-iteration or 
-cross-loop redundancy. We will first present our high-level algorithms, followed
-by the exact implementation in our prototype.
+cross-loop redundancy. 
+%We will first present our high-level algorithms, followed
+%by the exact implementation. 
 
 \paragraph{High-level algorithms}
-For cross-iteration redundancy, we need to answer two questions. 
-First, how to judge whether
-two iterations are doing redundant work?
-Second, is a (dynamic) loop problematic when it contains only few 
-iterations that are
-redundant with each other?
-
-Our answer to these two questions stick to one principle: there should be
+We need to answer two questions:
+how to judge whether
+two iterations or loop-instances are doing redundant work, and
+how to judge whether a loop contains sufficient redundant
+computation to be inefficient.
+Our answer stick to one principle: there should be
 sufficient amount of redundant computation to make a loop likely culprit
 for a user-perceived performance problem and to make itself worthwhile to
-get optimized by developers. Consequently,
-for the first question, \Tool takes a strict 
-definition --- only iterations that are doing exactly the same computation are
-considered redundant. Since one iteration may not contain too much computation,
-a weaker definition here may lead to many false positives. For the 
-second question, we believe there should be a threshold. In our current 
+get optimized by developers. 
+
+For the first question, \Tool takes a strict 
+definition for cross-iteration redundancy and a looser definition for
+cross-loop redundancy checking. Specifically,
+two iterations that conduct exactly the same computation are
+considered redundant; two loop instances that conduct largely
+the same computation are considered redundant.
+The rationale is that 
+a whole loop instance contains a lot of computation, much more than
+one iteration in general. Even if only part of its computation
+is redundant, it could still be the root-cause of a user-perceived performance
+problem and worth developers' attention. 
+In practice, we rarely see different loop 
+instances doing exactly the same computation.
+In cross-loop redundancy examples shown in 
+Figure~\ref{fig:Mozilla477564} and
+Figure~\ref{fig:Apache34464}, each loop instance is doing similar, but not
+exactly the same, work from its previous instance.
+For the second question, we believe there should be a threshold. 
+A loop will be considered inefficient if its \textit{redundancy rate} goes
+beyond the threshold.
+
+\comment{
+In our current 
 prototype,
 when the number of distinct iterations is less than half of the total iterations, 
 we consider the loop to be cross-iteration redundant. 
+}
 %when the number of distinct iterations is less than half of the total iterations 
 %iterations/(distinct iterations) = 2
 
@@ -244,39 +258,20 @@ Under the problem triggering input, there are
 only few distinct listeners, and most of the
 loop iterations in \texttt{fireMessageLoggedEvent}
 are doing redundant work. 
+}
 %The problem for this bug is that developers say that the performance 
 %loss happens in fireMessageLoggedEvent, but in the code I found, function
 %messageLogged does not contain anything, and it is an empty function.
 %I guess either developers do not have correct understanding of this bug,
 %or I did not find the correct codes. 
-}
 
 
 
 
-
-For cross-loop redundancy, we need to answer similar questions:
-how to judge whether two loop instances are doing redundant work?
 %should they contain exactly the same number of iterations and doing exactly
 %the same computation in each iteration?
 %Second, is a (static) loop problematic when it contains two instances that
 %are redundant with each other?
-
-Following the same principle discussed above, we have slightly different
-answers here.
-We do not require two loop instances to
-conduct exactly the same computation to be considered redundant. The rationale
-is that a whole loop instance contains a lot of computation, much more than
-one iteration in general. Even if only part of its computation
-is redundant, it could still be the root-cause of a user-perceived performance
-problem and worth developers' attention. 
-
-In practice, we rarely see cases where different loop 
-instances are doing exactly the same computation.
-In cross-loop redundancy examples shown in 
-Figure~\ref{fig:Mozilla477564} and
-Figure~\ref{fig:Apache34464}, each loop instance is doing similar, but not
-exactly the same, work from its previous instance.
 
 
 
@@ -318,12 +313,13 @@ may have executed. Therefore, we cannot simply chain values from different
 input instructions and iterations together and compare two data sequences.
 Instead, we decide to check the redundancy for each input instruction across
 $l_1$ and $l_2$ first, and then use the average \textit{redundancy rate} of
-all input instructions as the \textit{cross-loop redundancy rate} between
+all input instructions as the \textit{redundancy rate} between
 $l_1$ and $l_2$. 
 
 We calculate the redundancy for one input instruction $I$ by normalizing the
 edit-distance between the two sequences of values returned by $I$ in the two
-loop instances. The exact formula is the following:
+loop instances, denoted by $SeqA$ and $SeqB$. 
+The exact formula is the following:
 
 %\[
 %\Scale[0.8]{
@@ -331,12 +327,14 @@ loop instances. The exact formula is the following:
 %}
 %\]
 
+\vspace{-0.1in}
 \[
 \Scale[0.8]{
-	Redundancy(I) =  \frac{dist(SeqA,SeqB) - (len(SeqA) - len(SeqB))}{len(SeqA)}
+	Redundancy(I) =  \frac{EditDistance(SeqA, SeqB) - |Length(SeqA) - Length(SeqB)|}{max(Length(SeqA), Length(SeqB))}
 }
 \]
 
+\comment{
 Here, $SeqA$ and $SeqB$ represent the two value sequences corresponding to $I$
 from two loop instances, with $SeqA$ being the longer sequence.
 $dist$ means edit distance, and $len$ means the length of a value sequence.
@@ -344,6 +342,7 @@ Since the edit distance is at least the length-difference between the
 two sequences and at most the length of the longer sequence, we use the 
 subtraction and division shown in the formula above to normalize the
 redundancy value.
+}
 
 %$r\_dist$ means edit distance after 
 %we reverse one sequence. 
@@ -411,20 +410,20 @@ as long as the sampling is not insanely sparse
 %For cross-iteration redundancy, we randomly sample iterations, 
 %and compare distinct computation number with the total number of sampled iterations. 
 
-\paragraph{Cross-iteration redundancy analysis}
-Our high-level sampling strategy is straightforward:
-randomly decide at the
+For cross-iteration redundancy analysis,
+we randomly decide at the
 beginning of every iteration whether to track the values returned by
 input instructions in this iteration.
-
 The implementation is similar with previous sampling work 
 \cite{liblit03,liblit05}.
 Specifically, we create a clone of the original
-loop iteration code, including functions called by the loop directly or
-indirectly, and insert value-recording instructions along the
+loop iteration code, 
+%including functions called by the loop directly or indirectly, 
+and insert value-recording instructions along the
 cloned copy. 
-We then insert a code snippet that conducts random decision to
-the beginning of a loop iteration. 
+We then insert a code snippet that randomly decides to execute the
+cloned copy or the original copy at the beginning of a loop iteration. 
+\comment{
 Two variables \texttt{CurrentID}, which is initialized as 0, 
 and \texttt{NextSampleID}, which is initialized by a random integer, 
 are maintained
@@ -434,6 +433,7 @@ flow jumps to the value-recording clone of the loop iteration and the
 \texttt{NextSampleID} is increased by a random value. Different sampling
 sparsity setting will determine the range from which the random value is
 generated.
+}
 
 %\begin{figure}
 %\center
@@ -442,7 +442,7 @@ generated.
 %\label{fig:CI-I}
 %\end{figure}
 
-\paragraph{Cross-loop redundancy analysis} 
+For cross-loop redundancy analysis,
 We randomly decide at the beginning
 of every loop instance whether to track values for this instance. 
 Since we will need to compare two consecutive loop
@@ -480,7 +480,7 @@ sampling decisions in the loop pre-headers.
 We conduct a series of static analysis to reduce the number of instructions we 
 need to monitor. 
 
-First, we avoid tracking multiple read instructions that we can statically 
+First, we avoid tracking multiple reads that we can statically 
 prove to return the same value.
 Since we implement \Tool in LLVM, we leverage the SSA construction and the
 \textit{mem2reg} pass in LLVM to avoid unnecessary tracking of
@@ -492,35 +492,38 @@ and lifts the read of \texttt{max}
 out of the loop. Consequently, \Tool only records
 its value once during each loop, instead of each iteration.
 LLVM is conservative in lifting heap/global variables out of
-a loop, for fear of changing the location of potential exceptions, etc.
+a loop.
+%, for fear of changing the location of potential exceptions.
 \Tool conducts a best-effort
 loop invariant analysis for heap/global variables.
 For example, \Tool identifies that the values of
 \texttt{aNode->localName} and \texttt{aNode->namespaceURI} do not change
 throughout one loop instance
 in Figure~\ref{fig:Mozilla477564}, and hence only traces them once
-outside the loop. This analysis is sound but not complete.
+outside the loop. 
+\comment{
+This analysis is sound but not complete.
 \Tool may miss some loop invariants. For in-house debugging, since we know
 the problem-triggering inputs do not lead to exceptions, this optimization
 is safe. For production-run usage, users can turn off this heap/global
 variable related optimization.
+}
 
-Second, we leverage the scalar evolution analysis in LLVM to remove the 
+Second, we leverage the scalar evolution (SE) analysis in LLVM to remove the 
 monitoring to some loop-induction related variables.
-The scalar evolution analysis can tell which variables are
+SE analysis can tell which variables are
 loop-induction variables (e.g., \texttt{i} on line 10
 of Figure~\ref{fig:Apache34464}) and what are their strides. 
-We then use this information in two ways. 
-One is for cross-iteration redundancy checking.
-If a loop iteration's input set contains a loop-induction
+In cross-iteration redundancy checking,
+if a loop iteration's input set contains a loop-induction
 variable, we know different iterations' inputs would be different and 
-hence conclude that there is no cross-iteration redundancy without any
-run-time analysis. 
-The other is for cross-loop redundancy checking.
-When the address of a memory read is a loop induction variable, such as
+hence conclude that there is no redundancy without
+run-time analysis.
+In cross-loop redundancy checking,
+when the address of a read is a loop induction variable, such as
 \texttt{source[i]} on line 10 of Figure~\ref{fig:Apache34464},
-we only record the address range at run time (i.e., the start and the
-end), instead of every value returned by the memory read.
+we only record the address range at run time,
+instead of every value returned by the memory read.
 This optimization could lead to false positives ---
 different loop instances may work on variables read from
 similar memory locations but with different values.
@@ -530,37 +533,30 @@ We did not encounter such false positives in our experiments.
 \subsection{Fix Strategy Recommendation}
 \label{sec:redundant_fix}
 
-\Tool suggests how to fix an inefficient loop 
-{\color{red} and provides related information for carrying out that fix} 
-to developers.
+\Tool suggests a fix strategy for each inefficient loop 
+and provides related information for carrying out that strategy.
 This process is straightforward following our taxonomy discussion in 
 Section \ref{sec:study}, as there is often only one or two natural fix 
 strategies for each sub-category of root causes.
 
 Once a loop is identified as \emph{resultless}, \Tool will suggest
-the loop to be completely deleted, in case of 0$^*$ resultless, or
-conditionally skipped, in case of [0$|$1]*; \Tool will suggest a 
-data-structure change in case of 0*1? loops.
-{\color{red}Besides these fix strategies, \Tool also reports side-effect instructions 
-and what percentage of loop iterations executing each such instruction. 
-These information can help developers refactor the loop or change data structures processed by the loop. }
+the loop to be deleted in case of 0$^*$,
+conditionally skipped in case of [0$|$1]*, or a
+data-structure change in case of 0*1?.
+\Tool also reports side-effect instructions 
+and what percentage of loop iterations executes each such instruction,
+helping developers refactor the loop or change data structures. 
 
 When a loop is identified as \emph{redundant}, \Tool conducts
 extra analysis to
-decide whether batching or memoization should be suggested to fix the
-redundancy problem. 
-
+decide whether batching or memoization should be used. 
 For cross-iteration redundancy, \Tool suggests batching if the
 redundancy is related to I/O operations and suggests memoization otherwise.
-Specifically, 
-when the only side effect of a loop is from I/O operations
-and the same statement(s) is executed in every loop iteration, \Tool reports 
-this
-as an I/O related redundancy problem, 
-{\color{red}pointing out I/O instructions,} 
-and suggests batching as a potential fix
-strategy. Otherwise, \Tool suggests memoization, 
-{\color{red}and provides information for input instructions and redundancy rate.}
+Specifically, when the only side effect of a loop is from I/O operations
+and the same statement(s) is executed in every iteration, \Tool suggests
+batching the specific I/O operations.
+Otherwise, \Tool suggests memoization, and reports
+input instructions that lead to redundant computation and redundancy rate.
 
 For cross-loop redundancy, whether to use memoization or batching often
 depends on which strategy is cheaper.
@@ -569,24 +565,13 @@ heuristic. If
 the side effect of each loop instance is to update 
 a constant number of memory locations, like the 
 buggy loop in Figure~\ref{fig:Mozilla477564} and Figure~\ref{fig:Apache34464}, 
-we recommend memoization. Instead, if the side effect is to update
+we recommend memoization. If the side effect is to update
 a sequence of memory locations, with the number of locations increasing
 with the workload, memoization is unlikely to save much and
 hence batching is suggested.
-{\color{red} \Tool will also provide information for input instructions and side-effect instructions to developers. }
-
-{\color{red} [redundant]
-In addition to the above high-level fix strategies, \Tool can also provide some 
-detailed information to help developers design the patch.
-For example, in case of memoization fix strategy,
-since \Tool knows what exactly are the memory reads that return the same values
-again and again, it can help decide what to memoize; in case of
-I/O-related batching, \Tool points out the exact I/O operations that should
-be considered batching; and so on. 
-Generating complete patches is out of the scope of \Tool.
-}
-
-%TODO what does batching mean for cross-loop redundancy???
+\Tool will also report
+the memory reads that return the same values
+again and again, which can help decide what to memoize.
 
 \comment{
 %%if side effect of the loop is to define several scalar value used outside the loop, we recommend memoization.
