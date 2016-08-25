@@ -1,52 +1,39 @@
 \section{Root-Cause Taxonomy}
 \label{sec:study}
 
-Previous work has identified a wide variety of performance root-cause 
-categories. However, existing taxonomies do not satisfy all the three 
-requirements below and hence cannot be directly used to guide our 
-diagnosis-tool
-design.
-\begin{enumerate}
-\item Coverage: covering
+To guide the design of automated diagnosis tools, we need a
+taxonomy for inefficient loops that satisfies three requirements:
+(1) \textit{Coverage}, covering
 a big portion of real-world inefficient loop problems; 
-\item Actionability: each root-cause category should be informative enough 
-to help developers
-decide how to fix a performance problem; 
-\item Generality: application-specific root causes will not work, as we
-hope to build diagnosis tools that can automatically identify root causes 
-without developers' help.
-\end{enumerate}
+(2) \textit{Actionability}, each root-cause category being informative enough 
+to help developers fix a performance problem; 
+(3) \textit{Generality}, allowing automated diagnosis to be applied to many
+applications.
 
-
-We divide all inefficient loops into two main root-cause categories,
-\textit{resultless} and \textit{redundancy}, and many sub-categories under
-these two.
-The details of these categories will be presented below.
-
-Our discussion below will qualitatively show that 
-our taxonomy is general, not application-specific, and
-cover common loop inefficiency problems.
-We will quantitatively measure the coverage, actionability, and 
-generality of our taxonomy
+Previous work identified a wide variety of performance root-cause 
+categories. However, existing taxonomies do not satisfy all these 
+requirements and hence cannot be directly used by us.
+Therefore, we have designed our own taxonomy,
+as presented below.
+We will discuss how our taxonomy meets these three requirements
+qualitatively in this section and quantitatively 
 using real-world performance-bug suite in Section \ref{sec:eval_taxonomy}.
 
 
 \subsection{Resultless loops}
 \label{sec:study_resultless}
 Resultless loops spend a lot of time in computation that does not
-produce results useful after the loop (i.e., computation without side effects).
+produce results useful after the loop (i.e., no side effects).
 They can be further categorized to four sub-types 
 based on which part of the loop is
-(not) producing useful results. We explain these four sub-types below, 
-as well as
-how they can be fixed.
+(not) producing useful results.
 
 
-{\textbf{0*}}: 
-This type of loops never produce any results in any iteration.
+{\textbf{0*}} loops
+never produce any results in any iteration.
 They are rare in mature software systems.
 
-{\textit{How to fix?}} This type of loops should simply be deleted from the program.
+{\textit{How to fix?}} They should be deleted from software.
 %Question: dynamic or static?
 
 \begin{figure}
@@ -58,21 +45,18 @@ They are rare in mature software systems.
 \label{fig:Mozilla347306}
 \end{figure}
 
-{\textbf{0*1?}}:
-This type of loops only produce results in the last iteration, if any. 
+{\textbf{0*1?}} loops only produce results in the last iteration, if any. 
 They are often related to search: check a sequence of elements one
 by one until the right one is found.
-Clearly, whether these loops are efficient or not depends on the
-workload. When indeed inefficient, they are often
-fixed by data-structure changes.
+Whether these loops are efficient or not depends on the
+workload. 
 An example is shown in Figure \ref{fig:Mozilla347306}.
 Large JavaScript files often fill the \texttt{script} list with 
 tens of thousands of nodes and cause poor performance.
 
 {\textit{How to fix?}}
-To make a linear search more efficient, it usually requires a data
-structure change. For example, 
-the patch for the bug in Figure \ref{fig:Mozilla347306}
+They are often fixed by data-structure changes.
+For example, the patch for the bug in Figure \ref{fig:Mozilla347306}
 simply replaced the \texttt{script} list with a hash table.
 % This improve the performance by 52.60{\bf X}.
 
@@ -103,8 +87,8 @@ The patch applies a stack-like data structure to keep all parent nodes who have 
 %we are providing information to developers
 
 
-{\textbf{[0$|$1]*}}:
-Each iteration in this type of loops may or may not produce results.
+{\textbf{[0$|$1]*}} loops may or may not produce results in each
+iteration.
 For some workload, the majority of iterations do not produce
 results and cause performance problems perceived by users.
 %These problems are often solved
@@ -121,9 +105,8 @@ behind this loop has quadratic complexity in the number of operands in an expres
 programs with long expressions suffer severe slow-downs.
 After further diagnosis, developers observed that this loop rarely
 had any side-effects, as the \texttt{if} condition was rarely satisfied.
-At the end, the patch greatly improved performance through a
-simple checking that allows the loop to be
-skipped in most cases.
+%At the end, the patch greatly improved performance through a
+%simple checking that allows the loop to be skipped in most cases.
 
 \begin{figure}[t!]
 \centering
@@ -155,12 +138,10 @@ The patch designed by developers is to add an extra condition checking to skip t
 }
 }
 
-{\textbf{1*}}:
-Loops in this category always generate results in almost all iterations. 
-They are inefficient because their results are useless due to
-some high-level semantic reasons.
-Understanding and fixing this type of inefficiency problems often require
-deep understanding of the program and are difficult to automate.
+{\textbf{1*}} loops in this category always generate results in almost all iterations. 
+They are inefficient because their results are useless due to high-level semantic reasons.
+%Understanding and fixing this type of inefficiency problems often require
+%deep understanding of the program and are difficult to automate.
 For example, several Mozilla performance problems are caused by 
 loops that contain intensive GUI operations whose graphical outcome may not
 be observed by humans and hence can be optimized.
@@ -168,7 +149,8 @@ be observed by humans and hence can be optimized.
 {\textit{How to fix?}}
 Since a deep understanding of software semantics is required
 to understand the inefficiency of these loops,
-the fix strategies for these loops will likely vary from case to case.
+the fix strategies for these loops likely vary from case to case
+and are difficult to automate.
 %At high level, the patch often involves skip some computation that produces
 %side effects that are useless due to semantic reasons.
 
@@ -203,7 +185,6 @@ based on which part of the loop is the unit of redundancy.
 
 
 {\textbf{Cross-iteration Redundancy}}:
-Loop iteration is the redundancy unit here:
 one iteration repeats
 what was already done by an earlier iteration of the same loop.
 Here, we consider a recursive function as a loop, treating one function-call
@@ -212,9 +193,9 @@ instance as one loop iteration.
 {\textit{How to fix?}}
 Intuitively, most redundancy problems can be fixed through memoization or
 batching --- either caching the earlier computation results and skip
-some of the following iterations; or combining multiple iterations' work
+some following iterations; or combining multiple iterations' work
 together.
-For example, the GCC bug shown in Figure~\ref{fig:GCC27733} is caused by
+For example, the bug shown in Figure~\ref{fig:GCC27733} is caused by
 redundant computation across different invocations of recursive function
 \texttt{mult\_alg}. The patch essentially enables memoization.
 %Another bug similar to GCC\#27733 is shown in Figure~\ref{fig:GCC1687}. 
@@ -233,17 +214,14 @@ from popping up timeout windows to not blocking.
 }
 
 {\textbf{Cross-loop Redundancy}}:
-A whole loop is the redundancy unit:
 one dynamic instance of a loop spends a big chunk, if not all, of its
 computation in repeating the work already done by an
 earlier instance of the same loop.
 
 {\textit{How to fix?}}
 Just like that in cross-iteration redundancy, memoization and batching
-are the typical fix strategies for this type of redundancy problems ---
-caching the earlier computation results and skip following redundant loops;
-or combining multiple loop instances together to avoid or alleviate redundancy.
-Mozilla\#477564 shown in Figure~\ref{fig:Mozilla477564} is an example for this type of bugs. 
+are the typical fix strategies for this type of loops.
+Mozilla\#477564 shown in Figure~\ref{fig:Mozilla477564} is an example. 
 The buggy loop counts how many previous siblings of the input \texttt{aNode} have the same name and URI. 
 There is an outer loop, not shown in the figure, that repeatedly updates
 \texttt{aNode} to be its next sibling and calls
@@ -263,15 +241,11 @@ saved count value of the nearest previous sibling with the same name and URI.
 
 
 
-\subsection{Discussion}
-Coverage, actionability, and generality are the principles behind our taxonomy
-design. Intuitively, the categories above cover a lot of common inefficient
+\noindent\textbf{Threats to Validity}
+Intuitively, the categories above cover a lot of common inefficient
 loop problems; each sub-category is concrete enough to guide the design of a
 failure diagnosis tool; none of the categories above involve any application
-specific knowledges or heuristics. We will further assess our taxonomy
-through the design of \Tool (Section \ref{sec:design}) and 
-a real-world bug study (Section \ref{sec:eval_taxonomy}).
-
+specific knowledges or heuristics.
 Of course, our taxonomy does not cover \emph{all} loop inefficiency problems.
 For example, some loops may be vulnerable to false sharing problems or lock
 contention problems, which are out of the scope of our taxonomy. 
