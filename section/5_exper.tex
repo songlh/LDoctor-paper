@@ -240,43 +240,7 @@ any form of inefficiency, resultless or redundancy.
 \subsection{Performance}
 \label{sec:result_perf}
 
-\begin{table*}[tb!]
-  \centering
-  \scriptsize
-  \newcommand{\Yes}[1]{\checkmark{}$_#1$}
-  \newcommand{\No}[0]{-}
-  \begin{tabular}{lccccccc}
-    \toprule
-	    & \multicolumn{2}{c}{execution time} & \multicolumn{3}{c}{\Tool w/ optimization} & \multicolumn{2}{c}{w/o optimization} \\
-     \cmidrule(lr){2-3}
-     \cmidrule(lr){4-6}
-     \cmidrule(lr){7-8}
-     {\bf BugID}  & {\bf Buggy}  & {\bf Patched} & {\bf Resultless}  &  {\bf C-L R. } & {\bf C-I R. }  & {\bf C-L R.}  & {\bf C-I R. } \\
-    \midrule
-    Mozilla347306 &  $1.52\pm1.80*10^{-2}$ & $5.37*10^{-2}\pm3.77*10^{-3}$  &  $<0.01\%\pm0.73\%$  & $18.29\%\pm1.33\%$       &  $18.84\%\pm4.44\%$  & 355.51{\bf X}$\pm$8.59{\bf X} & 661.49{\bf X}$\pm$81.63{\bf X} \\ 
-    Mozilla416628 &  $4.29*10^{-1}\pm6.70*10^{-3}$  & $1.15*10^{-1}\pm4.64*10^{-3}$  &  $<0.01\%\pm1.76\%$  & $4.87\%\pm2.09\%$ &  $2.41\%\pm1.58\%$ & 72.52{\bf X}$\pm$1.57{\bf X}  & 112.15{\bf X}$\pm$2.01{\bf X} \\
-    \midrule
-     MySQL27287   & $1.21\pm1.77*10^{-2}$& $2.03*10^{-2}\pm3.45*10^{-4}$ &  $5.47\%\pm1.29\%$   & $0.20\%\pm2.04\%$  &   - & 263.74{\bf X}$\pm$8.50{\bf X} & 880.95{\bf X}$\pm$101.24{\bf X} \\
-     MySQL15811   & $1.65\pm1.67*10^{-2}$& $8.39*10^{-2}\pm6.64*10^{-3}$          &  -                   & $0.35\%\pm2.81\%$        &   -                  & 413.59{\bf X}$\pm$53.94{\bf X}& 1087.16{\bf X}$\pm$43.26{\bf X} \\
-    \midrule
-      GCC46401    & $3.21\pm7.92*10^{-3}$ & $6.56*10^{-2}\pm3.68*10^{-3}$          &  $<0.01\%\pm0.17\%$  & $<0.01\%\pm0.27\%$       &  $<0.01\pm0.22\%$    & 32.89 {\bf X}$\pm$0.38{\bf X} & 59.07{\bf X}$\pm$1.24{\bf X}\\ 
-      GCC1687     & $2.99\pm7.78*10^{-3}$ & $0.68*10^{-2}\pm8.12*10^{-4}$          & -              & /                 &  $1.84\%\pm0.28\%$                &   /                           & 223.30{\bf X}$\pm$17.75{\bf X} \\
-      GCC27733    &  $10.50\pm1.20*10^{-2}$ & $0.80\pm1.99*10^{-2}$           & $<0.01\%\pm0.26\%$   & /           &  $<0.01\%\pm0.25\%$               &   /                           & 18.44{\bf X}$\pm$0.32{\bf X}     \\
-      GCC8805     & $2.40\pm2.36*10^{-2}$  & $0.28\pm1.73*10^{-2}$          & -              & $0.50\%\pm1.26\%$ &  $0.19\%\pm1.43\%$                & 2.89{\bf X}$\pm$0.35{\bf X}    & 3.36{\bf X}$\pm$0.44{\bf X}\\
-      GCC21430    & $3.27\pm2.02*10^{-2}$             & $0.66\pm1.06*10^{-2}$          & -              & $4.86\%\pm0.81\%$ &  $2.37\%\pm1.38\%$                & 164.02{\bf X}$\pm$20.35{\bf X} & 254.9{\bf X}$\pm$22.34{\bf X} \\
-      GCC12322    & $47.68\pm1.01$       & $3.06\pm8.67*10^{-3}$          & -              & $4.77\%\pm2.48\%$ &  $<0.01\%\pm2.24\%$               & 25.56{\bf X}$\pm$2.50{\bf X}  & 24.87{\bf X}$\pm$2.52{\bf X} \\
-   \bottomrule
-   \end{tabular}
-  %\nocaptionrule
-  \caption{Run-time overhead of applying \Tool to the buggy loop
-    (only non-extracted benchmarks are shown). 
-  -: dynamic analysis is not needed;
-  /: not applicable;
-  execution time is measured in seconds;
-  $95\%$ confidence interval is calculated by running each benchmark 10 times.}
-  \label{tab:performance}
-\end{table*}
-
+\input section/overhead_tab.tex
 
 As shown in Table \ref{tab:performance}, 
 the performance of \Tool is good. The overhead is consistently under or around 5\% 
