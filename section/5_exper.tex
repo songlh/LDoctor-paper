@@ -14,7 +14,7 @@ We implement \Tool in LLVM-3.4.2 \cite{llvm}, and conduct our
 %with 4748 for instrumenter, 674 for resultless analysis, 
 %5802 for redundancy analysis, 
 %and the remaining 6430 for common utilities. 
-experiments on a i5-3330S machine, with Linux 3.19 kernel. 
+experiments on an i5-3330S machine, with Linux 3.19 kernel. 
 
 \noindent\textbf{Benchmarks}
 \Tool is a diagnosis tool that helps understand and fix 
@@ -29,7 +29,7 @@ First, \emph{general} benchmark suite.
 We evaluate \Tool on all bugs, 18 in total, that we can reproduce 
 among the 45 bugs discussed in Section \ref{sec:eval_taxonomy}. 
 These 18 bugs cover a wide variety of inefficiency root causes, as 
-shown in Table~\ref{tab:benchmarks}. 
+shown in the upper half of Table~\ref{tab:benchmarks}. 
 We use the problem-triggering inputs reported by real-world
 users in \Tool run-time analysis.
 Among these 18, seven are extracted from Java/JavaScript
@@ -49,7 +49,7 @@ following the original data and control flow.
 
 Note that, we expect \Tool to also work for most, if not all, of 
 the remaining 27 bugs listed in Table \ref{tab:root}.
-However, these 27 bugs are too difficult to be reproduced, as they 
+However, these 27 bugs are too difficult to reproduce, as they 
 depend on special hardware/software environment (e.g., Windows OS and 
 .Net libraries) and cannot be easily extracted or reimplemented. 
 For example, some bugs are related to GUI widgets, which are too complicated to 
@@ -64,18 +64,18 @@ without reproducing the original bugs.
 %We extract XXX (how did you
 %extract exactly?) and re-implement in C++. Each extracted benchmark 
 %contains 4--5 loops (how come you always have 4--5 loops??XXX). 
-Second, we evaluate \Tool on Toddler~\cite{Alabama, toddlerbuglist} benchmark suite.
+Second, we evaluate \Tool on Toddler benchmark suite~\cite{Alabama, toddlerbuglist}.
 Toddler project provides the bug-triggering inputs and detailed explanation
 for 21 inefficient-loop bugs that have been confirmed and fixed by developers, and
 we evaluate \Tool on \emph{all} of them.
 Due to the focus of Toddler, all of these bugs are caused by inefficient
 \textit{nested} loops and only cover two types of inefficiency root causes,
-as shown in Table \ref{tab:benchmarks}.
+as shown in the bottom half of Table \ref{tab:benchmarks}.
 We extract these bugs and re-implemented them in 
 C/C++;
-we also re-implement basic Java data structures following a recent version of 
+we re-implement basic Java data structures following a recent version of 
 \texttt{openjdk}. Each extracted benchmark contains at least five
-loops, except for two that contain four loops each.
+loops, except for two cases with four loops each.
 
 The general benchmark suite and Toddler benchmark suite both provide
 a large set of repeatable inefficient loop problems that we can access. 
@@ -103,8 +103,8 @@ the real root-cause loops are ranked number 2, 2, 4, and 10.
 
 To evaluate the coverage, accuracy, and performance of \Tool, we mainly conduct
 three sets of evaluation. First, we apply \Tool to the real root-cause loop to
-see if \Tool can correctly identify the root-cause category and provide
-correct fix-strategy suggestion. Second, we apply
+see if \Tool can correctly identify the root-cause category and suggest
+a fix strategy. Second, we apply
 statistical performance debugging \cite{SongOOPSLA2014} to all our benchmarks
 and apply \Tool to the top 5 ranked loops\footnote{Some extracted benchmarks
 have fewer than 5 loops. We simply apply \Tool to all loops in these cases.}
@@ -140,13 +140,13 @@ Overall, \Tool provides good diagnosis coverage, as shown by the check-marks in 
 suggests fix strategies that match what developers took in practice
 for 33 out of \allbugs cases. 
 
-The six cases where the fix strategy suggested by \Tool does not match that of 
-developers fall into three categories.
+The six cases where \Tool and developers suggest/take different fix strategies
+fall into three categories.
 First, the fix strategy taken by developers is a subset of what suggested by 
 \Tool.
 For MySQL\#27287 and Apache\#53622, the root-cause loops contain both
 cross-loop redundancy and 0*1? inefficiency. Consequently, \Tool suggests two
-corresponding fix strategies. In practice, the developers
+fix strategies. In practice, the developers
 acknowledge both types of inefficiencies, but the patches
 only changed the data structures, which eliminated both types of inefficiencies 
 in case of MySQL\#27287 and left the cross-loop redundancy unsolved in
@@ -160,8 +160,8 @@ what suggested by \Tool.
 The root-cause loops in 
 Collections bugs \#407, \#408, and \#425 all conduct frequent linear searches in arrays.
 \Tool suggests data-structure changes for these three cases. Developers' patches 
-still keep the original data structures and the original buggy loops, but they
-did use hash-sets, which contain the same content as the arrays do,
+still keep the original data structures, but they
+did use hash-sets, which contain the same content as the arrays,
 to help conditionally skip the loops. 
 
 Third, \Tool cannot suggest fix strategy for 1* loops.
@@ -185,14 +185,14 @@ of the \allbugs benchmarks.
 
 Here, benign false positives mean that \Tool analysis result is true ---
 some loops are indeed cross-iteration/loop redundant or indeed producing
-results in only a tiny portion of all the iterations. However, those
+results in only a tiny portion of loop iterations. However, those
 problems are \textit{not} fixed by developers in their performance patches. 
 
 There are several reasons for these benign performance problems. 
 The main reason is that they are not the main contributor to the 
 performance problem perceived by the users. This happens to 20 out of the
 22 benign cases. % 11 out of 13 in the first benchmark set 
-In fact, this is not really a problem for \Tool in 
+In fact, this is not a problem for \Tool in 
 real usage scenarios, because statistical debugging or profiling can often
 tell that these loops are not top contributors to the performance
 problems.
@@ -243,9 +243,9 @@ The performance benefit of sampling is huge.
 Without sampling, redundancy
 analysis lead to over 100X slowdown for six benchmarks.
 The benefit of static optimization is also non-trivial. 
-For example, for MySQL\#15811 and MySQL\#27287, static analysis alone
-(i.e., no run-time overhead) can
-judge that they do not contain cross-iteration redundancy: the computation of 
+For example, for MySQL\#15811 and MySQL\#27287, static analysis alone can
+judge that they do not contain cross-iteration redundancy (i.e., no run-time 
+overhead): the computation of 
 each iteration depends on loop induction variables, which are naturally different
 in different iterations. 
 As another example, the buggy loops of MySQL\#27287 and MySQL\#15811 access 
@@ -253,8 +253,8 @@ arrays.
 After changing to tracking the initial and ending memory-access addresses
 of the array, instead of the content of the whole array accesses,
 the overhead is reduced from 12.18\% to 0.20\% for MySQL\#27287, 
-and from 20.53\% to 0.35\% for MySQL\#15811 respectively 
-(sampling is conducted consistently here). 
+and from 20.53\% to 0.35\% for MySQL\#15811 respectively. 
+%(sampling is conducted consistently here). 
 
 \subsection{Parameter Setting and Sensitivity}
 \label{sec:sensi}
