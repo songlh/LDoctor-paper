@@ -204,7 +204,7 @@ The accuracy of \Tool benefits from its run-time analysis.
 %{\color{red} For example, there are 26 
 For example, our run-time analysis has correctly pruned out 24 false positives
 in 0*1? inefficiency detection for our benchmarks. Each of these 24 loops is a
-top-5 suspicious loops in one of our benchmarks; it only generates side effects
+top-5 suspicious loop in one of our benchmarks; it only generates side effects
 in its last iteration, and hence is identified as 0*1? by static analysis. 
 Without run-time information, \Tool would judge
 all of them as inefficient (0*1? resultless). Fortunately,
