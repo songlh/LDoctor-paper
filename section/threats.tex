@@ -1,40 +1,45 @@
 \section{Threats to Validity}
 \label{sec:threats}
 
-Of course, our taxonomy does not cover \emph{all} loop inefficiency problems.
-For example, some loops may be vulnerable to false sharing problems or lock
-contention problems, which are out of the scope of our taxonomy. 
+\Tool does not cover all loop inefficiency problems.
+For example, it does not handle performance problems caused by
+cache-line false sharing in multi-core machines or lock
+contention issues. It also cannot provide useful fixing 
+suggestions for 1* inefficient loops, as discussed in 
+Section \ref{sec:coverage}.
 
+The static analysis in \Tool could occasionally lead to inaccurate diagnosis.
+Specifically, \Tool static analysis could conservatively identify some
+non-side-effect instructions, such as a write to a heap variable that
+is not used after the loop, as having side effects 
+(Section \ref{sec:s_workless}). 
+The SE-based optimization discussed in Section \ref{sec:perf} could cause
+false positives in cross-loop redundancy diagnosis.
+These cases are all rare in practice and not encountered in our experiments.
 
-The static program analysis and optimization.
-This analysis is complete, but not sound. We may identify side-effect
-instructions that are actually not (Section \ref{sec:s_workless}).
-The optimization discussed in Section \ref{sec:perf}.
+Our default settings of resultless and redundancy rate thresholds 
+work well in our evaluation. However, they could potentially lead to false 
+positives and false negatives, as discussed in Section \ref{sec:sensi}.
 
-The resuleless and redundancy rate thresholds could lead to false positives
-and false negatives.
-
-Our evaluation.
-What presented above reflects our best effort in assessing our root-cause
-taxonomy using a non-biased set of real-world inefficient loop problems that
-have been perceived by users and fixed by developers.
-
-The numbers presented above should be interpreted together with our methodology
-and should not be overly generalized.
-The performance bugs examined above cover a variety of applications, workload, 
+The results presented in Section \ref{sec:eval_taxonomy}
+and Section \ref{sec:experiment}
+should be interpreted together with corresponding methodologies
+and not be overly generalized.
+They reflect our best effort in evaluating our root-cause
+taxonomy and \Tool using a non-biased set of real-world inefficient loop 
+problems that have been perceived by users and fixed by developers.
+The benchmark suite covers a variety of applications, workload, 
 development environments and programming languages. 
 However, there are definitely uncovered cases, like problems in distributed systems
 and scientific computing systems, and others. 
+Furthermore, although
+we did not intentionally ignore any aspect of loop-related performance problems,
+some loop-related problems may never be noticed by end users
+or never be fixed by developers, and hence may skip our evaluation. However,
+there are no conceivable ways to study them, particularly considering that 
+\Tool is designed to diagnose already-manifested performance problems not to
+predict not-yet-observed problems.
 
-Previous work~\cite{PerfBug, SongOOPSLA2014} uses developers tagging and
-on-line discussion to judge whether a bug report is about
-performance problems and whether 
-the performance problem under discussion is noticed and reported by users
-or not.
-We do not intentionally ignore any aspect of loop-related performance problems. 
-Some loop-related performance problems may never be noticed by end users
-or never be fixed by developers, and hence skip our study. However,
-there are no conceivable ways to study them. 
 
 \comment{
 We believe that the bugs in our study provide a representative sample of the 
