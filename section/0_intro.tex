@@ -3,7 +3,7 @@
 \subsection{Motivation}
 
 Performance bugs\footnote{We also refer performance bugs as performance problems
-following previous works in this area~\cite{PerfBug,Alabama,SongOOPSLA2014}} 
+following previous works in this area~\cite{PerfBug,Alabama,SongOOPSLA2014}.} 
 are software implementation mistakes that cause unnecessary performance
 degradation in software. They widely exist in deployed software due to the 
 complexity of modern software
@@ -26,6 +26,7 @@ slowness \cite{SongOOPSLA2014}; the root cause is about
 which code region is inefficient and why.
 An effective diagnosis tool can help developers quickly and correctly understand 
 and fix already-exposed performance symptoms.
+
 
 Also like general failure diagnosis, ideal performance diagnosis tools should
 satisfy three criteria.
@@ -80,16 +81,6 @@ real-world performance problems studied in previous work
 tell whether and how loop $l$ is inefficient 
 and hence is limited in its diagnosis \textit{coverage} and \textit{accuracy}.
 
-\begin{figure}
-\centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
-     morekeywords={+},keepspaces=true}
-  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC27733.c}}
-\caption{A real-world performance bug in GCC (the `-' and `+' demonstrate the patch; variable and 
-function names are simplified for demonstration purposes)}
-\label{fig:GCC27733}
-\end{figure}
-
 Figure~\ref{fig:GCC27733} shows a performance problem in GCC. 
 Recursive function \texttt{mult\_alg} computes the best algorithm for 
 multiplying \texttt{t}, a time-consuming computation. 
@@ -117,6 +108,19 @@ through profilers early on. However, they did not figure out
 whether \texttt{mult\_alg} is inefficient, which part of it is 
 inefficient (\texttt{mult\_alg} is a large function with about 400 lines of 
 code), and how it is inefficient, until several weeks later.
+
+\begin{figure}
+\centering
+\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+     morekeywords={+},keepspaces=true}
+  \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC27733.c}}
+\caption{A real-world performance bug in GCC (the `-' and `+' demonstrate the patch; variable and 
+function names are simplified for demonstration purposes)}
+\vspace{-0.1in}
+\label{fig:GCC27733}
+\end{figure}
+
+
 
 If a tool can tell developers not only \emph{which} loop or function is
 responsible for execution slowness, but also \emph{why} and \emph{how}

@@ -1,0 +1,296 @@
+\section{Evaluation of \Tool}
+\label{sec:experiment}
+
+\subsection{Methodology}
+\label{sec:result_meth}
+%Please discuss the potential usage scenarios of \Tool
+%How you will use it together with other tools 
+
+\input section/tab_benchmarks
+
+\noindent\textbf{Implementation and Platform}
+We implement \Tool in LLVM-3.4.2 \cite{llvm}, and conduct our
+%Our implementation consists of 17654 lines of C++ code, 
+%with 4748 for instrumenter, 674 for resultless analysis, 
+%5802 for redundancy analysis, 
+%and the remaining 6430 for common utilities. 
+experiments on a i5-3330S machine, with Linux 3.19 kernel. 
+
+\noindent\textbf{Benchmarks}
+\Tool is a diagnosis tool that helps understand and fix 
+already-manifested performance problems,
+not a detection tool that help predict not-yet-manifested
+problems. Consequently, our benchmarks are performance problems that have already
+happened in real world, and we will reproduce them to evaluate \Tool.
+For a thorough evaluation, we use
+benchmarks from two different sources.
+
+First, \emph{general} benchmark suite.
+We evaluate \Tool on all bugs, 18 in total, that we can reproduce 
+among the 45 bugs discussed in Section \ref{sec:eval_taxonomy}. 
+These 18 bugs cover a wide variety of inefficiency root causes, as 
+shown in Table~\ref{tab:benchmarks}. 
+We use the problem-triggering inputs reported by real-world
+users in \Tool run-time analysis.
+Among these 18, seven are extracted from Java/JavaScript
+programs.
+%, as \Tool currently only handles C/C++
+%programs; one is extracted from a very old version of Mozilla that can no longer be
+%compiled as it is.
+%These 18 bugs include all the benchmarks used in the recent
+%statistical performance debugging work~\cite{SongOOPSLA2014}.
+%The extraction is conducted by XXX.
+For these benchmarks, we did our best to keep all bug-related data structures
+and caller/callee functions intact, and re-implement them in C++
+following the original data and control flow. 
+%Their
+%bug-triggering inputs are produced based on the bug-triggering inputs in 
+%the original bug reports.
+
+Note that, we expect \Tool to also work for most, if not all, of 
+the remaining 27 bugs listed in Table \ref{tab:root}.
+However, these 27 bugs are too difficult to be reproduced, as they 
+depend on special hardware/software environment (e.g., Windows OS and 
+.Net libraries) and cannot be easily extracted or reimplemented. 
+For example, some bugs are related to GUI widgets, which are too complicated to 
+re-implement. Some bugs' inefficient 
+loops traverse big graphs, whose bug-triggering inputs
+(i.e., the graphs) are difficult to figure out 
+without reproducing the original bugs. 
+
+%Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama, toddlerbuglist}.
+%{\color{red} We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
+%All of these bugs come from Java programs. 
+%We extract XXX (how did you
+%extract exactly?) and re-implement in C++. Each extracted benchmark 
+%contains 4--5 loops (how come you always have 4--5 loops??XXX). 
+Second, we evaluate \Tool on Toddler~\cite{Alabama, toddlerbuglist} benchmark suite.
+Toddler project provides the bug-triggering inputs and detailed explanation
+for 21 inefficient-loop bugs that have been confirmed and fixed by developers, and
+we evaluate \Tool on \emph{all} of them.
+Due to the focus of Toddler, all of these bugs are caused by inefficient
+\textit{nested} loops and only cover two types of inefficiency root causes,
+as shown in Table \ref{tab:benchmarks}.
+We extract these bugs and re-implemented them in 
+C/C++;
+we also re-implement basic Java data structures following a recent version of 
+\texttt{openjdk}. Each extracted benchmark contains at least five
+loops, except for two that contain four loops each.
+
+The general benchmark suite and Toddler benchmark suite both provide
+a large set of repeatable inefficient loop problems that we can access. 
+At the same time, they were initially set up for different reasons and
+methodologies,
+and hence well complement each other.
+All the benchamrks led to severe performance problems.
+After developers fixed these problems, the performance of each benchmark improves
+4X -- 500X under the user-reported workload in our experiments. 
+
+
+\noindent\textbf{Evaluation settings}
+Our evaluation uses existing statistical performance diagnosis
+tool \cite{SongOOPSLA2014} to process a performance problem and identify 
+one or a few suspicious loops for \Tool to analyze.
+For all but four benchmarks, statistical debugging identifies the
+real root-cause loop as the most suspicious loop. For the remaining four
+benchmarks, which all come from Table \ref{tab:root},
+the real root-cause loops are ranked number 2, 2, 4, and 10.
+%Overall, we believe future tools can accurately identify the most one or a couple
+%of suspicious loops.
+%XXX (what can we say about Toddler benchmark set here?)
+
+%\input section/tab_cover
+
+To evaluate the coverage, accuracy, and performance of \Tool, we mainly conduct
+three sets of evaluation. First, we apply \Tool to the real root-cause loop to
+see if \Tool can correctly identify the root-cause category and provide
+correct fix-strategy suggestion. Second, we apply
+statistical performance debugging \cite{SongOOPSLA2014} to all our benchmarks
+and apply \Tool to the top 5 ranked loops\footnote{Some extracted benchmarks
+have fewer than 5 loops. We simply apply \Tool to all loops in these cases.}
+to see how accurate \Tool is. Third, we evaluate the run-time performance of
+applying \Tool to the real root-cause loop. 
+ 
+
+We use 0.001 as the default \textit{resultful rate} threshold for identifying
+0*1? 
+%loops, 0.01 as the \textit{resultful rate} threshold for identifying 
+and [0$|$1]* resultless loops; we use 
+0.5 as the default \textit{redundancy rate} threshold for identifying redundant loops.
+%, and 
+%2 as the \textit{cross-iteration redundancy rate} (i.e., 
+%the number of distinct iterations is less than half of the total iterations).
+We use $1/100$ sampling rate for cross-loop redundancy analysis and 
+$1/1000$ sampling rate for cross-iteration redundancy analysis
+(there tend to be more loop iterations than loop instances).
+All our diagnosis results require only \textbf{one} run under the 
+problem-triggering input.
+All our performance results are obtained by taking average of \textbf{ten} runs, 
+with the variation among different runs always less than 5\%.
+
+%More discussions about all the parameters/thresholds presented above, including
+%how to set them and how sensitive they are, are discussed in Section
+%\ref{sec:sensi}. 
+
+\subsection{Coverage Results}
+\label{sec:coverage}
+Overall, \Tool provides good diagnosis coverage, as shown by the check-marks in Table~\ref{tab:benchmarks}
+(the ``Did \Tool Identify ..?'' columns). 
+\Tool identifies the correct root cause for \textbf{all} \allbugs benchmarks, and 
+suggests fix strategies that match what developers took in practice
+for 33 out of \allbugs cases. 
+
+The six cases where the fix strategy suggested by \Tool does not match that of 
+developers fall into three categories.
+First, the fix strategy taken by developers is a subset of what suggested by 
+\Tool.
+For MySQL\#27287 and Apache\#53622, the root-cause loops contain both
+cross-loop redundancy and 0*1? inefficiency. Consequently, \Tool suggests two
+corresponding fix strategies. In practice, the developers
+acknowledge both types of inefficiencies, but the patches
+only changed the data structures, which eliminated both types of inefficiencies 
+in case of MySQL\#27287 and left the cross-loop redundancy unsolved in
+Apache\#53622. 
+%For Apache\#53622, there are two buggy loops, one is cross-loop redundant, and the other is 0*1? inefficient. 
+%\Tool suggests batching and changing data structure, respectively. 
+%In practice, developers only fix the main root cause loop, by using changing data structure.} 
+
+Second, the fix strategy taken by developers is related to
+what suggested by \Tool.
+The root-cause loops in 
+Collections bugs \#407, \#408, and \#425 all conduct frequent linear searches in arrays.
+\Tool suggests data-structure changes for these three cases. Developers' patches 
+still keep the original data structures and the original buggy loops, but they
+did use hash-sets, which contain the same content as the arrays do,
+to help conditionally skip the loops. 
+
+Third, \Tool cannot suggest fix strategy for 1* loops.
+For GCC\#12322, \Tool correctly tells that the loop under study
+does not contain any form of inefficiency and produce results in every 
+iteration, and hence fails to suggest any fix strategy. In practice, GCC
+developers decide to skip the loop, which will cause some programs compiled by
+GCC
+to be less performance-optimal than before. 
+%However, GCC developers feel
+%that it is worthwhile considering the slow-down caused by the original loop.
+
+\subsection{Accuracy Results}
+\label{sec:result_acc}
+
+%\input section/tab_top5
+
+As shown in Table \ref{tab:benchmarks}, \Tool is accurate, having 0 real
+false positive and 22 benign false positives in total for all the top five loops
+of the \allbugs benchmarks.
+
+Here, benign false positives mean that \Tool analysis result is true ---
+some loops are indeed cross-iteration/loop redundant or indeed producing
+results in only a tiny portion of all the iterations. However, those
+problems are \textit{not} fixed by developers in their performance patches. 
+
+There are several reasons for these benign performance problems. 
+The main reason is that they are not the main contributor to the 
+performance problem perceived by the users. This happens to 20 out of the
+22 benign cases. % 11 out of 13 in the first benchmark set 
+In fact, this is not really a problem for \Tool in 
+real usage scenarios, because statistical debugging or profiling can often
+tell that these loops are not top contributors to the performance
+problems.
+Two cases happen when fixing the 
+identified redundant/resultless problems
+are very difficult and hence developers decide not to fix them.
+
+The accuracy of \Tool benefits from its run-time analysis.
+%{\color{red} For example, there are 26 
+For example, our run-time analysis has correctly pruned out 24 false positives
+in 0*1? inefficiency detection for our benchmarks. Each of these 24 loops is a
+top-5 suspicious loops in one of our benchmarks; it only generates side effects
+in its last iteration, and hence is identified as 0*1? by static analysis. 
+Without run-time information, \Tool would judge
+all of them as inefficient (0*1? resultless). Fortunately,
+\Tool run-time counts the number of iterations of each loop instance and
+correctly identifies them as false positives. Similarly, \Tool run-time analysis
+helps prune out 19 false positives for [0$|$1]* loop identification.
+
+\Tool can also help improve the accuracy of statistical debugging in
+identifying which loop is the root-cause loop.
+For example, the real root-cause loop of Apache\#34464 and GCC\#46401 both
+rank number two by the statistical performance diagnosis tool.
+Fortunately,
+\Tool can tell that the number one loops in both cases do not contain
+any form of inefficiency, resultless or redundancy. 
+
+\subsection{Performance}
+\label{sec:result_perf}
+
+\input section/overhead_tab.tex
+
+As shown in Table \ref{tab:performance}, 
+the performance of \Tool is good. The overhead is consistently under or around 5\% 
+except for one benchmark, Mozilla\#347306. 
+We believe \Tool is promising for potential production
+run usage.
+We can easily further lower the overhead through sparser sampling.
+%the current diagnosis results are obtained by running the
+%program only \textbf{once} under the problem-triggering workload.
+%If we use sparser sampling, more failure runs will be needed to obtain good
+%diagnosis results.
+
+As we can also see from the table, our performance optimization discussed in 
+Section \ref{sec:inst} and \ref{sec:perf} has helped.
+
+The performance benefit of sampling is huge.
+Without sampling, redundancy
+analysis lead to over 100X slowdown for six benchmarks.
+The benefit of static optimization is also non-trivial. 
+For example, for MySQL\#15811 and MySQL\#27287, static analysis alone
+(i.e., no run-time overhead) can
+judge that they do not contain cross-iteration redundancy: the computation of 
+each iteration depends on loop induction variables, which are naturally different
+in different iterations. 
+As another example, the buggy loops of MySQL\#27287 and MySQL\#15811 access 
+arrays. 
+After changing to tracking the initial and ending memory-access addresses
+of the array, instead of the content of the whole array accesses,
+the overhead is reduced from 12.18\% to 0.20\% for MySQL\#27287, 
+and from 20.53\% to 0.35\% for MySQL\#15811 respectively 
+(sampling is conducted consistently here). 
+
+\subsection{Parameter Setting and Sensitivity}
+\label{sec:sensi}
+\noindent\textbf{Sampling rates}
+We have tried different sampling rates for redundancy analysis.
+Intuitively, sparser sampling leads to lower overhead but worse diagnosis
+results. Due to space constraints, we briefly summarize the results below.
+
+When we lower the sampling rate from 1/100 to 1/1000 
+in cross-loop redundancy analysis,
+among all the benchmarks in Table \ref{tab:performance},
+Mozilla\#416628 incurs the largest overhead (merely 4.51\%). 
+When we lower the sampling rate from 1/1000 to 1/10000
+in cross-iteration redundancy analysis,
+among all the benchmarks in Table \ref{tab:performance},
+Mozilla\#347306 has the largest overhead (merely 7.38\%). 
+%In fact, Mozilla347306 is the only one whose overhead is larger than 2\%. 
+In both cases,
+the diagnosis results remain 
+the same for all but GCC\#12322, where too few samples are available
+to judge redundancy.
+%If we increase the sampling rate to 1/100, we will 
+%have two benchmarks whose overhead is larger than 30\%.
+
+\noindent\textbf{Resultful and redundancy rate}
+Our default setting should work in most cases.
+In fact, the diagnosis results are largely {\bf in}sensitive to the threshold
+setting. For example, the results would remain the same when
+changing the redundancy rate threshold from 0.5 to any value between about
+0.1 and 0.66. We will have 1 more false negative and 1 fewer benign false positive, 
+when the rate is 0.7. The trend is similar for resultless loop checking. 
+Developers can adjust these thresholds. 
+They can even get rid of thresholds, and only
+use the raw values of resultful/redundancy rates to understand
+the absolute and relative (in)efficiency nature of suspicious 
+loops. Based on our experiments, the difference between efficient and inefficient
+loops is obvious based on these rates.
+
+
