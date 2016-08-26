@@ -56,10 +56,10 @@ resultless at run time.
 \label{sec:s_workless}
 
 \Tool considers two types of instructions as side-effect instructions:
-(1) write to heap or global variables;
-(2) write to a stack variable, defined outside the loop, and the update value
-may be used after the loop. The second condition is checked through liveness
-analysis.
+(1) writes to heap or global variables;
+(2) writes to a stack variable defined outside the loop and
+may be used after the loop.
+The second condition is checked through liveness analysis.
 \Tool also analyzes all functions called
 by a loop directly or indirectly --- a function $F$ that updates variables
 defined outside $F$ makes the corresponding call statement in $F$'s
@@ -69,8 +69,7 @@ We consider all calls to library functions or through function pointers
 as having side effects, 
 unless the library functions are specially marked by us in a white list.
 }
-This analysis is complete, but not sound. We may identify side-effect
-instructions that are actually not. %to be moved to threats to validity 
+ %to be moved to threats to validity 
 
 \Tool then categorizes loops into four types.
 Given a natural loop $l$, when $l$
