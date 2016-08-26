@@ -57,9 +57,8 @@ resultless at run time.
 
 \Tool considers two types of instructions as side-effect instructions:
 (1) writes to heap or global variables;
-(2) writes to a stack variable defined outside the loop and
-may be used after the loop.
-The second condition is checked through liveness analysis.
+(2) writes to stack variables defined outside the loop and
+may be used after the loop (checked through liveness analysis).
 \Tool also analyzes all functions called
 by a loop directly or indirectly --- a function $F$ that updates variables
 defined outside $F$ makes the corresponding call statement in $F$'s
