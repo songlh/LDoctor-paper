@@ -207,7 +207,7 @@ how to judge whether
 two iterations or loop-instances are doing redundant work, and
 how to judge whether a loop contains sufficient redundant
 computation to be inefficient.
-Our answer stick to one principle: there should be
+Our answer sticks to one principle: there should be
 sufficient amount of redundant computation to make a loop likely culprit
 for a user-perceived performance problem and to make itself worthwhile to
 get optimized by developers. 
@@ -300,9 +300,12 @@ Rate$_\text{C.L.}$ = $\frac{\text{\# of redundant pairs}}{\text{\# of pairs}}$
 (In this example, $\text{\# of pairs}$ is $k-1$).
 This rate ranges between 0 and 1, the smaller it is the less redundancy
 $L$ contains.
-We only check redundancy between consecutive loop instances, because  
-checking that between every pairs of loop
-instances is time consuming.
+%We only check redundancy between consecutive loop instances, because  
+%checking that between every pairs of loop
+%instances is time consuming.
+{\color{red} We only check redundancy between consecutive loop instances.
+This could bring false negatives, but checking redundancy between every pairs of loop instances is time consuming.}
+
 
 The key of this implementation is
 to judge whether two dynamic loop instances $l_1$ and $l_2$ 
@@ -316,11 +319,11 @@ $l_1$ and $l_2$ first, and then use the average \textit{redundancy rate} of
 all input instructions as the \textit{redundancy rate} between
 $l_1$ and $l_2$. 
 
-We calculate the redundancy for one input instruction $I$ by normalizing the
+{\color{red} We calculate the redundancy for one input instruction $I$ by using 1 to subtract the normalized
 edit-distance between the two sequences of values returned by $I$ in the two
 loop instances, denoted by $SeqA$ and $SeqB$. 
 The exact formula is the following:
-
+}
 %\[
 %\Scale[0.8]{
 %min\_dist(SeqA, SeqB) = min(dist(SeqA,SeqB), r\_dist(SeqA, SeqB))
@@ -330,7 +333,7 @@ The exact formula is the following:
 \vspace{-0.1in}
 \[
 \Scale[0.8]{
-	Redundancy(I) =  \frac{EditDistance(SeqA, SeqB) - |Length(SeqA) - Length(SeqB)|}{max(Length(SeqA), Length(SeqB))}
+	Redundancy(I) = 1 - \frac{EditDistance(SeqA, SeqB) - |Length(SeqA) - Length(SeqB)|}{min(Length(SeqA), Length(SeqB))}
 }
 \]
 
@@ -443,7 +446,7 @@ generated.
 %\end{figure}
 
 For cross-loop redundancy analysis,
-We randomly decide at the beginning
+we randomly decide at the beginning
 of every loop instance whether to track values for this instance. 
 Since we will need to compare two consecutive loop
 instances for redundancy, once we decide to sample one loop instance, we will
@@ -536,7 +539,7 @@ We did not encounter such false positives in our experiments.
 \Tool suggests a fix strategy for each inefficient loop 
 and provides related information for carrying out that strategy.
 This process is straightforward following our taxonomy discussion in 
-Section \ref{sec:study}, as there is often only one or two natural fix 
+Section \ref{sec:study}, as there are often only one or two natural fix 
 strategies for each sub-category of root causes.
 
 Once a loop is identified as \emph{resultless}, \Tool will suggest
