@@ -503,7 +503,11 @@ For example, \Tool identifies that the values of
 \texttt{aNode->localName} and \texttt{aNode->namespaceURI} do not change
 throughout one loop instance
 in Figure~\ref{fig:Mozilla477564}, and hence only traces them once
-outside the loop. 
+outside the loop.
+{\color{red} We may have false positives here, 
+since heap/global variables could be changed by a different thread. 
+However, concurrent programs are out of scope for current design of \Tool. 
+} 
 \comment{
 This analysis is sound but not complete.
 \Tool may miss some loop invariants. For in-house debugging, since we know
