@@ -300,11 +300,10 @@ Rate$_\text{C.L.}$ = $\frac{\text{\# of redundant pairs}}{\text{\# of pairs}}$
 (In this example, $\text{\# of pairs}$ is $k-1$).
 This rate ranges between 0 and 1, the smaller it is the less redundancy
 $L$ contains.
-%We only check redundancy between consecutive loop instances, because  
-%checking that between every pairs of loop
-%instances is time consuming.
-{\color{red} We only check redundancy between consecutive loop instances.
-This could bring false negatives, but checking redundancy between every pairs of loop instances is time consuming.}
+We only check redundancy between consecutive loop instances, because  
+checking that between every pairs of loop
+instances is time consuming.
+
 
 
 The key of this implementation is
@@ -504,10 +503,7 @@ For example, \Tool identifies that the values of
 throughout one loop instance
 in Figure~\ref{fig:Mozilla477564}, and hence only traces them once
 outside the loop.
-{\color{red} We may have false positives here, 
-since heap/global variables could be changed by a different thread. 
-However, concurrent programs are out of scope for current design of \Tool. 
-} 
+
 \comment{
 This analysis is sound but not complete.
 \Tool may miss some loop invariants. For in-house debugging, since we know
