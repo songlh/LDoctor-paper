@@ -102,16 +102,7 @@ the real root-cause loops are ranked number 2, 2, 4, and 10.
 
 %\input section/tab_cover
 
-To evaluate the coverage, accuracy, and performance of \Tool, we mainly conduct
-three sets of evaluation. First, we apply \Tool to the real root-cause loop to
-see if \Tool can correctly identify the root-cause category and suggest
-a fix strategy. Second, we apply
-statistical performance debugging \cite{SongOOPSLA2014} to all our benchmarks
-and apply \Tool to the top 5 ranked loops\footnote{Some extracted benchmarks
-have fewer than 5 loops. We simply apply \Tool to all loops in these cases.}
-to see how accurate \Tool is. Third, we evaluate the run-time performance of
-applying \Tool to the real root-cause loop. 
- 
+
 
 We use 0.001 as the default \textit{resultful rate} threshold for identifying
 0*1? 
@@ -133,10 +124,33 @@ with the variation among different runs always less than 5\%.
 %how to set them and how sensitive they are, are discussed in Section
 %\ref{sec:sensi}. 
 
+{\color{red}
+\noindent\textbf{Research questions to answer}
+We mainly conduct three sets of evaluation to answer three key research 
+questions regarding the coverage, accuracy, and performance of \Tool, 
+
+\textbf{RQ1}.
+Can \Tool correctly identify inefficiency categories and suggest fix 
+strategies for many real-world loops? (Sec.\ref{sec:coverage})
+
+\textbf{RQ2}.
+Might \Tool report many false positives and hence waste developers' diagnosis
+effort? (Sec.\ref{sec:result_acc})
+
+\textbf{RQ3}.
+What is the run-time overhead of \Tool? (Sec.\ref{sec:result_perf})
+}
+
+
 \subsection{Coverage Results}
 \label{sec:coverage}
-Overall, \Tool provides good diagnosis coverage, as shown by the check-marks in Table~\ref{tab:benchmarks}
-(the ``Did \Tool Identify ..?'' columns). 
+{\color{red}
+To answer \textbf{RQ1}, we apply \Tool to real root-cause loops to see if 
+it can accurately identify inefficiency categories.
+As shown by the check-marks in Table~\ref{tab:benchmarks}
+(the ``Did \Tool Identify ..?'' columns), 
+\Tool does provide good diagnosis coverage.
+}
 \Tool identifies the correct root cause for \textbf{all} \allbugs benchmarks, and 
 suggests fix strategies that match what developers took in practice
 for 33 out of \allbugs cases. 
@@ -179,27 +193,44 @@ to be less performance-optimal than before.
 \label{sec:result_acc}
 
 %\input section/tab_top5
-
-As shown in Table \ref{tab:benchmarks}, \Tool is accurate, having 0 real
-false positive and 22 benign false positives in total for all the top five loops
+{\color{red}
+To answer \textbf{RQ2}, we apply
+statistical performance debugging \cite{SongOOPSLA2014} to all our benchmarks
+and apply \Tool to the top 5 ranked loops\footnote{Some extracted benchmarks
+have fewer than 5 loops. We simply apply \Tool to all loops in these cases.}
+to see how accurate \Tool is. 
+}
+{\color{red}
+As shown in Table \ref{tab:benchmarks}, \Tool is accurate, having 2 real
+false positive and 20 benign false positives in total for all the top five loops
 of the \allbugs benchmarks.
 
-Here, benign false positives mean that \Tool analysis result is true ---
-some loops are indeed cross-iteration/loop redundant or indeed producing
-results in only a tiny portion of loop iterations. However, those
-problems are \textit{not} fixed by developers in their performance patches. 
+%TODO for Linhai: 
+%1. check the accuracy of the next two paragraphs
+%2. fill in the XXX and XXX in the next paragraph
+%3. change the false positive numbers in Table
+%4. change the true false positive and benign false positive numbers in other part of the paper
 
-There are several reasons for these benign performance problems. 
-The main reason is that they are not the main contributor to the 
-performance problem perceived by the users. This happens to 20 out of the
-22 benign cases. % 11 out of 13 in the first benchmark set 
-In fact, this is not a problem for \Tool in 
-real usage scenarios, because statistical debugging or profiling can often
-tell that these loops are not top contributors to the performance
-problems.
-Two cases happen when fixing the 
-identified redundant/resultless problems
-are very difficult and hence developers decide not to fix them.
+The two real false positives happen for benchmarks XXX and XXX.
+These two loops are identified as
+redundant and resultless by \Tool. However, they
+are very difficult to fix and hence are not changed in the patches.
+Since these two loops are ranked higher than the true positive loops by
+statistical debugging, they could cost (waste) \Tool users some effort during 
+performance diagnosis. Future work could try to prune these false positives
+by estimating the fix difficulty.
+
+\Tool also reports 20 benign false positives.
+In these cases, \Tool correctly identified truly inefficient loops.
+However, these loops are not the main contributors to the 
+performance problems perceived by the users, and hence are not
+fixed in patches. 
+Different from the two false positives discussed above, these 20 loops are
+ranked {\bf lower} than the true positive loops by statistical debugging, as
+well as by profillers,
+because of their low contributions to the perceived performance problems.
+Consequently, they will not cause extra diagnosis effort for \Tool users.
+}
 
 The accuracy of \Tool benefits from its run-time analysis.
 %{\color{red} For example, there are 26 
@@ -226,6 +257,10 @@ any form of inefficiency, resultless or redundancy.
 
 \input section/overhead_tab.tex
 
+{\color{red}
+To answer \textbf{RQ3}, we evaluate the run-time performance of
+applying \Tool to the real root-cause loop. 
+}
 As shown in Table \ref{tab:performance}, 
 the performance of \Tool is good. The overhead is consistently under or around 5\% 
 except for one benchmark, Mozilla\#347306. 

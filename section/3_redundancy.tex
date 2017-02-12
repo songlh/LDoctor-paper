@@ -318,11 +318,16 @@ $l_1$ and $l_2$ first, and then use the average \textit{redundancy rate} of
 all input instructions as the \textit{redundancy rate} between
 $l_1$ and $l_2$. 
 
-{\color{red} We calculate the redundancy for one input instruction $I$ by using 1 to subtract the normalized
+{\color{red}
+We calculate the redundancy for an input instruction $I$ based on the
 edit-distance between the two sequences of values returned by $I$ in the two
-loop instances, denoted by $SeqA$ and $SeqB$. 
-The exact formula is the following:
+loop instances
+and the lengths of the two sequences, denoted by $SeqA$ and $SeqB$. 
+The intuition is that the redundancy rate should be 1 if one sequence is the 
+sub-sequence of the other; and, the redundancy rate should be 0 if these two
+sequences are completely different.
 }
+The exact formula is the following:
 %\[
 %\Scale[0.8]{
 %min\_dist(SeqA, SeqB) = min(dist(SeqA,SeqB), r\_dist(SeqA, SeqB))
