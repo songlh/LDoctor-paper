@@ -324,7 +324,7 @@ edit-distance between the two sequences of values returned by $I$ in the two
 loop instances
 and the lengths of the two sequences, denoted by $SeqA$ and $SeqB$. 
 The intuition is that the redundancy rate should be 1 if one sequence is the 
-sub-sequence of the other; and, the redundancy rate should be 0 if these two
+sub-sequence of the other, and be 0 if these two
 sequences are completely different.
 }
 The exact formula is the following:
@@ -542,10 +542,11 @@ We did not encounter such false positives in our experiments.
 \label{sec:redundant_fix}
 
 {\color{red}
-\Tool suggests a fix strategy for each inefficient loop and provides
-related information for carrying out that strategy. 
-For sub-category with two fix strategies, \Tool conducts extra analysis
-To decide which one to use. 
+\Tool suggests a fix strategy for each inefficient loop based on the
+inefficiency category. Making this suggestion is straightforward for
+most categories, and requires a small amount of extra
+analysis occasionally. \Tool also
+provides related information for carrying out the suggested fix strategy. 
 }
 
 \comment{
