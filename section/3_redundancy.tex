@@ -541,11 +541,20 @@ We did not encounter such false positives in our experiments.
 \subsection{Fix Strategy Recommendation}
 \label{sec:redundant_fix}
 
+{\color{red}
+\Tool suggests a fix strategy for each inefficient loop and provides
+related information for carrying out that strategy. 
+For sub-category with two fix strategies, \Tool conducts extra analysis
+To decide which one to use. 
+}
+
+\comment{
 \Tool suggests a fix strategy for each inefficient loop 
 and provides related information for carrying out that strategy.
 This process is straightforward following our taxonomy discussion in 
 Section \ref{sec:study}, as there are often only one or two natural fix 
 strategies for each sub-category of root causes.
+}
 
 Once a loop is identified as \emph{resultless}, \Tool will suggest
 the loop to be deleted in case of 0$^*$,

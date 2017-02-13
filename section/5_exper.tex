@@ -201,8 +201,8 @@ have fewer than 5 loops. We simply apply \Tool to all loops in these cases.}
 to see how accurate \Tool is. 
 }
 {\color{red}
-As shown in Table \ref{tab:benchmarks}, \Tool is accurate, having 2 real
-false positive and 20 benign false positives in total for all the top five loops
+As shown in Table \ref{tab:benchmarks}, \Tool is accurate, having five real
+false positives and 17 benign false positives in total for all the top five loops
 of the \allbugs benchmarks.
 
 %TODO for Linhai: 
@@ -211,21 +211,21 @@ of the \allbugs benchmarks.
 %3. change the false positive numbers in Table
 %4. change the true false positive and benign false positive numbers in other part of the paper
 
-The two real false positives happen for benchmarks XXX and XXX.
-These two loops are identified as
+The five real false positives happen for benchmarks GCC\#8805 and GCC\#12322.
+These five loops are identified as
 redundant and resultless by \Tool. However, they
 are very difficult to fix and hence are not changed in the patches.
-Since these two loops are ranked higher than the true positive loops by
+Since these five loops are ranked higher than the true positive loops by
 statistical debugging, they could cost (waste) \Tool users some effort during 
 performance diagnosis. Future work could try to prune these false positives
 by estimating the fix difficulty.
 
-\Tool also reports 20 benign false positives.
+\Tool also reports 17 benign false positives.
 In these cases, \Tool correctly identified truly inefficient loops.
 However, these loops are not the main contributors to the 
 performance problems perceived by the users, and hence are not
 fixed in patches. 
-Different from the two false positives discussed above, these 20 loops are
+Different from the five false positives discussed above, these 17 loops are
 ranked {\bf lower} than the true positive loops by statistical debugging, as
 well as by profillers,
 because of their low contributions to the perceived performance problems.
@@ -320,7 +320,7 @@ Our default setting should work in most cases.
 In fact, the diagnosis results are largely {\bf in}sensitive to the threshold
 setting. For example, the results would remain the same when
 changing the redundancy rate threshold from 0.5 to any value between about
-0.1 and 0.66. We will have 1 more false negative and 1 fewer benign false positive, 
+0.1 and 0.66. We will have 1 more false negative and 1 fewer true false positive, 
 when the rate is 0.7. The trend is similar for resultless loop checking. 
 Developers can adjust these thresholds. 
 They can even get rid of thresholds, and only
