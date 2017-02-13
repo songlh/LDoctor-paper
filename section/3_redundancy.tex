@@ -138,15 +138,16 @@ when only comparing the loop side-effect (e.g., always returning
 
 \begin{figure}
   \centering
-  \lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+  \lstset{basicstyle=\ttfamily\fontsize{7}{8}\selectfont,
      morekeywords={+},keepspaces=true,numbers=left}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Apache34464.c}}
-  \caption{A cross-loop redundant bug in Apache (The \texttt{for} loop on line 7 
+  \caption{A cross-loop redundant bug in Apache 
+{\footnotesize{(The \texttt{for} loop on line 7 
 searches a string \texttt{source} for a target sub-string 
 \texttt{target}. Since the outer loop on line 2 appends one 
 character to \texttt{source} in every iteration (line 30), 
 the \texttt{for} loop is always working on a similar 
-\texttt{source} from its previous execution, with a lot of redundancy.) 
+\texttt{source} from its previous execution, with a lot of redundancy.}}) 
 }
   \label{fig:Apache34464}
 \end{figure}
@@ -541,21 +542,11 @@ We did not encounter such false positives in our experiments.
 \subsection{Fix Strategy Recommendation}
 \label{sec:redundant_fix}
 
-{\color{red}
 \Tool suggests a fix strategy for each inefficient loop based on the
 inefficiency category. Making this suggestion is straightforward for
 most categories, and requires a small amount of extra
 analysis occasionally. \Tool also
 provides related information for carrying out the suggested fix strategy. 
-}
-
-\comment{
-\Tool suggests a fix strategy for each inefficient loop 
-and provides related information for carrying out that strategy.
-This process is straightforward following our taxonomy discussion in 
-Section \ref{sec:study}, as there are often only one or two natural fix 
-strategies for each sub-category of root causes.
-}
 
 Once a loop is identified as \emph{resultless}, \Tool will suggest
 the loop to be deleted in case of 0$^*$,
@@ -568,11 +559,10 @@ helping developers refactor the loop or change data structures.
 When a loop is identified as \emph{redundant}, \Tool conducts
 extra analysis to
 decide whether batching or memoization should be used. 
-For cross-iteration redundancy, \Tool suggests batching if the
-redundancy is related to I/O operations and suggests memoization otherwise.
-Specifically, when the only side effect of a loop is from I/O operations
-and the same statement(s) is executed in every iteration, \Tool suggests
-batching the specific I/O operations.
+For cross-iteration redundancy, \Tool suggests batching 
+I/O operations.
+when the only side effect of a loop is from I/O operations
+and the same statement(s) is executed in every iteration.
 Otherwise, \Tool suggests memoization, and reports
 input instructions that lead to redundant computation and redundancy rate.
 

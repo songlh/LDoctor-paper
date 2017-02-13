@@ -18,10 +18,9 @@ experiments on an i5-3330S machine, with Linux 3.19 kernel.
 
 \noindent\textbf{Benchmarks}
 \Tool is a diagnosis tool that helps understand and fix 
-already-manifested performance problems,
-not a detection tool that help predict not-yet-manifested
-problems. Consequently, our benchmarks are performance problems that have already
-happened in real world, and we will reproduce them to evaluate \Tool.
+already-manifested performance problems.
+Consequently, our benchmarks are performance problems that have already
+happened in real world.
 For a thorough evaluation, we use
 benchmarks from two different sources.
 
@@ -46,17 +45,18 @@ following the original data and control flow.
 %Their
 %bug-triggering inputs are produced based on the bug-triggering inputs in 
 %the original bug reports.
-
-Note that, we expect \Tool to also work for most, if not all, of 
-the remaining 27 bugs listed in Table \ref{tab:root}.
+We expect \Tool to also work for most of 
+the remaining 27 bugs in Table \ref{tab:root}.
 However, these 27 bugs are too difficult to reproduce, as they 
-depend on special hardware/software environment (e.g., Windows OS and 
+depend on special environment (e.g., Windows OS and 
 .Net libraries) and cannot be easily extracted or reimplemented. 
-For example, some bugs are related to GUI widgets, which are too complicated to 
-re-implement. Some bugs' inefficient 
-loops traverse big graphs, whose bug-triggering inputs
-(i.e., the graphs) are difficult to figure out 
-without reproducing the original bugs. 
+For example, some bugs are related to GUI widgets and some 
+require big complicated graphs to trigger.
+%, which are too complicated to 
+%re-implement. Some bugs' inefficient 
+%loops traverse big graphs, whose bug-triggering inputs
+%(i.e., the graphs) are difficult to figure out 
+%without reproducing the original bugs. 
 
 %Second, we evaluate \Tool on 21 out of the 42 detected by Toddler \cite{Alabama, toddlerbuglist}.
 %{\color{red} We use all benchmarks that are reported with bug-triggering inputs and fixed by developers. 
@@ -91,19 +91,15 @@ After developers fixed these problems, the performance of each benchmark improve
 \noindent\textbf{Evaluation settings}
 Our evaluation uses existing statistical performance diagnosis
 tool \cite{SongOOPSLA2014} to process a performance problem and identify 
-one or a few suspicious loops for \Tool to analyze.
+a few suspicious loops for \Tool to analyze.
 For all but four benchmarks, statistical debugging identifies the
-real root-cause loop as the most suspicious loop. For the remaining four
-benchmarks, which all come from Table \ref{tab:root},
+real root-cause loop as the most suspicious loop. For the remaining four,
+which all come from Table \ref{tab:root},
 the real root-cause loops are ranked number 2, 2, 4, and 10.
 %Overall, we believe future tools can accurately identify the most one or a couple
 %of suspicious loops.
 %XXX (what can we say about Toddler benchmark set here?)
-
 %\input section/tab_cover
-
-
-
 We use 0.001 as the default \textit{resultful rate} threshold for identifying
 0*1? 
 %loops, 0.01 as the \textit{resultful rate} threshold for identifying 
