@@ -38,12 +38,13 @@ They are rare in mature software systems.
 
 \begin{figure}
 \centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+\lstset{basicstyle=\ttfamily\fontsize{7}{8}\selectfont,
      morekeywords={+},keepspaces=true,numbers=left}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla347306.c}}
 \caption{A resultless 0*1? bug in Mozilla}
 \vspace{-0.05in}
 \label{fig:Mozilla347306}
+\vspace{-0.05in}
 \end{figure}
 
 {\textbf{0*1?}} loops only produce results in the last iteration, if any. 
@@ -111,12 +112,13 @@ had any side-effects, as the \texttt{if} condition was rarely satisfied.
 
 \begin{figure}[t!]
 \centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+\lstset{basicstyle=\ttfamily\fontsize{7}{8}\selectfont,
      morekeywords={+},keepspaces=true}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC46401.c}}
 \caption{A resultless [0$|$1]* bug in GCC }
 \vspace{-0.05in}
 \label{fig:GCC46401}
+\vspace{-0.05in}
 \end{figure}
 
 
@@ -234,12 +236,12 @@ saved count value of the nearest previous sibling with the same name and URI.
 
 \begin{figure}
 \centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+\lstset{basicstyle=\ttfamily\fontsize{7}{8}\selectfont,
      morekeywords={+},keepspaces=true}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/Mozilla477564.js}}
 \caption{A cross-loop redundant bug in Mozilla }
 \vspace{-0.05in}
-\label{fig:Mozilla477564}
+\label{fig:Mozilla477564}\vspace{-0.05in}
 \end{figure}
 
 

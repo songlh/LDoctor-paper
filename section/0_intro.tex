@@ -2,12 +2,11 @@
 \label{sec:intro}
 \subsection{Motivation}
 
-Performance bugs\footnote{We also refer performance bugs as performance problems
-following previous works in this area~\cite{PerfBug,Alabama,SongOOPSLA2014}.} 
+Performance bugs 
 are software implementation mistakes that cause unnecessary performance
 degradation in software. They widely exist in deployed software due to the 
 complexity of modern software
-~\cite{PerfBug,perf.fse10,rily.perftest,perfantipattern,xiao13:context}. 
+~\cite{PerfBug,perf.fse10,rily.perftest,Alabama,perfantipattern,SongOOPSLA2014,xiao13:context}. 
 They annoy end users and waste energy during production runs, and 
 have already caused highly publicized failures~\cite{ACA-health,colorado}.
 Tools that can help
@@ -111,7 +110,7 @@ code), and how it is inefficient, until several weeks later.
 
 \begin{figure}
 \centering
-\lstset{basicstyle=\ttfamily\fontsize{8}{8}\selectfont,
+\lstset{basicstyle=\ttfamily\fontsize{7}{8}\selectfont,
      morekeywords={+},keepspaces=true}
   \mbox{\lstinputlisting[mathescape,boxpos=t]{figures/GCC27733.c}}
 \caption{A real-world performance bug in GCC (the `-' and `+' demonstrate the patch; variable and 
