@@ -120,7 +120,6 @@ with the variation among different runs always less than 5\%.
 %how to set them and how sensitive they are, are discussed in Section
 %\ref{sec:sensi}. 
 
-{\color{red}
 \noindent\textbf{Research questions to answer}
 We mainly conduct three sets of evaluation to answer three key research 
 questions regarding the coverage, accuracy, and performance of \Tool, 
@@ -135,18 +134,15 @@ effort? (Sec.\ref{sec:result_acc})
 
 \textbf{RQ3}.
 What is the run-time overhead of \Tool? (Sec.\ref{sec:result_perf})
-}
 
 
 \subsection{Coverage Results}
 \label{sec:coverage}
-{\color{red}
 To answer \textbf{RQ1}, we apply \Tool to real root-cause loops to see if 
 it can accurately identify inefficiency categories.
 As shown by the check-marks in Table~\ref{tab:benchmarks}
 (the ``Did \Tool Identify ..?'' columns), 
 \Tool does provide good diagnosis coverage.
-}
 \Tool identifies the correct root cause for \textbf{all} \allbugs benchmarks, and 
 suggests fix strategies that match what developers took in practice
 for 33 out of \allbugs cases. 
@@ -189,13 +185,10 @@ to be less performance-optimal than before.
 \label{sec:result_acc}
 
 %\input section/tab_top5
-{\color{red}
 To answer \textbf{RQ2}, we apply
 statistical performance debugging \cite{SongOOPSLA2014} to all benchmarks
 and then apply \Tool to the top 5 ranked loops\footnote{Some extracted benchmarks
 have fewer than 5 loops. We simply apply \Tool to all loops in these cases.}.
-}
-{\color{red}
 Table \ref{tab:benchmarks} shows that \Tool is accurate, having five real
 false positives and 17 benign false positives in total for all the top five loops
 of the \allbugs benchmarks.
@@ -225,7 +218,6 @@ ranked {\bf lower} than the true positive loops by statistical debugging, as
 well as by profillers,
 because of their low contributions to the perceived performance problems.
 Consequently, they will not cause extra diagnosis effort for \Tool users.
-}
 
 The accuracy of \Tool benefits from its run-time analysis.
 %{\color{red} For example, there are 26 
@@ -252,10 +244,8 @@ any form of inefficiency, resultless or redundancy.
 
 \input section/overhead_tab.tex
 
-{\color{red}
 To answer \textbf{RQ3}, we evaluate the run-time performance of
 applying \Tool to the real root-cause loop. 
-}
 As shown in Table \ref{tab:performance}, 
 the performance of \Tool is good. The overhead is consistently under or around 5\% 
 except for one benchmark, Mozilla\#347306. 
